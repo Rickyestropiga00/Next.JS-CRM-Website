@@ -1,11 +1,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+// Update the interface to include secondary variant
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "secondary";
   color?: "success"; // for green outline/text
 }
 
+// Update the Badge component to handle the secondary variant
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant = "default", color, ...props }, ref) => {
     return (
@@ -20,6 +22,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
           variant === "outline" &&
             color === "success" &&
             "border border-green-500 text-green-600",
+          variant === "secondary" && "bg-secondary text-secondary-foreground",
           className
         )}
         {...props}

@@ -29,6 +29,7 @@ interface TableBodyProps {
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
   setEditCustomerId: (id: string | null) => void;
+  onCustomerClick: (id: string) => void;
 }
 
 export function CustomersTableBody({
@@ -39,17 +40,34 @@ export function CustomersTableBody({
   deleteDialogId,
   setDeleteDialogId,
   setEditCustomerId,
+  onCustomerClick,
 }: TableBodyProps) {
   return (
     <TableBody className="pl-5">
       {paginated.map((c) => (
-        <TableRow key={c.id}>
+        <TableRow
+          key={c.id}
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={(e) => {
+            // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+            const target = e.target as HTMLElement;
+            if (
+              target.closest('input[type="checkbox"]') ||
+              target.closest('[role="menuitem"]') ||
+              target.closest("button")
+            ) {
+              return;
+            }
+            onCustomerClick(c.id);
+          }}
+        >
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
               checked={selected.includes(c.id)}
               onCheckedChange={(checked) => onSelectRow(c.id, !!checked)}
               aria-label={`Select row for ${c.name}`}
+              onClick={(e) => e.stopPropagation()}
             />
           </TableCell>
           <TableCell className="pl-4 w-[60px] font-mono">{c.id}</TableCell>
@@ -62,13 +80,18 @@ export function CustomersTableBody({
           </TableCell>
           <TableCell className="w-[120px]">{c.lastContacted}</TableCell>
           <TableCell className="w-[120px]">{c.createdAt}</TableCell>
-          <TableCell className="w-[180px]">{c.notes || "-"}</TableCell>
+          <TableCell className="w-[180px] max-w-[180px]">
+            <div className="truncate" title={c.notes || ""}>
+              {c.notes || "-"}
+            </div>
+          </TableCell>
           <TableCell className="w-[70px]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   className="h-8 w-8 p-0 flex items-center justify-center"
                   aria-label="Actions"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>

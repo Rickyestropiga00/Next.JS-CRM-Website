@@ -42,3 +42,12 @@ next-env.d.ts
 
 # IDE
 .cursor/
+
+# Backend specific
+backend/dist/
+backend/.env
+backend/.env.local
+backend/.env.development.local
+backend/.env.test.local
+backend/.env.production.local
+backend/logs/

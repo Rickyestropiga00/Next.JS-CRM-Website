@@ -212,7 +212,7 @@ export default function AccountPage() {
                         Role:
                       </span>
                     </div>
-                    <Badge variant="outline">{user.role}</Badge>
+                    <Badge variant="secondary">{user.role}</Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />

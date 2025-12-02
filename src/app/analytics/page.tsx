@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mt-3">
           <SectionCards />
-          <div className="flex flex-col lg:flex-row gap-4 mt-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="lg:basis-1/4 w-full">
               <ChartRadarLegend />
             </div>

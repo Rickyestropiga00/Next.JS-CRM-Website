@@ -9,6 +9,7 @@ import { CustomersTableBody } from "./table-body";
 import { CustomersPaginationBar } from "./pagination-bar";
 import { EditCustomerPopover } from "./edit-customer-popover";
 import { AddCustomerPopover } from "./add-customer-popover";
+import { CustomerDetailsModal } from "./customer-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,9 @@ export function CustomersTable() {
   const [editCustomerId, setEditCustomerId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+    null
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const statusOptions: CustomerStatus[] = [
@@ -111,6 +115,33 @@ export function CustomersTable() {
     setData((prev) =>
       prev.map((customer) =>
         customer.id === updatedCustomer.id ? updatedCustomer : customer
+      )
+    );
+  }
+
+  function handleAddComment(customerId: string, comment: string) {
+    const timestamp = new Date().toISOString();
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const formattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
+
+    setData((prev) =>
+      prev.map((customer) =>
+        customer.id === customerId
+          ? {
+              ...customer,
+              notes: customer.notes
+                ? `${customer.notes}\n\n${commentWithTimestamp}`
+                : commentWithTimestamp,
+            }
+          : customer
       )
     );
   }
@@ -235,6 +266,7 @@ export function CustomersTable() {
               deleteDialogId={deleteDialogId}
               setDeleteDialogId={setDeleteDialogId}
               setEditCustomerId={setEditCustomerId}
+              onCustomerClick={setSelectedCustomerId}
             />
           </Table>
         </div>
@@ -271,6 +303,18 @@ export function CustomersTable() {
           setShowAddCustomer(false);
         }}
         onClose={() => setShowAddCustomer(false)}
+      />
+
+      {/* Customer Details Modal */}
+      <CustomerDetailsModal
+        customer={
+          selectedCustomerId
+            ? data.find((c) => c.id === selectedCustomerId) || null
+            : null
+        }
+        isOpen={!!selectedCustomerId}
+        onClose={() => setSelectedCustomerId(null)}
+        onAddComment={handleAddComment}
       />
     </>
   );
