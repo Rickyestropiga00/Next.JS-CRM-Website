@@ -52,6 +52,7 @@ export default function ProductsPage() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <ProductsTable />
+          
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -138,7 +138,7 @@ export const products: Product[] = [
   {
     id: '12',
     name: 'Laptop Backpack',
-    code: 'LB‑BP1500‑012',
+    code: 'LB-BP1500-012',
     type: 'Physical',
     date: '2025-12-29',
     stock: 40,
@@ -179,7 +179,64 @@ export const products: Product[] = [
     status: 'Active',
     image: '/products/ergonomic-mouse-pad.png',
   },
+  {
+    id: '16',
+    name: 'Laptop Cooling Pad',
+    code: 'LCP-400-016',
+    type: 'Physical',
+    date: '2025-12-29',
+    stock: 22,
+    price: 34.99,
+    status: 'Active',
+    image: '/products/laptop-cooling-pad.png',
+  },
+  {
+    id: '17',
+    name: 'Antivirus Software License',
+    code: 'ASL-245-017',
+    type: 'Digital',
+    date: '2025-12-29',
+    stock: 0,
+    price: 29.99,
+    status: 'Active',
+    image: '/products/antivirus-software-license.png',
+  },
+  {
+    id: '18',
+    name: 'Remote IT Support Service',
+    code: 'RIT-102-018',
+    type: 'Service',
+    date: '2025-12-29',
+    stock: 0,
+    price: 39.99,
+    status: 'Active',
+    image: '/products/remote-it-support-service.png',
+  },
+  {
+    id: '19',
+    name: 'Ergonomic Laptop Stand',
+    code: 'ELS-556-019',
+    type: 'Physical',
+    date: '2025-12-29',
+    stock: 75,
+    price: 34.99,
+    status: 'Active',
+    image: '/products/ergonomic-laptop-stand.png',
+  },
+  {
+    id: '20',
+    name: 'Bluetooth Earbuds',
+    code: 'BTE-223-020',
+    type: 'Physical',
+    date: '2025-12-29',
+    stock: 120,
+    price: 20.99,
+    status: 'Active',
+    image: '/products/bluetooth-earbuds.png',
+  },
 ];
+
+
 
 export const productStatuses: ProductStatus[] = ['Active', 'Disabled'];
 export const productTypes: ProductType[] = ['Physical', 'Digital', 'Service', 'Subscription'];
