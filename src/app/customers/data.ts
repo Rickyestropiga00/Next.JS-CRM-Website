@@ -10,6 +10,7 @@ export interface Customer {
   lastContacted: string; // ISO date string
   createdAt: string; // ISO date string
   notes?: string;
+  comment?: string;
 }
 
 export const customers: Customer[] = [

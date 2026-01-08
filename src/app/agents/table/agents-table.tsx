@@ -6,6 +6,7 @@ import { AgentsTableBody } from "./table-body";
 import { AgentsPaginationBar } from "./pagination-bar";
 import { EditAgentPopover } from "./edit-agent-popover";
 import { AddAgentPopover } from "./add-agent-popover";
+import { AgentDetailsModal } from "./agent-details-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +43,7 @@ export function AgentsTable() {
   const [editAgentId, setEditAgentId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddAgent, setShowAddAgent] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -108,6 +110,33 @@ export function AgentsTable() {
     setData((prev) => [newAgent, ...prev]);
     // Reset to first page when adding new agent
     setCurrentPage(1);
+  }
+
+  function handleAddComment(agentId: string, comment: string) {
+    const timestamp = new Date().toISOString();
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const formattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
+
+    setData((prev) =>
+      prev.map((agent) =>
+        agent.id === agentId
+          ? {
+              ...agent,
+              comment: agent.comment
+                ? `${agent.comment}\n\n${commentWithTimestamp}`
+                : commentWithTimestamp,
+            }
+          : agent
+      )
+    );
   }
 
   function handleSort(col: keyof Agent) {
@@ -244,6 +273,7 @@ export function AgentsTable() {
               deleteDialogId={deleteDialogId}
               setDeleteDialogId={setDeleteDialogId}
               setEditAgentId={setEditAgentId}
+              onAgentClick={setSelectedAgentId}
             />
           </Table>
         </div>
@@ -280,6 +310,18 @@ export function AgentsTable() {
           setShowAddAgent(false);
         }}
         onClose={() => setShowAddAgent(false)}
+      />
+
+      {/* Agent Details Modal */}
+      <AgentDetailsModal
+        agent={
+          selectedAgentId
+            ? data.find((a) => a.id === selectedAgentId) || null
+            : null
+        }
+        isOpen={!!selectedAgentId}
+        onClose={() => setSelectedAgentId(null)}
+        onAddComment={handleAddComment}
       />
     </>
   );

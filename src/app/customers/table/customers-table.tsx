@@ -137,8 +137,8 @@ export function CustomersTable() {
         customer.id === customerId
           ? {
               ...customer,
-              notes: customer.notes
-                ? `${customer.notes}\n\n${commentWithTimestamp}`
+              comment: customer.comment
+                ? `${customer.comment}\n\n${commentWithTimestamp}`
                 : commentWithTimestamp,
             }
           : customer
