@@ -9,6 +9,7 @@ export type Agent = {
   createdAt: string;
   lastLogin: string;
   notes?: string;
+  comment?: string;
 };
 
 export const agents: Agent[] = [

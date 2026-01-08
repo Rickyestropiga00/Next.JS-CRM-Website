@@ -49,6 +49,12 @@ const sortableCols: {
     sortable: true,
   },
   { key: "notes", label: "Notes", className: "w-[180px]", sortable: true },
+  {
+    key: "comment",
+    label: "Comment",
+    className: "w-[180px] text-center",
+    sortable: false,
+  },
 ];
 
 function RenderSortableHead({

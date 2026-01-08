@@ -9,37 +9,35 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Customer } from "../data";
+import { Agent } from "../data";
 import {
-  X,
   Mail,
   Phone,
-  Building,
+  User,
   Calendar,
   FileText,
   MessageSquare,
-  Send,
+  Users,
 } from "lucide-react";
 
-interface CustomerDetailsModalProps {
-  customer: Customer | null;
+interface AgentDetailsModalProps {
+  agent: Agent | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddComment?: (customerId: string, comment: string) => void;
+  onAddComment?: (agentId: string, comment: string) => void;
 }
 
-export function CustomerDetailsModal({
-  customer,
+export function AgentDetailsModal({
+  agent,
   isOpen,
   onClose,
   onAddComment,
-}: CustomerDetailsModalProps) {
+}: AgentDetailsModalProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!customer) return null;
+  if (!agent) return null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -49,16 +47,38 @@ export function CustomerDetailsModal({
     });
   };
 
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Lead":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Prospect":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "Inactive":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+      case "On Leave":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "Admin":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+      case "Manager":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "Agent":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
@@ -69,7 +89,7 @@ export function CustomerDetailsModal({
 
     setIsSubmitting(true);
     try {
-      await onAddComment(customer.id, newComment.trim());
+      await onAddComment(agent.id, newComment.trim());
       setNewComment("");
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -175,17 +195,15 @@ export function CustomerDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-bold">
-            Customer Details
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">Agent Details</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Customer Header */}
+          {/* Agent Header */}
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center">
               <span className="text-lg font-bold text-white">
-                {customer.name
+                {agent.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
@@ -193,19 +211,22 @@ export function CustomerDetailsModal({
               </span>
             </div>
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-foreground">
-                {customer.name}
-              </h2>
+              <h2 className="text-xl font-bold text-foreground">{agent.name}</h2>
               <div className="flex items-center justify-center gap-2">
                 <Badge
                   className={`${getStatusColor(
-                    customer.status
+                    agent.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {customer.status}
+                  {agent.status}
+                </Badge>
+                <Badge
+                  className={`${getRoleColor(agent.role)} px-2 py-0.5 text-xs`}
+                >
+                  {agent.role}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {customer.id}
+                  ID: {agent.id}
                 </span>
               </div>
             </div>
@@ -226,40 +247,42 @@ export function CustomerDetailsModal({
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     Email
                   </p>
-                  <p className="text-xs">{customer.email}</p>
+                  <p className="text-xs">{agent.email}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     Phone
                   </p>
-                  <p className="text-xs">{customer.phone}</p>
+                  <p className="text-xs">{agent.phone}</p>
                 </div>
               </div>
             </div>
 
-            {/* Company Information */}
+            {/* Role Information */}
             <div className="bg-card border rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Building className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                  <User className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Company</h3>
+                <h3 className="text-sm font-semibold">Role</h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Organization
+                  Position
                 </p>
-                <p className="text-xs">
-                  {customer.company || "No company specified"}
-                </p>
+                <Badge
+                  className={`${getRoleColor(agent.role)} px-2 py-0.5 text-xs`}
+                >
+                  {agent.role}
+                </Badge>
               </div>
             </div>
 
             {/* Timeline Information */}
             <div className="bg-card border rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <h3 className="text-sm font-semibold">Timeline</h3>
               </div>
@@ -268,44 +291,42 @@ export function CustomerDetailsModal({
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     Created
                   </p>
-                  <p className="text-xs">{formatDate(customer.createdAt)}</p>
+                  <p className="text-xs">{formatDate(agent.createdAt)}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Last Contacted
+                    Last Login
                   </p>
-                  <p className="text-xs">
-                    {formatDate(customer.lastContacted)}
-                  </p>
+                  <p className="text-xs">{formatDateTime(agent.lastLogin)}</p>
                 </div>
               </div>
             </div>
 
-            {/* Status Information */}
+            {/* Assigned Customers */}
             <div className="bg-card border rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                  <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Status</h3>
+                <h3 className="text-sm font-semibold">Assigned</h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Current Status
+                  Customers
                 </p>
-                <Badge
-                  className={`${getStatusColor(
-                    customer.status
-                  )} px-2 py-0.5 text-xs`}
-                >
-                  {customer.status}
-                </Badge>
+                <p className="text-xs">
+                  {agent.assignedCustomers.length > 0
+                    ? `${agent.assignedCustomers.length} customer${
+                        agent.assignedCustomers.length !== 1 ? "s" : ""
+                      } assigned`
+                    : "No customers assigned"}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Notes Section */}
-          {customer.notes && (
+          {agent.notes && (
             <div className="bg-card border rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gray-100 dark:bg-gray-900/30 rounded-lg flex items-center justify-center">
@@ -313,20 +334,25 @@ export function CustomerDetailsModal({
                 </div>
                 <h3 className="text-sm font-semibold">Notes</h3>
               </div>
-              <div className="bg-muted/50 rounded-lg p-3">
-                <p className="text-xs text-foreground whitespace-pre-wrap">
-                  {customer.notes}
-                </p>
-              </div>
+              {(() => {
+                const { regularNotes } = parseNotesAndComments(agent.notes || "");
+                return regularNotes.length > 0 ? (
+                  renderRegularNotes(regularNotes)
+                ) : (
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-xs text-foreground whitespace-pre-wrap">
+                      {agent.notes}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
           {/* Comments Section */}
           {onAddComment &&
             (() => {
-              const { comments } = parseNotesAndComments(
-                customer.comment || ""
-              );
+              const { comments } = parseNotesAndComments(agent.comment || "");
               return (
                 <div className="bg-card border rounded-lg p-4 space-y-4">
                   <div className="flex items-center gap-2">
@@ -349,7 +375,7 @@ export function CustomerDetailsModal({
                   {/* Add Comment Form */}
                   <div className="space-y-2 pt-2 border-t">
                     <Textarea
-                      placeholder="Add a comment about this customer..."
+                      placeholder="Add a comment about this agent..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onKeyDown={handleKeyPress}
