@@ -25,17 +25,16 @@ interface ProductDetailsModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddComment?: (productId: string, comment: string) => void;
+ 
 }
 
 export function ProductDetailsModal({
   product,
   isOpen,
   onClose,
-  onAddComment,
+  
 }: ProductDetailsModalProps) {
-  const [newComment, setNewComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
 
   if (!product) return null;
 
@@ -67,98 +66,6 @@ export function ProductDetailsModal({
     }
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim() || !onAddComment) return;
-
-    setIsSubmitting(true);
-    try {
-      await onAddComment(product.id, newComment.trim());
-      setNewComment("");
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      handleAddComment();
-    }
-  };
-
-  const parseNotesAndComments = (notes: string) => {
-    if (!notes) return { regularNotes: [], comments: [] };
-
-    const sections = notes.split("---").filter((section) => section.trim());
-    const regularNotes: string[] = [];
-    const comments: Array<{
-      author: string;
-      date: string;
-      content: string;
-    }> = [];
-
-    sections.forEach((section) => {
-      const lines = section.trim().split("\n");
-      const commentLine = lines.find((line) => line.includes("📝 Comment by"));
-      const dateLine = lines.find((line) => line.includes("📅"));
-
-      if (commentLine && dateLine) {
-        // This is a comment
-        const content = lines.slice(3).join("\n").trim(); // Skip header lines
-        comments.push({
-          author: commentLine.replace("📝 Comment by ", ""),
-          date: dateLine.replace("📅 ", ""),
-          content: content,
-        });
-      } else {
-        // This is regular notes
-        regularNotes.push(section.trim());
-      }
-    });
-
-    return { regularNotes, comments };
-  };
-
-  
-
-  const renderComments = (
-    comments: Array<{
-      author: string;
-      date: string;
-      content: string;
-    }>
-  ) => {
-    if (comments.length === 0) return null;
-
-    return (
-      <div className="space-y-3">
-        {comments.map((comment, index) => (
-          <div
-            key={index}
-            className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-blue-800 dark:text-blue-300">
-                  {comment.author}
-                </span>
-              </div>
-              <span className="text-xs text-blue-600 dark:text-blue-400 font-mono">
-                {comment.date}
-              </span>
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 rounded-md p-3 border-l-4 border-blue-300 dark:border-blue-600">
-              <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                {comment.content}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -299,56 +206,6 @@ export function ProductDetailsModal({
             </div>
 
 
-          {/* Comments Section */}
-          {onAddComment &&
-            (() => {
-              const { comments } = parseNotesAndComments(product.comment || "");
-              return (
-                <div className="bg-card border rounded-lg p-4 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold">Comments</h3>
-                    {comments.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {comments.length}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Existing Comments */}
-                  {comments.length > 0 && (
-                    <div className="space-y-3">{renderComments(comments)}</div>
-                  )}
-
-                  {/* Add Comment Form */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <Textarea
-                      placeholder="Add a comment about this agent..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      className="min-h-[80px] text-xs resize-none"
-                      disabled={isSubmitting}
-                    />
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-muted-foreground">
-                        Press Ctrl+Enter to submit
-                      </p>
-                      <Button
-                        onClick={handleAddComment}
-                        disabled={!newComment.trim() || isSubmitting}
-                        size="sm"
-                        className="h-7 px-3 text-xs cursor-pointer"
-                      >
-                        {isSubmitting ? "Adding..." : "Add Comment"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
         </div>
 
         {/* Footer Actions */}

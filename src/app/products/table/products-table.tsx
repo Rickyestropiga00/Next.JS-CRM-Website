@@ -134,33 +134,7 @@ export function ProductsTable() {
     setCurrentPage(1);
   }
 
-  function handleAddComment(agentId: string, comment: string) {
-    const timestamp = new Date().toISOString();
-    const formattedDate = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-    const formattedTime = new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
-
-    setData((prev) =>
-      prev.map((product) =>
-        product.id === product.id
-          ? {
-              ...product,
-              comment: product.comment
-                ? `${product.comment}\n\n${commentWithTimestamp}`
-                : commentWithTimestamp,
-            }
-          : product
-      )
-    );
-  }
-
+  
   function handleEdit(updatedProduct: Product) {
     setData((prev) =>
       prev.map((product) =>
@@ -347,7 +321,7 @@ export function ProductsTable() {
         }
         isOpen={!!selectedProductId}
         onClose={() => setSelectedProductId(null)}
-        onAddComment={handleAddComment}
+        
       />
     </>
   );
