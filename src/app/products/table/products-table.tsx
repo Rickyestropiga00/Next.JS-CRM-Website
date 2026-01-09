@@ -10,6 +10,7 @@ import { ProductsTableBody } from "./table-body";
 import { ProductsPaginationBar } from "./pagination-bar";
 import { EditProductPopover } from "./edit-product-popover";
 import { AddProductPopover } from "./add-product-popover";
+import { ProductDetailsModal } from "./product-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ export function ProductsTable() {
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,6 +132,33 @@ export function ProductsTable() {
     setData((prev) => [newProduct, ...prev]);
     // Reset to first page when adding new product
     setCurrentPage(1);
+  }
+
+  function handleAddComment(agentId: string, comment: string) {
+    const timestamp = new Date().toISOString();
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const formattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
+
+    setData((prev) =>
+      prev.map((product) =>
+        product.id === product.id
+          ? {
+              ...product,
+              comment: product.comment
+                ? `${product.comment}\n\n${commentWithTimestamp}`
+                : commentWithTimestamp,
+            }
+          : product
+      )
+    );
   }
 
   function handleEdit(updatedProduct: Product) {
@@ -272,6 +301,7 @@ export function ProductsTable() {
               deleteDialogId={deleteDialogId}
               setDeleteDialogId={setDeleteDialogId}
               setEditProductId={setEditProductId}
+              onProductClick={setSelectedProductId}
             />
           </Table>
         </div>
@@ -308,6 +338,16 @@ export function ProductsTable() {
           setShowAddProduct(false);
         }}
         onClose={() => setShowAddProduct(false)}
+      />
+      <ProductDetailsModal
+        product={
+          selectedProductId
+            ? data.find((p) => p.id === selectedProductId) || null
+            : null
+        }
+        isOpen={!!selectedProductId}
+        onClose={() => setSelectedProductId(null)}
+        onAddComment={handleAddComment}
       />
     </>
   );

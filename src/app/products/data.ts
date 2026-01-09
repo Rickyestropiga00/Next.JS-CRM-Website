@@ -11,6 +11,7 @@ export interface Product {
   price: number;
   status: ProductStatus;
   image: string;
+  comment?: string;
 }
 
 export const products: Product[] = [

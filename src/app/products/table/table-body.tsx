@@ -30,6 +30,7 @@ interface TableBodyProps {
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
   setEditProductId: (id: string | null) => void;
+  onProductClick: (id: string) => void;
 }
 
 export function ProductsTableBody({
@@ -39,6 +40,7 @@ export function ProductsTableBody({
   onDelete,
   deleteDialogId,
   setDeleteDialogId,
+  onProductClick,
   setEditProductId,
 }: TableBodyProps) {
   const formatPrice = (price: number) => {
@@ -58,7 +60,20 @@ export function ProductsTableBody({
   return (
     <TableBody className="pl-5">
       {paginated.map((p) => (
-        <TableRow key={p.id}>
+        <TableRow key={p.id}
+        className="cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={(e) => {
+              // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+              const target = e.target as HTMLElement;
+              if (
+                target.closest('input[type="checkbox"]') ||
+                target.closest('[role="menuitem"]') ||
+                target.closest("button")
+              ) {
+                return;
+              }
+              onProductClick(p.id);
+            }}>
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
