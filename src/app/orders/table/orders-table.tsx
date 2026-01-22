@@ -10,6 +10,7 @@ import { OrdersTableBody } from "./table-body";
 import { OrdersPaginationBar } from "./pagination-bar";
 import { EditOrderPopover } from "./edit-order-popover";
 import { AddOrderPopover } from "./add-order-popover";
+import { OrderDetailsModal } from "./order-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +50,7 @@ export function OrdersTable() {
   const [showAddOrder, setShowAddOrder] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const statusOptions: OrderStatus[] = [
     "Pending",
@@ -291,6 +293,7 @@ export function OrdersTable() {
               deleteDialogId={deleteDialogId}
               setDeleteDialogId={setDeleteDialogId}
               setEditOrderId={setEditOrderId}
+              onOrderClick={setSelectedOrderId}
             />
           </Table>
         </div>
@@ -328,6 +331,17 @@ export function OrdersTable() {
         }}
         onClose={() => setShowAddOrder(false)}
       />
+
+      <OrderDetailsModal
+              order={
+                selectedOrderId
+                  ? data.find((o) => o.id === selectedOrderId) || null
+                  : null
+              }
+              isOpen={!!selectedOrderId}
+              onClose={() => setSelectedOrderId(null)}
+              
+            />
     </>
   );
 }

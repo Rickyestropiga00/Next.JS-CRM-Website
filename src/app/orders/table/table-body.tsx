@@ -29,6 +29,8 @@ interface TableBodyProps {
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
   setEditOrderId: (id: string | null) => void;
+  onOrderClick: (id: string) => void;
+
 }
 
 export function OrdersTableBody({
@@ -39,6 +41,7 @@ export function OrdersTableBody({
   deleteDialogId,
   setDeleteDialogId,
   setEditOrderId,
+  onOrderClick,
 }: TableBodyProps) {
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString("en-US", {
@@ -58,7 +61,20 @@ export function OrdersTableBody({
   return (
     <TableBody className="pl-5">
       {paginated.map((order) => (
-        <TableRow key={order.id}>
+        <TableRow key={order.id}
+        className="cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={(e) => {
+              // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+              const target = e.target as HTMLElement;
+              if (
+                target.closest('input[type="checkbox"]') ||
+                target.closest('[role="menuitem"]') ||
+                target.closest("button")
+              ) {
+                return;
+              }
+              onOrderClick(order.id);
+            }}>
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
