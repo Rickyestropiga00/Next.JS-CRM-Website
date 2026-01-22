@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import  Image  from 'next/image';
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -75,11 +76,14 @@ export function ProductDetailsModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Agent Header */}
+          {/* Product  Header */}
           <div className="text-center space-y-2">
-            <div className=" relative w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center overflow-hidden">
+            <div className=" relative w-30 h-30 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center overflow-hidden">
                 {product.image 
-                    ?   <Image src={product.image} alt={product.name} fill className="rounded-full object-cover" sizes="64px" />
+                    ?   
+                    <Link href={product.image} target="_blank">
+                        <Image src={product.image} alt={product.name} fill className="rounded-full object-cover" sizes="120px" />
+                    </Link>
                     :   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center">
                             <span className="text-lg font-bold text-white">
                                 {product.name

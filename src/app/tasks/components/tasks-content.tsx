@@ -6,6 +6,9 @@ import { EditTaskPopover } from "./edit-task-popover";
 import { AddTaskPopover } from "./add-task-popover";
 import { Task, ColumnKey } from "../data";
 import { tasks } from "../data";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { AddNewTaskPopover } from "./add-new-task-popover";
 
 interface TasksContentProps {}
 
@@ -22,6 +25,7 @@ export function TasksContent({}: TasksContentProps) {
   const [editTaskId, setEditTaskId] = React.useState<string | null>(null);
   const [showAddTask, setShowAddTask] = React.useState(false);
   const [addTaskColumn, setAddTaskColumn] = React.useState<ColumnKey>("todo");
+  const [showAddNewTask, setShowAddNewTask] = React.useState(false);
 
   const statusOptions = [
     { label: "All Categories", value: "all" },
@@ -79,6 +83,11 @@ export function TasksContent({}: TasksContentProps) {
     });
   }
 
+  function handleAddNewTask(newTask: Task) {
+    setTaskList((prev) => [newTask, ...prev]);
+    setShowAddNewTask(false);
+  }
+
   function handleEditTask(updatedTask: Task) {
     setTaskList((prev) =>
       prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
@@ -91,15 +100,26 @@ export function TasksContent({}: TasksContentProps) {
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 px-4 pb-2 pt-3">
-        <Filters
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          priorityFilter={priorityFilter}
-          setPriorityFilter={setPriorityFilter}
-          statusOptions={statusOptions}
-          priorityOptions={priorityOptions}
-        />
+      <div  className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3 px-4">
+        <div className="flex flex-wrap gap-2 ">
+          <Filters
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+            statusOptions={statusOptions}
+            priorityOptions={priorityOptions}
+          />
+        </div>
+
+        <Button
+          className="flex items-center gap-2 cursor-pointer"
+          type="button"
+          onClick={() => setShowAddNewTask(true)}
+        >
+          <Plus className="h-4 w-4" />
+          Add New Task
+        </Button>
       </div>
       <ColumnsBoard
         columns={columns}
@@ -138,6 +158,15 @@ export function TasksContent({}: TasksContentProps) {
         }}
         onClose={() => setShowAddTask(false)}
         defaultColumn={addTaskColumn}
+      />
+      
+      <AddNewTaskPopover
+        isOpen={showAddNewTask}
+        onAddNewTask={(newTask) => {
+          handleAddNewTask(newTask);
+          setShowAddNewTask(false);
+        }}
+        onClose={() => setShowAddNewTask(false)}
       />
     </>
   );
