@@ -9,6 +9,9 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { tasks } from "@/app/tasks/data";
+import { AddNewTaskPopover } from "@/app/tasks/components/add-new-task-popover";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 // Utility function to calculate task statistics
 const calculateTaskStats = () => {
@@ -31,18 +34,51 @@ const calculateTaskStats = () => {
   };
 };
 
+
 export function TasksSection() {
   const taskStats = calculateTaskStats();
   const [selectedTaskCategory, setSelectedTaskCategory] =
     useState<string>("todo");
+  const [showAddNewTask, setShowAddNewTask] = useState<boolean>(false);
+  const [taskList, setTaskList] = useState<typeof tasks>(tasks);
+  const [taskCount, setTaskCount] = useState(taskStats);
+  const handleAddNewTask = (newTask: typeof tasks[0]) => {
+    setTaskList((prevTasks) => [...prevTasks, newTask]);
+    setSelectedTaskCategory(newTask.column);
+    switch (newTask.column)  {
+      case "todo":
+        setTaskCount((prev) => ({...prev, todo: prev.todo + 1}));
+        break;
+      case "inprogress":
+        setTaskCount((prev) => ({...prev, inProgress: prev.inProgress + 1}));
+        break;
+      case "inreview":
+        setTaskCount((prev) => ({...prev, inReview: prev.inReview + 1}));
+        break;
+      case "done":
+        setTaskCount((prev) => ({...prev, done: prev.done + 1}));
+        break;
+    }
+    setTaskCount((prev) => ({...prev, total: prev.total + 1}));
+  };
+
+
 
   return (
     <Card>
       <CardContent className="px-4">
         <div className="flex flex-col gap-4">
           {/* Header with My Tasks */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg lg:text-base">My Tasks</h2>
+            <Button
+              className="flex items-center gap-2 cursor-pointer"
+              type="button"
+              onClick={() => setShowAddNewTask(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Add New Task
+            </Button>
           </div>
 
           <Select
@@ -53,13 +89,13 @@ export function TasksSection() {
               <div className="flex items-center justify-center w-6 h-6 lg:w-5 lg:h-5 rounded-full bg-primary text-primary-foreground text-sm lg:text-xs font-semibold">
                 {selectedTaskCategory
                   ? selectedTaskCategory === "todo"
-                    ? taskStats.todo
+                    ? taskCount.todo
                     : selectedTaskCategory === "inprogress"
-                    ? taskStats.inProgress
+                    ? taskCount.inProgress
                     : selectedTaskCategory === "inreview"
-                    ? taskStats.inReview
-                    : taskStats.done
-                  : taskStats.total}
+                    ? taskCount.inReview
+                    : taskCount.done
+                  : taskCount.total}
               </div>
               <span className="text-sm lg:text-xs font-medium">
                 {selectedTaskCategory
@@ -84,7 +120,7 @@ export function TasksSection() {
           {/* Task Data Display - Only show selected category */}
           {selectedTaskCategory && (
             <div className="space-y-3">
-              {tasks
+              {taskList
                 .filter((task) => task.column === selectedTaskCategory)
                 .map((task) => (
                   <div
@@ -107,6 +143,14 @@ export function TasksSection() {
           )}
         </div>
       </CardContent>
+      <AddNewTaskPopover
+          isOpen={showAddNewTask}
+          onAddNewTask={(newTask) => {
+            handleAddNewTask(newTask);
+            setShowAddNewTask(false);
+          }}
+          onClose={() => setShowAddNewTask(false)}
+        />
     </Card>
   );
 }
