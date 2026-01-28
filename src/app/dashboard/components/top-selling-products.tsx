@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,6 +9,8 @@ import {
 import Image from "next/image";
 import { orders } from "@/app/orders/data";
 import { products } from "@/app/products/data";
+import { TopSellingProductModal } from "./top-selling-products-modal";
+import { formatPrice } from "@/utils/formatters";
 
 // Utility function to calculate top selling products
 const calculateTopSellingProducts = () => {
@@ -17,6 +20,7 @@ const calculateTopSellingProducts = () => {
     .reduce((acc, order) => {
       const productCode = order.item;
       const productName = order.product;
+      const productType = order.productType;
 
       if (!acc[productCode]) {
         acc[productCode] = {
@@ -24,14 +28,29 @@ const calculateTopSellingProducts = () => {
           name: productName,
           totalQuantity: 0,
           totalRevenue: 0,
+          productType: productType,
+          completedOrders: 0,
+          pendingOrders: 0,
+          inTransitOrders: 0,
         };
       }
 
       acc[productCode].totalQuantity += order.quantity;
       acc[productCode].totalRevenue += order.total;
+      switch (order.status) {
+        case  "Completed": 
+          acc[productCode].completedOrders += order.quantity;
+          break;
+        case  "Pending": 
+          acc[productCode].pendingOrders += order.quantity;
+          break;
+        case  "In Transit": 
+          acc[productCode].inTransitOrders += order.quantity;
+          break;
+      }
 
       return acc;
-    }, {} as Record<string, { code: string; name: string; totalQuantity: number; totalRevenue: number }>);
+    }, {} as Record<string, { code: string; name: string; totalQuantity: number; totalRevenue: number; productType: string; completedOrders: number; pendingOrders: number; inTransitOrders: number; }>);
 
   // Convert to array and sort by total quantity sold
   const sortedProducts = Object.values(productSales)
@@ -45,12 +64,16 @@ const calculateTopSellingProducts = () => {
       ...sale,
       image: product?.image || "/products/product-1.webp",
       price: product?.price || 0,
+      status: product?.status || "Inactive",
+      stock: product?.stock || 0,
+
     };
   });
 };
 
 export function TopSellingProducts() {
   const topSellingProducts = calculateTopSellingProducts();
+  const [selectedTopProductId, setSelectedTopProductId] = useState<string | null>(null);
 
   return (
     <Card>
@@ -66,7 +89,8 @@ export function TopSellingProducts() {
         {topSellingProducts.map((product, index) => (
           <div
             key={product.code}
-            className="flex items-center space-x-4 lg:space-x-3 p-3 lg:p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            className="flex items-center space-x-4 lg:space-x-3 p-3 lg:p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => setSelectedTopProductId(product.code)}
           >
             <div className="relative w-12 h-12 lg:w-10 lg:h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
               <Image
@@ -91,7 +115,7 @@ export function TopSellingProducts() {
                   {product.totalQuantity} units sold
                 </p>
                 <p className="text-xs lg:text-[11px] font-medium">
-                  ${product.totalRevenue.toFixed(2)}
+                  {formatPrice(product.totalRevenue)}
                 </p>
               </div>
             </div>
@@ -103,6 +127,16 @@ export function TopSellingProducts() {
           </div>
         )}
       </CardContent>
+
+      <TopSellingProductModal
+      topProduct={
+        selectedTopProductId
+          ? topSellingProducts.find((p) => p.code === selectedTopProductId) || null
+          : null
+      }
+      isOpen={!!selectedTopProductId}
+      onClose={() => setSelectedTopProductId(null)}
+    />
     </Card>
   );
 }
