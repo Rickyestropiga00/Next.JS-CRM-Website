@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,6 @@ interface TableBodyProps {
   setDeleteDialogId: (id: string | null) => void;
   setEditOrderId: (id: string | null) => void;
   onOrderClick: (id: string) => void;
-
 }
 
 export function OrdersTableBody({
@@ -61,20 +60,22 @@ export function OrdersTableBody({
   return (
     <TableBody className="pl-5">
       {paginated.map((order) => (
-        <TableRow key={order.id}
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={(e) => {
-              // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
-              const target = e.target as HTMLElement;
-              if (
-                target.closest('input[type="checkbox"]') ||
-                target.closest('[role="menuitem"]') ||
-                target.closest("button")
-              ) {
-                return;
-              }
-              onOrderClick(order.id);
-            }}>
+        <TableRow
+          key={order.id}
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={(e) => {
+            // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+            const target = e.target as HTMLElement;
+            if (
+              target.closest('input[type="checkbox"]') ||
+              target.closest('[role="menuitem"]') ||
+              target.closest("button")
+            ) {
+              return;
+            }
+            onOrderClick(order.id);
+          }}
+        >
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
@@ -110,10 +111,10 @@ export function OrdersTableBody({
             {formatPrice(order.total)}
           </TableCell>
           <TableCell className="w-[100px]">
-            <StatusBadge status={order.payment} />
+            <StatusBadge status={order.payment} type="payment" />
           </TableCell>
           <TableCell className="w-[120px]">
-            <StatusBadge status={order.status} />
+            <StatusBadge status={order.status} type="order" />
           </TableCell>
           <TableCell className="w-[70px]">
             <DropdownMenu>

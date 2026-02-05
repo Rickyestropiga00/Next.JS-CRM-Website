@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   products as initialProducts,
   ProductStatus,
@@ -8,9 +9,6 @@ import {
 import { ProductsTableHeader } from "./table-header";
 import { ProductsTableBody } from "./table-body";
 import { ProductsPaginationBar } from "./pagination-bar";
-import { EditProductPopover } from "./edit-product-popover";
-import { AddProductPopover } from "./add-product-popover";
-import { ProductDetailsModal } from "./product-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +20,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Dynamically import modals to reduce initial bundle size
+const EditProductPopover = dynamic(
+  () => import("./edit-product-popover").then((mod) => ({ default: mod.EditProductPopover })),
+  { ssr: false }
+);
+
+const AddProductPopover = dynamic(
+  () => import("./add-product-popover").then((mod) => ({ default: mod.AddProductPopover })),
+  { ssr: false }
+);
+
+const ProductDetailsModal = dynamic(
+  () => import("./product-details-modal").then((mod) => ({ default: mod.ProductDetailsModal })),
+  { ssr: false }
+);
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,7 +59,9 @@ export function ProductsTable() {
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -134,7 +150,6 @@ export function ProductsTable() {
     setCurrentPage(1);
   }
 
-  
   function handleEdit(updatedProduct: Product) {
     setData((prev) =>
       prev.map((product) =>
@@ -321,7 +336,6 @@ export function ProductsTable() {
         }
         isOpen={!!selectedProductId}
         onClose={() => setSelectedProductId(null)}
-        
       />
     </>
   );

@@ -1,3 +1,4 @@
+import { useMemo, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { orders } from "@/app/orders/data";
 
@@ -26,8 +27,8 @@ const calculateOrderStats = () => {
   };
 };
 
-export function OrderStatsCards() {
-  const orderStats = calculateOrderStats();
+export const OrderStatsCards = memo(function OrderStatsCards() {
+  const orderStats = useMemo(() => calculateOrderStats(), []);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -101,4 +102,4 @@ export function OrderStatsCards() {
       </Card>
     </div>
   );
-}
+});

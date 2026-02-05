@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,20 +60,22 @@ export function ProductsTableBody({
   return (
     <TableBody className="pl-5">
       {paginated.map((p) => (
-        <TableRow key={p.id}
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={(e) => {
-              // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
-              const target = e.target as HTMLElement;
-              if (
-                target.closest('input[type="checkbox"]') ||
-                target.closest('[role="menuitem"]') ||
-                target.closest("button")
-              ) {
-                return;
-              }
-              onProductClick(p.id);
-            }}>
+        <TableRow
+          key={p.id}
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={(e) => {
+            // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+            const target = e.target as HTMLElement;
+            if (
+              target.closest('input[type="checkbox"]') ||
+              target.closest('[role="menuitem"]') ||
+              target.closest("button")
+            ) {
+              return;
+            }
+            onProductClick(p.id);
+          }}
+        >
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
@@ -111,7 +113,7 @@ export function ProductsTableBody({
             {formatPrice(p.price)}
           </TableCell>
           <TableCell className="w-[120px]">
-            <StatusBadge status={p.status} />
+            <StatusBadge status={p.status} type="product" />
           </TableCell>
           <TableCell className="w-[70px]">
             <DropdownMenu>

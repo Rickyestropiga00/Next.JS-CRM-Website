@@ -1,12 +1,10 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { agents as initialAgents, Agent } from "../data";
 import { AgentsTableHeader } from "./table-header";
 import { AgentsTableBody } from "./table-body";
 import { AgentsPaginationBar } from "./pagination-bar";
-import { EditAgentPopover } from "./edit-agent-popover";
-import { AddAgentPopover } from "./add-agent-popover";
-import { AgentDetailsModal } from "./agent-details-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +18,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Dynamically import modals to reduce initial bundle size
+const EditAgentPopover = dynamic(
+  () => import("./edit-agent-popover").then((mod) => ({ default: mod.EditAgentPopover })),
+  { ssr: false }
+);
+
+const AddAgentPopover = dynamic(
+  () => import("./add-agent-popover").then((mod) => ({ default: mod.AddAgentPopover })),
+  { ssr: false }
+);
+
+const AgentDetailsModal = dynamic(
+  () => import("./agent-details-modal").then((mod) => ({ default: mod.AgentDetailsModal })),
+  { ssr: false }
+);
 import { Trash, Plus } from "lucide-react";
 import {
   Select,

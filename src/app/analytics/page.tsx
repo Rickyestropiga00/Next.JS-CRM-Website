@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import {
@@ -16,9 +17,22 @@ import {
 } from "@/components/ui/sidebar";
 import { navGroups, getAllNavItems } from "@/components/app-navigation";
 import { SectionCards } from "./components/section-cards";
-import { ChartRadarLegend } from "./components/chart-radar-legend";
-import { ChartBarMultiple } from "./components/chart-bar-multiple";
-import { ChartAreaGradient } from "./components/chart-area-gradient";
+
+// Dynamically import heavy chart components
+const ChartRadarLegend = dynamic(
+  () => import("./components/chart-radar-legend").then((mod) => ({ default: mod.ChartRadarLegend })),
+  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-muted rounded-lg" /> }
+);
+
+const ChartBarMultiple = dynamic(
+  () => import("./components/chart-bar-multiple").then((mod) => ({ default: mod.ChartBarMultiple })),
+  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-muted rounded-lg" /> }
+);
+
+const ChartAreaGradient = dynamic(
+  () => import("./components/chart-area-gradient").then((mod) => ({ default: mod.ChartAreaGradient })),
+  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-muted rounded-lg" /> }
+);
 
 export default function AnalyticsPage() {
   const pathname = usePathname();

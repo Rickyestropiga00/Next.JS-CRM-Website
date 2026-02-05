@@ -20,7 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Agent } from "../data";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -87,7 +87,7 @@ export function AgentsTableBody({
             <TableCell className="w-[120px]">{a.phone}</TableCell>
             <TableCell className="w-[100px]">{a.role}</TableCell>
             <TableCell className="w-[100px]">
-              <StatusBadge status={a.status} />
+              <StatusBadge status={a.status} type="agent" />
             </TableCell>
             <TableCell className="w-[150px]">
               {a.assignedCustomers.length > 0

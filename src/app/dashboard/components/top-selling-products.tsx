@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
+import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
@@ -9,48 +10,68 @@ import {
 import Image from "next/image";
 import { orders } from "@/app/orders/data";
 import { products } from "@/app/products/data";
-import { TopSellingProductModal } from "./top-selling-products-modal";
 import { formatPrice } from "@/utils/formatters";
+
+// Dynamically import modal to reduce initial bundle size
+const TopSellingProductModal = dynamic(
+  () => import("./top-selling-products-modal").then((mod) => ({ default: mod.TopSellingProductModal })),
+  { ssr: false }
+);
 
 // Utility function to calculate top selling products
 const calculateTopSellingProducts = () => {
   // Group orders by product and sum quantities (excluding canceled orders)
   const productSales = orders
     .filter((order) => order.status !== "Canceled")
-    .reduce((acc, order) => {
-      const productCode = order.item;
-      const productName = order.product;
-      const productType = order.productType;
+    .reduce(
+      (acc, order) => {
+        const productCode = order.item;
+        const productName = order.product;
+        const productType = order.productType;
 
-      if (!acc[productCode]) {
-        acc[productCode] = {
-          code: productCode,
-          name: productName,
-          totalQuantity: 0,
-          totalRevenue: 0,
-          productType: productType,
-          completedOrders: 0,
-          pendingOrders: 0,
-          inTransitOrders: 0,
-        };
-      }
+        if (!acc[productCode]) {
+          acc[productCode] = {
+            code: productCode,
+            name: productName,
+            totalQuantity: 0,
+            totalRevenue: 0,
+            productType: productType,
+            completedOrders: 0,
+            pendingOrders: 0,
+            inTransitOrders: 0,
+          };
+        }
 
-      acc[productCode].totalQuantity += order.quantity;
-      acc[productCode].totalRevenue += order.total;
-      switch (order.status) {
-        case  "Completed": 
-          acc[productCode].completedOrders += order.quantity;
-          break;
-        case  "Pending": 
-          acc[productCode].pendingOrders += order.quantity;
-          break;
-        case  "In Transit": 
-          acc[productCode].inTransitOrders += order.quantity;
-          break;
-      }
+        acc[productCode].totalQuantity += order.quantity;
+        acc[productCode].totalRevenue += order.total;
+        switch (order.status) {
+          case "Completed":
+            acc[productCode].completedOrders += order.quantity;
+            break;
+          case "Pending":
+            acc[productCode].pendingOrders += order.quantity;
+            break;
+          case "In Transit":
+            acc[productCode].inTransitOrders += order.quantity;
+            break;
+        }
 
-      return acc;
-    }, {} as Record<string, { code: string; name: string; totalQuantity: number; totalRevenue: number; productType: string; completedOrders: number; pendingOrders: number; inTransitOrders: number; }>);
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          code: string;
+          name: string;
+          totalQuantity: number;
+          totalRevenue: number;
+          productType: string;
+          completedOrders: number;
+          pendingOrders: number;
+          inTransitOrders: number;
+        }
+      >
+    );
 
   // Convert to array and sort by total quantity sold
   const sortedProducts = Object.values(productSales)
@@ -66,14 +87,15 @@ const calculateTopSellingProducts = () => {
       price: product?.price || 0,
       status: product?.status || "Inactive",
       stock: product?.stock || 0,
-
     };
   });
 };
 
-export function TopSellingProducts() {
-  const topSellingProducts = calculateTopSellingProducts();
-  const [selectedTopProductId, setSelectedTopProductId] = useState<string | null>(null);
+export const TopSellingProducts = memo(function TopSellingProducts() {
+  const topSellingProducts = useMemo(() => calculateTopSellingProducts(), []);
+  const [selectedTopProductId, setSelectedTopProductId] = useState<
+    string | null
+  >(null);
 
   return (
     <Card>
@@ -129,14 +151,15 @@ export function TopSellingProducts() {
       </CardContent>
 
       <TopSellingProductModal
-      topProduct={
-        selectedTopProductId
-          ? topSellingProducts.find((p) => p.code === selectedTopProductId) || null
-          : null
-      }
-      isOpen={!!selectedTopProductId}
-      onClose={() => setSelectedTopProductId(null)}
-    />
+        topProduct={
+          selectedTopProductId
+            ? topSellingProducts.find((p) => p.code === selectedTopProductId) ||
+              null
+            : null
+        }
+        isOpen={!!selectedTopProductId}
+        onClose={() => setSelectedTopProductId(null)}
+      />
     </Card>
   );
-}
+});

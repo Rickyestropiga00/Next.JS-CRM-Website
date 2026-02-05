@@ -33,6 +33,94 @@ interface PaginationBarProps {
 const paginationIconBtnClass =
   "flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background px-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground";
 
+function PaginationFirst({
+  disabled,
+  onClick,
+}: {
+  disabled: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Go to first page"
+      className={`${paginationIconBtnClass} ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <ChevronsLeft className="w-4 h-4" />
+    </button>
+  );
+}
+
+function PaginationPrevious({
+  disabled,
+  onClick,
+}: {
+  disabled: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Go to previous page"
+      className={`${paginationIconBtnClass} ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <ChevronLeft className="w-4 h-4" />
+    </button>
+  );
+}
+
+function PaginationNext({
+  disabled,
+  onClick,
+}: {
+  disabled: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Go to next page"
+      className={`${paginationIconBtnClass} ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <ChevronRight className="w-4 h-4" />
+    </button>
+  );
+}
+
+function PaginationLast({
+  disabled,
+  onClick,
+}: {
+  disabled: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Go to last page"
+      className={`${paginationIconBtnClass} ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <ChevronsRight className="w-4 h-4" />
+    </button>
+  );
+}
+
 export function AgentsPaginationBar({
   selectedCount,
   totalRows,
@@ -50,33 +138,22 @@ export function AgentsPaginationBar({
       <Pagination>
         <PaginationContent className="gap-2">
           <PaginationItem>
-            <button
-              type="button"
-              aria-label="Go to first page"
-              className={`${paginationIconBtnClass} ${
-                currentPage === 1 ? "pointer-events-none opacity-50" : ""
-              }`}
-              onClick={() => currentPage !== 1 && setCurrentPage(1)}
+            <PaginationFirst
               disabled={currentPage === 1}
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage(1);
+              }}
+            />
           </PaginationItem>
           <PaginationItem>
-            <button
-              type="button"
-              aria-label="Go to previous page"
-              className={`${paginationIconBtnClass} ${
-                currentPage === 1 ? "pointer-events-none opacity-50" : ""
-              }`}
-              onClick={() =>
-                currentPage !== 1 &&
-                setCurrentPage(Math.max(1, currentPage - 1))
-              }
+            <PaginationPrevious
               disabled={currentPage === 1}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage(Math.max(1, currentPage - 1));
+              }}
+            />
           </PaginationItem>
           {Array.from({ length: totalPages }).map((_, idx) => {
             const page = idx + 1;
@@ -119,39 +196,22 @@ export function AgentsPaginationBar({
             );
           })}
           <PaginationItem>
-            <button
-              type="button"
-              aria-label="Go to next page"
-              className={`${paginationIconBtnClass} ${
-                currentPage === totalPages
-                  ? "pointer-events-none opacity-50"
-                  : ""
-              }`}
-              onClick={() =>
-                currentPage !== totalPages &&
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+            <PaginationNext
               disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage(Math.min(totalPages, currentPage + 1));
+              }}
+            />
           </PaginationItem>
           <PaginationItem>
-            <button
-              type="button"
-              aria-label="Go to last page"
-              className={`${paginationIconBtnClass} ${
-                currentPage === totalPages
-                  ? "pointer-events-none opacity-50"
-                  : ""
-              }`}
-              onClick={() =>
-                currentPage !== totalPages && setCurrentPage(totalPages)
-              }
+            <PaginationLast
               disabled={currentPage === totalPages}
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage(totalPages);
+              }}
+            />
           </PaginationItem>
         </PaginationContent>
       </Pagination>

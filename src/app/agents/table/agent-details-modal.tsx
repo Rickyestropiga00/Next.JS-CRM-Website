@@ -159,7 +159,7 @@ export function AgentDetailsModal({
       author: string;
       date: string;
       content: string;
-    }>
+    }>,
   ) => {
     if (comments.length === 0) return null;
 
@@ -211,11 +211,13 @@ export function AgentDetailsModal({
               </span>
             </div>
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-foreground">{agent.name}</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                {agent.name}
+              </h2>
               <div className="flex items-center justify-center gap-2">
                 <Badge
                   className={`${getStatusColor(
-                    agent.status
+                    agent.status,
                   )} px-2 py-0.5 text-xs`}
                 >
                   {agent.status}
@@ -335,7 +337,9 @@ export function AgentDetailsModal({
                 <h3 className="text-sm font-semibold">Notes</h3>
               </div>
               {(() => {
-                const { regularNotes } = parseNotesAndComments(agent.notes || "");
+                const { regularNotes } = parseNotesAndComments(
+                  agent.notes || "",
+                );
                 return regularNotes.length > 0 ? (
                   renderRegularNotes(regularNotes)
                 ) : (

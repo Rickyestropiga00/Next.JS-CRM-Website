@@ -54,6 +54,7 @@ function PaginationFirst({
     </button>
   );
 }
+
 function PaginationPrevious({
   disabled,
   onClick,
@@ -75,6 +76,7 @@ function PaginationPrevious({
     </button>
   );
 }
+
 function PaginationNext({
   disabled,
   onClick,
@@ -96,6 +98,7 @@ function PaginationNext({
     </button>
   );
 }
+
 function PaginationLast({
   disabled,
   onClick,

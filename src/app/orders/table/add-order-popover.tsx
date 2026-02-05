@@ -328,7 +328,7 @@ export function AddOrderPopover({
                 <Select
                   value={formData.productType}
                   onValueChange={(
-                    value: "Physical" | "Digital" | "Service" | "Subscription"
+                    value: "Physical" | "Digital" | "Service" | "Subscription",
                   ) => setFormData({ ...formData, productType: value })}
                 >
                   <SelectTrigger className="h-8 text-xs w-full">

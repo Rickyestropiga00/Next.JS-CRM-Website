@@ -208,10 +208,10 @@ export function TopSellingProductModal({
                         <h3 className="text-sm font-semibold">Order Status Overview</h3>
                     </div>
                     <div>
-                      <p className="text-xs font-medium mb-0.5 flex items-center gap-2 text-green-500">
+                      <div className="text-xs font-medium mb-0.5 flex items-center gap-2 text-green-500">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           Completed Orders
-                      </p>
+                      </div>
                         
                         <Badge
                         className={` ${getOrderStatusColor("Completed")} px-2 py-0.5 text-xs`}
@@ -220,10 +220,10 @@ export function TopSellingProductModal({
                         </Badge>    
                     </div>
                     <div>
-                      <p className="text-xs font-medium mb-0.5 flex items-center gap-2 text-yellow-500">
+                      <div className="text-xs font-medium mb-0.5 flex items-center gap-2 text-yellow-500">
                           <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                           Pending Orders
-                      </p>
+                      </div>
                         
                         <Badge
                         className={` ${getOrderStatusColor("Pending")} px-2 py-0.5 text-xs`}
@@ -232,10 +232,10 @@ export function TopSellingProductModal({
                         </Badge>   
                     </div>
                     <div>
-                      <p className="text-xs font-medium mb-0.5 flex items-center gap-2 text-blue-500">
+                      <div className="text-xs font-medium mb-0.5 flex items-center gap-2 text-blue-500">
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                           In Transit Orders
-                      </p>
+                      </div>
 
                         <Badge
                         className={` ${getOrderStatusColor("In Transit")} px-2 py-0.5 text-xs`}

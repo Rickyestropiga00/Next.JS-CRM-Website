@@ -19,7 +19,7 @@ import { DarkModeToggle } from "@/components/dark-mode-toggle";
 
 const TasksContent = dynamic(
   () => import("./components/tasks-content").then((mod) => mod.TasksContent),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function TasksPage() {

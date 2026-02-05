@@ -67,7 +67,7 @@ export function EditProductPopover({
 
   const validateStock = (
     stock: number,
-    type: ProductType
+    type: ProductType,
   ): string | undefined => {
     if (type === "Physical" && stock < 0) return "Stock cannot be negative";
     if (type === "Physical" && stock > 999999)

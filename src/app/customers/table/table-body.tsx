@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,7 +86,7 @@ export function CustomersTableBody({
             <TableCell className="w-[120px]">{c.phone}</TableCell>
             <TableCell className="w-[120px]">{c.company || "-"}</TableCell>
             <TableCell className="w-[100px]">
-              <StatusBadge status={c.status} />
+              <StatusBadge status={c.status} type="customer" />
             </TableCell>
             <TableCell className="w-[120px]">{c.lastContacted}</TableCell>
             <TableCell className="w-[120px]">{c.createdAt}</TableCell>

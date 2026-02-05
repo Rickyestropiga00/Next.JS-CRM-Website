@@ -1,24 +1,38 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Filters } from "./filters";
 import { ColumnsBoard } from "./columns-board";
-import { EditTaskPopover } from "./edit-task-popover";
-import { AddTaskPopover } from "./add-task-popover";
 import { Task, ColumnKey } from "../data";
-import { tasks } from "../data";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { AddNewTaskPopover } from "./add-new-task-popover";
+import { useTasks } from "@/hooks/use-tasks";
+
+// Dynamically import task modals to reduce initial bundle size
+const EditTaskPopover = dynamic(
+  () => import("./edit-task-popover").then((mod) => ({ default: mod.EditTaskPopover })),
+  { ssr: false }
+);
+
+const AddTaskPopover = dynamic(
+  () => import("./add-task-popover").then((mod) => ({ default: mod.AddTaskPopover })),
+  { ssr: false }
+);
+
+const AddNewTaskPopover = dynamic(
+  () => import("./add-new-task-popover").then((mod) => ({ default: mod.AddNewTaskPopover })),
+  { ssr: false }
+);
 
 interface TasksContentProps {}
 
 export function TasksContent({}: TasksContentProps) {
   const { state } = useSidebar();
   const isSidebarCollapsed = state === "collapsed";
+  const { tasks: taskList, addTask, updateTask, deleteTask, moveTask } = useTasks();
 
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
-  const [taskList, setTaskList] = React.useState(tasks);
   const [deleteDialogId, setDeleteDialogId] = React.useState<string | null>(
     null
   );
@@ -59,43 +73,24 @@ export function TasksContent({}: TasksContentProps) {
   );
 
   function handleDeleteTask(id: string) {
-    setTaskList((prev) => prev.filter((task) => task.id !== id));
+    deleteTask(id);
   }
 
   function handleMoveTask(id: string, newColumn: Task["column"]) {
-    setTaskList((prev) => {
-      const taskToMove = prev.find((task) => task.id === id);
-      if (!taskToMove || taskToMove.column === newColumn) return prev;
-      const filtered = prev.filter((task) => task.id !== id);
-      const updatedTask = { ...taskToMove, column: newColumn };
-      const insertIndex = filtered.findIndex(
-        (task) => task.column === newColumn
-      );
-      if (insertIndex === -1) {
-        return [updatedTask, ...filtered];
-      } else {
-        return [
-          ...filtered.slice(0, insertIndex),
-          updatedTask,
-          ...filtered.slice(insertIndex),
-        ];
-      }
-    });
+    moveTask(id, newColumn);
   }
 
   function handleAddNewTask(newTask: Task) {
-    setTaskList((prev) => [newTask, ...prev]);
+    addTask(newTask);
     setShowAddNewTask(false);
   }
 
   function handleEditTask(updatedTask: Task) {
-    setTaskList((prev) =>
-      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
+    updateTask(updatedTask);
   }
 
   function handleAddTask(newTask: Task) {
-    setTaskList((prev) => [newTask, ...prev]);
+    addTask(newTask);
   }
 
   return (

@@ -1,3 +1,5 @@
+import { useMemo, memo } from "react";
+import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
@@ -7,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
-import { Pie, PieChart } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -17,19 +18,16 @@ import {
 import { customers } from "@/app/customers/data";
 import { agents } from "@/app/agents/data";
 
-// Chart data for customers vs agents
-const chartData = [
-  {
-    category: "customers",
-    count: customers.length,
-    fill: "var(--chart-1)",
-  },
-  {
-    category: "agents",
-    count: agents.length,
-    fill: "var(--chart-5)",
-  },
-];
+// Dynamically import Recharts components
+const Pie = dynamic(
+  () => import("recharts").then((mod) => mod.Pie),
+  { ssr: false }
+);
+
+const PieChart = dynamic(
+  () => import("recharts").then((mod) => mod.PieChart),
+  { ssr: false }
+);
 
 const chartConfig = {
   customers: {
@@ -42,7 +40,20 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function CustomersAgentsChart() {
+export const CustomersAgentsChart = memo(function CustomersAgentsChart() {
+  // Memoize chart data calculation
+  const chartData = useMemo(() => [
+    {
+      category: "customers",
+      count: customers.length,
+      fill: "var(--chart-1)",
+    },
+    {
+      category: "agents",
+      count: agents.length,
+      fill: "var(--chart-5)",
+    },
+  ], []);
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -79,4 +90,4 @@ export function CustomersAgentsChart() {
       </CardFooter>
     </Card>
   );
-}
+});

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   orders as initialOrders,
   OrderStatus,
@@ -8,9 +9,6 @@ import {
 import { OrdersTableHeader } from "./table-header";
 import { OrdersTableBody } from "./table-body";
 import { OrdersPaginationBar } from "./pagination-bar";
-import { EditOrderPopover } from "./edit-order-popover";
-import { AddOrderPopover } from "./add-order-popover";
-import { OrderDetailsModal } from "./order-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +20,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Dynamically import modals to reduce initial bundle size
+const EditOrderPopover = dynamic(
+  () => import("./edit-order-popover").then((mod) => ({ default: mod.EditOrderPopover })),
+  { ssr: false }
+);
+
+const AddOrderPopover = dynamic(
+  () => import("./add-order-popover").then((mod) => ({ default: mod.AddOrderPopover })),
+  { ssr: false }
+);
+
+const OrderDetailsModal = dynamic(
+  () => import("./order-details-modal").then((mod) => ({ default: mod.OrderDetailsModal })),
+  { ssr: false }
+);
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -333,15 +347,14 @@ export function OrdersTable() {
       />
 
       <OrderDetailsModal
-              order={
-                selectedOrderId
-                  ? data.find((o) => o.id === selectedOrderId) || null
-                  : null
-              }
-              isOpen={!!selectedOrderId}
-              onClose={() => setSelectedOrderId(null)}
-              
-            />
+        order={
+          selectedOrderId
+            ? data.find((o) => o.id === selectedOrderId) || null
+            : null
+        }
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </>
   );
 }

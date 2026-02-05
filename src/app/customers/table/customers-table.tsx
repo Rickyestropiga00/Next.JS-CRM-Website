@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   customers as initialCustomers,
   CustomerStatus,
@@ -7,9 +8,6 @@ import {
 import { CustomersTableHeader } from "./table-header";
 import { CustomersTableBody } from "./table-body";
 import { CustomersPaginationBar } from "./pagination-bar";
-import { EditCustomerPopover } from "./edit-customer-popover";
-import { AddCustomerPopover } from "./add-customer-popover";
-import { CustomerDetailsModal } from "./customer-details-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +19,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Dynamically import modals to reduce initial bundle size
+const EditCustomerPopover = dynamic(
+  () => import("./edit-customer-popover").then((mod) => ({ default: mod.EditCustomerPopover })),
+  { ssr: false }
+);
+
+const AddCustomerPopover = dynamic(
+  () => import("./add-customer-popover").then((mod) => ({ default: mod.AddCustomerPopover })),
+  { ssr: false }
+);
+
+const CustomerDetailsModal = dynamic(
+  () => import("./customer-details-modal").then((mod) => ({ default: mod.CustomerDetailsModal })),
+  { ssr: false }
+);
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

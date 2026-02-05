@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -8,59 +9,58 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { tasks } from "@/app/tasks/data";
-import { AddNewTaskPopover } from "@/app/tasks/components/add-new-task-popover";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useTasks } from "@/hooks/use-tasks";
 
-// Utility function to calculate task statistics
-const calculateTaskStats = () => {
-  const todoTasks = tasks.filter((task) => task.column === "todo").length;
-  const inProgressTasks = tasks.filter(
-    (task) => task.column === "inprogress"
-  ).length;
-  const inReviewTasks = tasks.filter(
-    (task) => task.column === "inreview"
-  ).length;
-  const doneTasks = tasks.filter((task) => task.column === "done").length;
-  const totalTasks = tasks.length;
-
-  return {
-    total: totalTasks,
-    todo: todoTasks,
-    inProgress: inProgressTasks,
-    inReview: inReviewTasks,
-    done: doneTasks,
-  };
-};
-
+// Dynamically import modal to reduce initial bundle size
+const AddNewTaskPopover = dynamic(
+  () => import("@/app/tasks/components/add-new-task-popover").then((mod) => ({ default: mod.AddNewTaskPopover })),
+  { ssr: false }
+);
 
 export function TasksSection() {
-  const taskStats = calculateTaskStats();
+  const { tasks: taskList, addTask, isLoading } = useTasks();
   const [selectedTaskCategory, setSelectedTaskCategory] =
     useState<string>("todo");
   const [showAddNewTask, setShowAddNewTask] = useState<boolean>(false);
-  const [taskList, setTaskList] = useState<typeof tasks>(tasks);
-  const [taskCount, setTaskCount] = useState(taskStats);
-  const handleAddNewTask = (newTask: typeof tasks[0]) => {
-    setTaskList((prevTasks) => [...prevTasks, newTask]);
+
+  // Calculate task statistics from current tasks
+  const taskCount = useMemo(() => {
+    const todoTasks = taskList.filter((task) => task.column === "todo").length;
+    const inProgressTasks = taskList.filter(
+      (task) => task.column === "inprogress"
+    ).length;
+    const inReviewTasks = taskList.filter(
+      (task) => task.column === "inreview"
+    ).length;
+    const doneTasks = taskList.filter((task) => task.column === "done").length;
+    const totalTasks = taskList.length;
+
+    return {
+      total: totalTasks,
+      todo: todoTasks,
+      inProgress: inProgressTasks,
+      inReview: inReviewTasks,
+      done: doneTasks,
+    };
+  }, [taskList]);
+
+  const handleAddNewTask = (newTask: (typeof taskList)[0]) => {
+    addTask(newTask);
     setSelectedTaskCategory(newTask.column);
-    switch (newTask.column)  {
-      case "todo":
-        setTaskCount((prev) => ({...prev, todo: prev.todo + 1}));
-        break;
-      case "inprogress":
-        setTaskCount((prev) => ({...prev, inProgress: prev.inProgress + 1}));
-        break;
-      case "inreview":
-        setTaskCount((prev) => ({...prev, inReview: prev.inReview + 1}));
-        break;
-      case "done":
-        setTaskCount((prev) => ({...prev, done: prev.done + 1}));
-        break;
-    }
-    setTaskCount((prev) => ({...prev, total: prev.total + 1}));
+    setShowAddNewTask(false);
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="px-4 py-8">
+          <div className="text-center text-muted-foreground">Loading tasks...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
 
 
@@ -144,13 +144,10 @@ export function TasksSection() {
         </div>
       </CardContent>
       <AddNewTaskPopover
-          isOpen={showAddNewTask}
-          onAddNewTask={(newTask) => {
-            handleAddNewTask(newTask);
-            setShowAddNewTask(false);
-          }}
-          onClose={() => setShowAddNewTask(false)}
-        />
+        isOpen={showAddNewTask}
+        onAddNewTask={handleAddNewTask}
+        onClose={() => setShowAddNewTask(false)}
+      />
     </Card>
   );
 }
