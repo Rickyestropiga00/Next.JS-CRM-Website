@@ -3,27 +3,63 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { hardcodedUser, SESSION_KEY } from '@/lib/auth';
+import { findUserByEmail, verifyPassword, SESSION_KEY } from '@/lib/auth';
+import { error } from 'console';
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+const loginSchema = z.object({
+  email: z.string().email('Invalid Email Address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-export async function loginAction(prevState: { error: string }, formData: FormData) {
+export async function loginAction(
+  prevState: { error: string },
+  formData: FormData
+) {
   const email = formData.get('email');
   const password = formData.get('password');
-  const result = schema.safeParse({ email, password });
+  // Validate input
+  const result = loginSchema.safeParse({ email, password });
   if (!result.success) {
-    return { error: 'Invalid input' };
+    return { error: result.error.errors[0].message };
   }
-  if (
-    email === hardcodedUser.email &&
-    password === hardcodedUser.password
-  ) {
+  try {
+    // Find user in database
+    const user = await findUserByEmail(result.data.email);
+    
+    if (!user) {
+      return { error: 'Invalid email or password' };
+    }
+    // Verify password
+    const isValid = await verifyPassword(result.data.password, user.password);
+    
+    if (!isValid) {
+      return { error: 'Invalid email or password' };
+    }
+    // Create session (store user ID in cookie)
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_KEY, 'active', { httpOnly: true, secure: true, path: '/' });
+    const userId = user._id?.toString?.() || user.id;
+
+    if (!userId) {
+      return { error: "User ID missing" };
+    }
+
+    cookieStore.set(SESSION_KEY, userId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    console.log("LOGIN SUCCESS:", {
+      inputEmail: result.data.email,
+      dbEmail: user.email,
+      userId,
+    });
     redirect('/dashboard');
+  } catch (error) {
+    if (isRedirectError(error)) { throw error; }
+    console.error('Login error:', error);
+    return { error: 'An error occurred during login' };
   }
-  return { error: 'Invalid credentials' };
-} 
+}
