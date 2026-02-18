@@ -18,7 +18,8 @@ export async function registerAction(
   const password = formData.get('password');
   const result = registerSchema.safeParse({ name, email, password });
   if (!result.success) {
-    return { error: result.error.errors[0].message , success: false };
+    const firstIssue = result.error.issues?.[0];
+    return { error: firstIssue?.message || 'Invalid input' };
   }
   try {
     // Check if user already exists
