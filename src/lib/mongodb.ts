@@ -1,31 +1,26 @@
 // MongoDB connection utility
 // TODO: Implement database connection
 
-import mongoose from 'mongoose';
+import mongoose, { Connection } from 'mongoose';
+
+const cached: { conn: Connection | null; promise: Promise<Connection> | null } =
+  {
+    conn: null,
+    promise: null,
+  };
 
 async function dbConnect() {
-  const MONGODB_URI = process.env.MONGODB_URI;
-  if (!MONGODB_URI) {
-    throw new Error('Please define the MONGODB_URI environment variable');
-  }
-  let cached = global.mongoose;
-  if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
-  }
-  if (cached.conn) {
-    return cached.conn;
-  }
+  if (cached.conn) return cached.conn;
+
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
-    });
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not defined in environment variables');
+    }
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URI!)
+      .then((mongoose) => mongoose.connection);
   }
-
   cached.conn = await cached.promise;
-
   return cached.conn;
 }
 export default dbConnect;

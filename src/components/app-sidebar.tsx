@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { GalleryVerticalEnd } from "lucide-react";
+import * as React from 'react';
+import { GalleryVerticalEnd } from 'lucide-react';
 
-import { AppNavigation, navGroups } from "@/components/app-navigation";
-import { NavUser } from "@/components/nav-user";
+import { AppNavigation, navGroups } from '@/components/app-navigation';
+import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -13,13 +13,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 const user = {
-  name: "test",
-  email: "test@example.com",
-  avatar: "https://github.com/shadcn.png",
+  name: 'test',
+  email: 'test@example.com',
+  avatar: 'https://github.com/shadcn.png',
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -46,7 +46,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <AppNavigation groups={navGroups} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
