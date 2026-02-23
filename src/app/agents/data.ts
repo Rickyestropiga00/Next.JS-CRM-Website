@@ -1,4 +1,5 @@
 export type Agent = {
+  _id?: string; // For MongoDB documents
   id: string;
   name: string;
   email: string;
@@ -373,4 +374,4 @@ export const agents: Agent[] = [
     lastLogin: '2024-06-18T12:40:00Z',
     notes: '',
   },
-]; 
+];

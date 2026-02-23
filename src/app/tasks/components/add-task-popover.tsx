@@ -1,17 +1,17 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Task, ColumnKey } from "../data";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Task, ColumnKey } from '../data';
 
 interface AddTaskPopoverProps {
   onAddTask: (task: Task) => void;
@@ -45,19 +45,19 @@ export function AddTaskPopover({
   // Get column label for display
   const getColumnLabel = (column: ColumnKey): string => {
     const columnLabels: Record<ColumnKey, string> = {
-      todo: "To Do",
-      inprogress: "In Progress",
-      inreview: "In Review",
-      done: "Done",
+      todo: 'To Do',
+      inprogress: 'In Progress',
+      inreview: 'In Review',
+      done: 'Done',
     };
     return columnLabels[column] || column;
   };
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "DESIGN" as string,
-    priority: "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
+    title: '',
+    description: '',
+    status: 'DESIGN' as string,
+    priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     column: defaultColumn,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -66,10 +66,10 @@ export function AddTaskPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        title: "",
-        description: "",
-        status: "DESIGN",
-        priority: "MEDIUM",
+        title: '',
+        description: '',
+        status: 'DESIGN',
+        priority: 'MEDIUM',
         column: defaultColumn,
       });
       setErrors({});
@@ -78,12 +78,12 @@ export function AddTaskPopover({
 
   // Validation functions
   const validateTitle = (title: string): string | undefined => {
-    if (!title.trim()) return "Title is required";
+    if (!title.trim()) return 'Title is required';
     return undefined;
   };
 
   const validateDescription = (description: string): string | undefined => {
-    if (!description.trim()) return "Description is required";
+    if (!description.trim()) return 'Description is required';
     return undefined;
   };
 
@@ -108,7 +108,7 @@ export function AddTaskPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -117,36 +117,65 @@ export function AddTaskPopover({
 
     // Generate status color based on the selected status
     const statusColors: Record<string, string> = {
-      DESIGN: "var(--badge-design)",
-      DEVELOPMENT: "var(--badge-development)",
-      TESTING: "var(--badge-testing)",
-      CONTENT: "var(--badge-content)",
-      MARKETING: "var(--badge-marketing)",
-      MEETING: "var(--badge-meeting)",
-      "FOLLOW-UP": "var(--badge-followup)",
+      DESIGN: 'var(--badge-design)',
+      DEVELOPMENT: 'var(--badge-development)',
+      TESTING: 'var(--badge-testing)',
+      CONTENT: 'var(--badge-content)',
+      MARKETING: 'var(--badge-marketing)',
+      MEETING: 'var(--badge-meeting)',
+      'FOLLOW-UP': 'var(--badge-followup)',
     };
 
     // Generate default avatar for new task
     const defaultAvatar = {
-      src: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png",
-      alt: "@user",
-      fallback: "U",
+      src: 'https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png',
+      alt: '@user',
+      fallback: 'U',
     };
 
-    const newTask: Task = {
-      id: generateTempId(), // Generate unique temporary ID
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      status: formData.status,
-      statusColor: statusColors[formData.status] || "var(--badge-design)",
-      priority: formData.priority,
-      column: formData.column,
-      lastAdded: "Just now",
-      avatars: [defaultAvatar],
-    };
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          status: formData.status,
+          priority: formData.priority,
+          column: formData.column,
+          avatars: [defaultAvatar],
+        }),
+      });
 
-    onAddTask(newTask);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+
+      switch (response.status) {
+        case 201:
+          onAddTask(data); // update UI
+          break; // Success
+        case 400:
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save task');
+      }
+
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving task:', error);
+      setErrors((prev) => ({
+        ...prev,
+        description:
+          error instanceof Error ? error.message : 'Failed to save task.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -199,7 +228,7 @@ export function AddTaskPopover({
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.title ? "border-red-500" : ""
+                  errors.title ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter task title"
               />
@@ -221,7 +250,7 @@ export function AddTaskPopover({
                 }
                 placeholder="Enter task description..."
                 className={`h-16 sm:h-20 text-xs resize-none ${
-                  errors.description ? "border-red-500" : ""
+                  errors.description ? 'border-red-500' : ''
                 }`}
               />
               {errors.description && (
@@ -261,7 +290,7 @@ export function AddTaskPopover({
                 </Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(value: "LOW" | "MEDIUM" | "HIGH") =>
+                  onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') =>
                     setFormData({ ...formData, priority: value })
                   }
                 >

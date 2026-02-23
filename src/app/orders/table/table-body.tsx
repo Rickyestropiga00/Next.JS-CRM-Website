@@ -1,14 +1,14 @@
-import React from "react";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react';
+import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "@/components/shared/status-badge";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
+import { StatusBadge } from '@/components/shared/status-badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface TableBodyProps {
   paginated: any[];
@@ -43,14 +43,14 @@ export function OrdersTableBody({
   onOrderClick,
 }: TableBodyProps) {
   const formatPrice = (price: number) => {
-    return `$${price.toLocaleString("en-US", {
+    return `$${price.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
   const formatAddress = (address: string) => {
-    const parts = address.split(", ");
+    const parts = address.split(', ');
     if (parts.length >= 3) {
       return `${parts[0]}, ${parts[1]}`;
     }
@@ -61,7 +61,7 @@ export function OrdersTableBody({
     <TableBody className="pl-5">
       {paginated.map((order) => (
         <TableRow
-          key={order.id}
+          key={order.id || order._id}
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={(e) => {
             // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -69,11 +69,11 @@ export function OrdersTableBody({
             if (
               target.closest('input[type="checkbox"]') ||
               target.closest('[role="menuitem"]') ||
-              target.closest("button")
+              target.closest('button')
             ) {
               return;
             }
-            onOrderClick(order.id);
+            onOrderClick(order.id || order._id);
           }}
         >
           <TableCell className="w-8">
@@ -88,7 +88,8 @@ export function OrdersTableBody({
             {order.id}
           </TableCell>
           <TableCell className="w-[120px]">
-            {new Date(order.date).toLocaleDateString()}
+            {new Date(order.date).toLocaleDateString() ||
+              order.createdAt?.split('T')[0]}
           </TableCell>
           <TableCell className="w-[150px] font-medium">
             {order.customer}

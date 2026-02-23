@@ -1,16 +1,17 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Order, OrderStatus, PaymentStatus } from "../data";
+} from '@/components/ui/select';
+import { Order, OrderStatus, PaymentStatus } from '../data';
+import { set } from 'mongoose';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -40,23 +41,23 @@ export function AddOrderPopover({
   // Generate a unique temporary ID (ORD-031, ORD-032, ORD-033, etc.)
   const generateTempId = (): string => {
     const random = Math.floor(Math.random() * 70) + 31; // Generate 31 to 99
-    return `ORD-${random.toString().padStart(3, "0")}`;
+    return `ORD-${random.toString().padStart(3, '0')}`;
   };
 
   const [formData, setFormData] = useState({
-    customer: "",
-    address: "",
-    product: "",
-    productType: "Physical" as
-      | "Physical"
-      | "Digital"
-      | "Service"
-      | "Subscription",
-    item: "",
-    quantity: "",
-    total: "",
-    payment: "Unpaid" as PaymentStatus,
-    status: "Pending" as OrderStatus,
+    customer: '',
+    address: '',
+    product: '',
+    productType: 'Physical' as
+      | 'Physical'
+      | 'Digital'
+      | 'Service'
+      | 'Subscription',
+    item: '',
+    quantity: '',
+    total: '',
+    payment: 'Unpaid' as PaymentStatus,
+    status: 'Pending' as OrderStatus,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -64,15 +65,15 @@ export function AddOrderPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        customer: "",
-        address: "",
-        product: "",
-        productType: "Physical",
-        item: "",
-        quantity: "",
-        total: "",
-        payment: "Unpaid",
-        status: "Pending",
+        customer: '',
+        address: '',
+        product: '',
+        productType: 'Physical',
+        item: '',
+        quantity: '',
+        total: '',
+        payment: 'Unpaid',
+        status: 'Pending',
       });
       setErrors({});
     }
@@ -80,38 +81,38 @@ export function AddOrderPopover({
 
   // Validation functions
   const validateCustomer = (customer: string): string | undefined => {
-    if (!customer.trim()) return "Customer name is required";
+    if (!customer.trim()) return 'Customer is required';
     return undefined;
   };
 
   const validateAddress = (address: string): string | undefined => {
-    if (!address.trim()) return "Address is required";
+    if (!address.trim()) return 'Address is required';
     return undefined;
   };
 
   const validateProduct = (product: string): string | undefined => {
-    if (!product.trim()) return "Product name is required";
+    if (!product.trim()) return 'Product name is required';
     return undefined;
   };
 
   const validateItem = (item: string): string | undefined => {
-    if (!item.trim()) return "Item code is required";
+    if (!item.trim()) return 'Item code is required';
     return undefined;
   };
 
   const validateQuantity = (quantity: string): string | undefined => {
-    if (!quantity.trim()) return "Quantity is required";
+    if (!quantity.trim()) return 'Quantity is required';
     const numQuantity = parseInt(quantity);
     if (isNaN(numQuantity) || numQuantity <= 0)
-      return "Quantity must be a positive number";
+      return 'Quantity must be a positive number';
     return undefined;
   };
 
   const validateTotal = (total: string): string | undefined => {
-    if (!total.trim()) return "Total is required";
+    if (!total.trim()) return 'Total is required';
     const numTotal = parseFloat(total);
     if (isNaN(numTotal) || numTotal <= 0)
-      return "Total must be a positive number";
+      return 'Total must be a positive number';
     return undefined;
   };
 
@@ -152,29 +153,59 @@ export function AddOrderPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const newOrder: Order = {
-      id: generateTempId(), // Generate unique temporary ID
-      date: new Date().toISOString().split("T")[0],
-      customer: formData.customer.trim(),
-      address: formData.address.trim(),
-      product: formData.product.trim(),
-      productType: formData.productType,
-      item: formData.item.trim(),
-      quantity: parseInt(formData.quantity),
-      total: parseFloat(formData.total),
-      payment: formData.payment,
-      status: formData.status,
-    };
+    try {
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer: formData.customer.trim(),
+          address: formData.address.trim(),
+          product: formData.product.trim(),
+          productType: formData.productType,
+          item: formData.item.trim(),
+          quantity: parseInt(formData.quantity),
+          total: parseFloat(formData.total),
+          payment: formData.payment,
+          status: formData.status,
+        }),
+      });
 
-    onAddOrder(newOrder);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+
+      switch (response.status) {
+        case 201:
+          onAddOrder(data); // update UI
+          break; // Success
+        case 400:
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save product');
+      }
+
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setErrors((prev) => ({
+        ...prev,
+        code:
+          error instanceof Error ? error.message : 'Failed to save product.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -245,22 +276,19 @@ export function AddOrderPopover({
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Row 1: Customer and Product */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-2">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="customer" className="text-xs">
-                  Customer Name
+                  Customer
                 </Label>
                 <Input
                   id="customer"
                   value={formData.customer}
                   onChange={(e) => handleCustomerChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.customer ? "border-red-500" : ""
+                    errors.customer ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter customer name"
                 />
-                {errors.customer && (
-                  <p className="text-xs text-red-500">{errors.customer}</p>
-                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="product" className="text-xs">
@@ -271,7 +299,7 @@ export function AddOrderPopover({
                   value={formData.product}
                   onChange={(e) => handleProductChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.product ? "border-red-500" : ""
+                    errors.product ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter product name"
                 />
@@ -292,7 +320,7 @@ export function AddOrderPopover({
                   value={formData.address}
                   onChange={(e) => handleAddressChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.address ? "border-red-500" : ""
+                    errors.address ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter delivery address"
                 />
@@ -309,7 +337,7 @@ export function AddOrderPopover({
                   value={formData.item}
                   onChange={(e) => handleItemChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.item ? "border-red-500" : ""
+                    errors.item ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter item code"
                 />
@@ -328,7 +356,7 @@ export function AddOrderPopover({
                 <Select
                   value={formData.productType}
                   onValueChange={(
-                    value: "Physical" | "Digital" | "Service" | "Subscription",
+                    value: 'Physical' | 'Digital' | 'Service' | 'Subscription'
                   ) => setFormData({ ...formData, productType: value })}
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -378,7 +406,7 @@ export function AddOrderPopover({
                   value={formData.quantity}
                   onChange={(e) => handleQuantityChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.quantity ? "border-red-500" : ""
+                    errors.quantity ? 'border-red-500' : ''
                   }`}
                   placeholder="1"
                 />
@@ -398,7 +426,7 @@ export function AddOrderPopover({
                   value={formData.total}
                   onChange={(e) => handleTotalChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.total ? "border-red-500" : ""
+                    errors.total ? 'border-red-500' : ''
                   }`}
                   placeholder="0.00"
                 />

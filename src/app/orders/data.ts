@@ -2,6 +2,7 @@ export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
 export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface Order {
+  _id?: string; // For MongoDB documents
   id: string;
   date: string; // ISO date string
   customer: string;
@@ -13,6 +14,7 @@ export interface Order {
   total: number;
   payment: PaymentStatus;
   status: OrderStatus;
+  createdAt?: string; // For MongoDB documents
 }
 
 export const orders: Order[] = [
@@ -278,5 +280,10 @@ export const orders: Order[] = [
   },
 ];
 
-export const orderStatuses: OrderStatus[] = ['Pending', 'In Transit', 'Completed', 'Canceled'];
+export const orderStatuses: OrderStatus[] = [
+  'Pending',
+  'In Transit',
+  'Completed',
+  'Canceled',
+];
 export const paymentStatuses: PaymentStatus[] = ['Paid', 'Unpaid'];

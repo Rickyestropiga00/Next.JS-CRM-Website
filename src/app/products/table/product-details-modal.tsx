@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Product } from "../data";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Product } from '../data';
 import {
   Calendar,
   Tag,
@@ -19,7 +19,7 @@ import {
   DollarSign,
   FileText,
   Boxes,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -36,40 +36,40 @@ export function ProductDetailsModal({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Inactive":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      case "On Leave":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case 'Active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'On Leave':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
   const formatPrice = (price: number) => {
-    return `$${price.toLocaleString("en-US", {
+    return `$${price.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
   const formatStock = (stock: number, type: string) => {
-    if (type === "Digital") return "Unlimited";
-    if (type === "Service") return "N/A";
+    if (type === 'Digital') return 'Unlimited';
+    if (type === 'Service') return 'N/A';
     return `${stock} units`;
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "Physical":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-      case "Digital":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Service":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
+      case 'Physical':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'Digital':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Service':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
@@ -97,9 +97,9 @@ export function ProductDetailsModal({
               ) : (
                 <span className="text-lg font-bold text-white">
                   {product.name
-                    .split(" ")
+                    .split(' ')
                     .map((n) => n[0])
-                    .join("")
+                    .join('')
                     .toUpperCase()}
                 </span>
               )}
@@ -110,12 +110,16 @@ export function ProductDetailsModal({
               </h2>
               <div className="flex items-center justify-center gap-2">
                 <Badge
-                  className={`${getStatusColor(product.status)} px-2 py-0.5 text-xs`}
+                  className={`${getStatusColor(
+                    product.status
+                  )} px-2 py-0.5 text-xs`}
                 >
                   {product.status}
                 </Badge>
                 <Badge
-                  className={`${getTypeColor(product.type)} px-2 py-0.5 text-xs`}
+                  className={`${getTypeColor(
+                    product.type
+                  )} px-2 py-0.5 text-xs`}
                 >
                   {product.type}
                 </Badge>
@@ -165,7 +169,9 @@ export function ProductDetailsModal({
                   Type
                 </p>
                 <Badge
-                  className={`${getTypeColor(product.type)} px-2 py-0.5 text-xs`}
+                  className={`${getTypeColor(
+                    product.type
+                  )} px-2 py-0.5 text-xs`}
                 >
                   {product.type}
                 </Badge>
@@ -184,7 +190,9 @@ export function ProductDetailsModal({
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
                   Price
                 </p>
-                <p className="text-xs font-semibold">{formatPrice(product.price)}</p>
+                <p className="text-xs font-semibold">
+                  {formatPrice(product.price)}
+                </p>
               </div>
             </div>
 
@@ -200,7 +208,9 @@ export function ProductDetailsModal({
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
                   Stock Level
                 </p>
-                <p className="text-xs">{formatStock(product.stock, product.type)}</p>
+                <p className="text-xs">
+                  {formatStock(product.stock, product.type)}
+                </p>
               </div>
             </div>
 
@@ -217,7 +227,9 @@ export function ProductDetailsModal({
                   Current Status
                 </p>
                 <Badge
-                  className={`${getStatusColor(product.status)} px-2 py-0.5 text-xs`}
+                  className={`${getStatusColor(
+                    product.status
+                  )} px-2 py-0.5 text-xs`}
                 >
                   {product.status}
                 </Badge>
@@ -236,7 +248,9 @@ export function ProductDetailsModal({
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
                   Created Date
                 </p>
-                <p className="text-xs">{product.date}</p>
+                <p className="text-xs">
+                  {product.date || product.createdAt?.split('T')[0]}
+                </p>
               </div>
             </div>
           </div>

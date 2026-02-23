@@ -1,13 +1,13 @@
-import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   customers as initialCustomers,
   CustomerStatus,
   Customer,
-} from "../data";
-import { CustomersTableHeader } from "./table-header";
-import { CustomersTableBody } from "./table-body";
-import { CustomersPaginationBar } from "./pagination-bar";
+} from '../data';
+import { CustomersTableHeader } from './table-header';
+import { CustomersTableBody } from './table-body';
+import { CustomersPaginationBar } from './pagination-bar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,25 +18,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Dynamically import modals to reduce initial bundle size
 const EditCustomerPopover = dynamic(
-  () => import("./edit-customer-popover").then((mod) => ({ default: mod.EditCustomerPopover })),
+  () =>
+    import('./edit-customer-popover').then((mod) => ({
+      default: mod.EditCustomerPopover,
+    })),
   { ssr: false }
 );
 
 const AddCustomerPopover = dynamic(
-  () => import("./add-customer-popover").then((mod) => ({ default: mod.AddCustomerPopover })),
+  () =>
+    import('./add-customer-popover').then((mod) => ({
+      default: mod.AddCustomerPopover,
+    })),
   { ssr: false }
 );
 
 const CustomerDetailsModal = dynamic(
-  () => import("./customer-details-modal").then((mod) => ({ default: mod.CustomerDetailsModal })),
+  () =>
+    import('./customer-details-modal').then((mod) => ({
+      default: mod.CustomerDetailsModal,
+    })),
   { ssr: false }
 );
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -44,15 +53,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Trash, Plus } from "lucide-react";
+} from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { Trash, Plus } from 'lucide-react';
 
 export function CustomersTable() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<keyof Customer>("id");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<keyof Customer>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [data, setData] = useState(initialCustomers);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
@@ -65,10 +74,10 @@ export function CustomersTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const statusOptions: CustomerStatus[] = [
-    "Lead",
-    "Active",
-    "Inactive",
-    "Prospect",
+    'Lead',
+    'Active',
+    'Inactive',
+    'Prospect',
   ];
 
   // Filtering
@@ -77,7 +86,7 @@ export function CustomersTable() {
       const matchesSearch =
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.email.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = status === "all" ? true : c.status === status;
+      const matchesStatus = status === 'all' ? true : c.status === status;
       return matchesSearch && matchesStatus;
     });
   }, [data, search, status]);
@@ -86,18 +95,18 @@ export function CustomersTable() {
   const sorted = useMemo(() => {
     if (!sortBy) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? "";
-      const bVal = b[sortBy] ?? "";
-      if (sortBy === "id") {
+      const aVal = a[sortBy] ?? '';
+      const bVal = b[sortBy] ?? '';
+      if (sortBy === 'id') {
         const aNum = Number(aVal);
         const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === "asc" ? -1 : 1;
-        if (aNum > bNum) return sortDir === "asc" ? 1 : -1;
+        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
+        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
       return 0;
@@ -135,14 +144,14 @@ export function CustomersTable() {
 
   function handleAddComment(customerId: string, comment: string) {
     const timestamp = new Date().toISOString();
-    const formattedDate = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
-    const formattedTime = new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
+    const formattedTime = new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
     const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
 
@@ -162,10 +171,10 @@ export function CustomersTable() {
 
   function handleSort(col: keyof Customer) {
     if (sortBy === col) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortBy(col);
-      setSortDir("asc");
+      setSortDir('asc');
     }
   }
 
@@ -204,7 +213,7 @@ export function CustomersTable() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full md:w-64"
           />
-          <Select value={status || "all"} onValueChange={setStatus}>
+          <Select value={status || 'all'} onValueChange={setStatus}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
@@ -323,7 +332,10 @@ export function CustomersTable() {
       <CustomerDetailsModal
         customer={
           selectedCustomerId
-            ? data.find((c) => c.id === selectedCustomerId) || null
+            ? data.find(
+                (c) =>
+                  c.id === selectedCustomerId || c._id === selectedCustomerId
+              ) || null
             : null
         }
         isOpen={!!selectedCustomerId}

@@ -1,15 +1,15 @@
-import React from "react";
-import Image from "next/image";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react';
+import Image from 'next/image';
+import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "@/components/shared/status-badge";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
+import { StatusBadge } from '@/components/shared/status-badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface TableBodyProps {
   paginated: any[];
@@ -44,15 +44,15 @@ export function ProductsTableBody({
   setEditProductId,
 }: TableBodyProps) {
   const formatPrice = (price: number) => {
-    return `$${price.toLocaleString("en-US", {
+    return `$${price.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
   const formatStock = (stock: number, type: string) => {
-    if (type === "Digital" || type === "Subscription" || type === "Service") {
-      return "∞";
+    if (type === 'Digital' || type === 'Subscription' || type === 'Service') {
+      return '∞';
     }
     return stock.toString();
   };
@@ -61,7 +61,7 @@ export function ProductsTableBody({
     <TableBody className="pl-5">
       {paginated.map((p) => (
         <TableRow
-          key={p.id}
+          key={p.id || p._id}
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={(e) => {
             // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -69,11 +69,11 @@ export function ProductsTableBody({
             if (
               target.closest('input[type="checkbox"]') ||
               target.closest('[role="menuitem"]') ||
-              target.closest("button")
+              target.closest('button')
             ) {
               return;
             }
-            onProductClick(p.id);
+            onProductClick(p.id || p._id);
           }}
         >
           <TableCell className="w-8">
@@ -104,7 +104,7 @@ export function ProductsTableBody({
           </TableCell>
           <TableCell className="w-[100px]">{p.type}</TableCell>
           <TableCell className="w-[120px]">
-            {new Date(p.date).toLocaleDateString()}
+            {new Date(p.createdAt ?? p.date).toLocaleDateString()}
           </TableCell>
           <TableCell className="w-[80px]">
             {formatStock(p.stock, p.type)}

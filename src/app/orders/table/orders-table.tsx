@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   orders as initialOrders,
   OrderStatus,
   PaymentStatus,
   Order,
-} from "../data";
-import { OrdersTableHeader } from "./table-header";
-import { OrdersTableBody } from "./table-body";
-import { OrdersPaginationBar } from "./pagination-bar";
+} from '../data';
+import { OrdersTableHeader } from './table-header';
+import { OrdersTableBody } from './table-body';
+import { OrdersPaginationBar } from './pagination-bar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,25 +19,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Dynamically import modals to reduce initial bundle size
 const EditOrderPopover = dynamic(
-  () => import("./edit-order-popover").then((mod) => ({ default: mod.EditOrderPopover })),
+  () =>
+    import('./edit-order-popover').then((mod) => ({
+      default: mod.EditOrderPopover,
+    })),
   { ssr: false }
 );
 
 const AddOrderPopover = dynamic(
-  () => import("./add-order-popover").then((mod) => ({ default: mod.AddOrderPopover })),
+  () =>
+    import('./add-order-popover').then((mod) => ({
+      default: mod.AddOrderPopover,
+    })),
   { ssr: false }
 );
 
 const OrderDetailsModal = dynamic(
-  () => import("./order-details-modal").then((mod) => ({ default: mod.OrderDetailsModal })),
+  () =>
+    import('./order-details-modal').then((mod) => ({
+      default: mod.OrderDetailsModal,
+    })),
   { ssr: false }
 );
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -45,17 +54,17 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Trash, Plus } from "lucide-react";
+} from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { Trash, Plus } from 'lucide-react';
 
 export function OrdersTable() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string>("all");
-  const [payment, setPayment] = useState<string>("all");
-  const [productType, setProductType] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<keyof Order>("id");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<string>('all');
+  const [payment, setPayment] = useState<string>('all');
+  const [productType, setProductType] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<keyof Order>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [data, setData] = useState(initialOrders);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
@@ -67,27 +76,27 @@ export function OrdersTable() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const statusOptions: OrderStatus[] = [
-    "Pending",
-    "In Transit",
-    "Completed",
-    "Canceled",
+    'Pending',
+    'In Transit',
+    'Completed',
+    'Canceled',
   ];
-  const paymentOptions: PaymentStatus[] = ["Paid", "Unpaid"];
-  const productTypeOptions = ["Physical", "Digital", "Service", "Subscription"];
+  const paymentOptions: PaymentStatus[] = ['Paid', 'Unpaid'];
+  const productTypeOptions = ['Physical', 'Digital', 'Service', 'Subscription'];
 
   // Filtering
   const filtered = useMemo(() => {
     return data.filter((order) => {
       const matchesSearch =
-        order.id.toLowerCase().includes(search.toLowerCase()) ||
-        order.customer.toLowerCase().includes(search.toLowerCase()) ||
-        order.product.toLowerCase().includes(search.toLowerCase()) ||
-        order.quantity.toString().includes(search.toLowerCase());
-      const matchesStatus = status === "all" ? true : order.status === status;
+        (order.id ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (order.customer ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (order.product ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        String(order.quantity ?? '').includes(search.toLowerCase());
+      const matchesStatus = status === 'all' ? true : order.status === status;
       const matchesPayment =
-        payment === "all" ? true : order.payment === payment;
+        payment === 'all' ? true : order.payment === payment;
       const matchesProductType =
-        productType === "all" ? true : order.productType === productType;
+        productType === 'all' ? true : order.productType === productType;
       return (
         matchesSearch && matchesStatus && matchesPayment && matchesProductType
       );
@@ -98,34 +107,34 @@ export function OrdersTable() {
   const sorted = useMemo(() => {
     if (!sortBy) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? "";
-      const bVal = b[sortBy] ?? "";
+      const aVal = a[sortBy] ?? '';
+      const bVal = b[sortBy] ?? '';
 
-      if (sortBy === "id") {
-        if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
+      if (sortBy === 'id') {
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (sortBy === "total" || sortBy === "quantity") {
+      if (sortBy === 'total' || sortBy === 'quantity') {
         const aNum = Number(aVal);
         const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === "asc" ? -1 : 1;
-        if (aNum > bNum) return sortDir === "asc" ? 1 : -1;
+        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
+        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (sortBy === "date") {
+      if (sortBy === 'date') {
         const aDate = new Date(aVal as string);
         const bDate = new Date(bVal as string);
-        if (aDate < bDate) return sortDir === "asc" ? -1 : 1;
-        if (aDate > bDate) return sortDir === "asc" ? 1 : -1;
+        if (aDate < bDate) return sortDir === 'asc' ? -1 : 1;
+        if (aDate > bDate) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
       return 0;
@@ -162,10 +171,10 @@ export function OrdersTable() {
 
   function handleSort(col: keyof Order) {
     if (sortBy === col) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(col);
-      setSortDir("asc");
+      setSortDir('asc');
     }
   }
 
@@ -349,7 +358,9 @@ export function OrdersTable() {
       <OrderDetailsModal
         order={
           selectedOrderId
-            ? data.find((o) => o.id === selectedOrderId) || null
+            ? data.find(
+                (o) => o.id === selectedOrderId || o._id === selectedOrderId
+              ) || null
             : null
         }
         isOpen={!!selectedOrderId}

@@ -1,13 +1,13 @@
-import React from "react";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react';
+import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Pencil } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,9 +18,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Agent } from "../data";
-import { StatusBadge } from "@/components/shared/status-badge";
+} from '@/components/ui/alert-dialog';
+import { Agent } from '../data';
+import { StatusBadge } from '@/components/shared/status-badge';
+import { formatPhone } from '@/utils/formatters';
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -57,7 +58,7 @@ export function AgentsTableBody({
         const commentCount = countComments(a.comment);
         return (
           <TableRow
-            key={a.id}
+            key={a.id || a._id}
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={(e) => {
               // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -65,11 +66,11 @@ export function AgentsTableBody({
               if (
                 target.closest('input[type="checkbox"]') ||
                 target.closest('[role="menuitem"]') ||
-                target.closest("button")
+                target.closest('button')
               ) {
                 return;
               }
-              onAgentClick(a.id);
+              onAgentClick(a.id || a._id!);
             }}
           >
             <TableCell className="w-8">
@@ -84,7 +85,7 @@ export function AgentsTableBody({
             <TableCell className="pl-4 w-[70px] font-mono">{a.id}</TableCell>
             <TableCell className="w-[150px]">{a.name}</TableCell>
             <TableCell className="w-[220px]">{a.email}</TableCell>
-            <TableCell className="w-[120px]">{a.phone}</TableCell>
+            <TableCell className="w-[120px]">{formatPhone(a.phone)}</TableCell>
             <TableCell className="w-[100px]">{a.role}</TableCell>
             <TableCell className="w-[100px]">
               <StatusBadge status={a.status} type="agent" />
@@ -92,15 +93,17 @@ export function AgentsTableBody({
             <TableCell className="w-[150px]">
               {a.assignedCustomers.length > 0
                 ? `${a.assignedCustomers.length} assigned`
-                : "-"}
+                : '-'}
             </TableCell>
-            <TableCell className="w-[120px]">{a.createdAt}</TableCell>
             <TableCell className="w-[120px]">
-              {a.lastLogin.split("T")[0]}
+              {a.createdAt?.split('T')[0]}
+            </TableCell>
+            <TableCell className="w-[120px]">
+              {a.lastLogin ? new Date(a.lastLogin).toLocaleDateString() : '-'}
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
-              <div className="truncate" title={a.notes || ""}>
-                {a.notes || "-"}
+              <div className="truncate" title={a.notes || ''}>
+                {a.notes || '-'}
               </div>
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
@@ -110,7 +113,7 @@ export function AgentsTableBody({
                     {commentCount}
                   </span>
                 ) : (
-                  "-"
+                  '-'
                 )}
               </div>
             </TableCell>

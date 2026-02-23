@@ -1,5 +1,5 @@
-import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -8,7 +8,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +19,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Pencil, Trash, Move, CircleCheckBig } from "lucide-react";
-import { Task, ColumnKey } from "../data";
+} from '@/components/ui/alert-dialog';
+import { Pencil, Trash, Move, CircleCheckBig } from 'lucide-react';
+import { Task, ColumnKey } from '../data';
+
+const statusColors: Record<string, string> = {
+  DESIGN: 'var(--badge-design)',
+  DEVELOPMENT: 'var(--badge-development)',
+  TESTING: 'var(--badge-testing)',
+  CONTENT: 'var(--badge-content)',
+  MARKETING: 'var(--badge-marketing)',
+  MEETING: 'var(--badge-meeting)',
+  'FOLLOW-UP': 'var(--badge-followup)',
+};
 
 interface TaskCardProps {
   task: Task;
@@ -55,7 +65,10 @@ export function TaskCard({
             <span className="flex items-center gap-2">
               <span
                 className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: task.statusColor }}
+                style={{
+                  backgroundColor:
+                    statusColors[task.status] || 'var(--badge-default)',
+                }}
               />
               <span className="text-xs text-muted-foreground font-medium">
                 {task.status}
@@ -67,12 +80,12 @@ export function TaskCard({
                 className="px-2 py-0.5 rounded-xs text-xs font-semibold"
                 style={{
                   backgroundColor:
-                    task.priority === "LOW"
-                      ? "var(--badge-priority-low)"
-                      : task.priority === "MEDIUM"
-                      ? "var(--badge-priority-medium)"
-                      : "var(--badge-priority-high)",
-                  color: "#fff",
+                    task.priority === 'LOW'
+                      ? 'var(--badge-priority-low)'
+                      : task.priority === 'MEDIUM'
+                      ? 'var(--badge-priority-medium)'
+                      : 'var(--badge-priority-high)',
+                  color: '#fff',
                 }}
               >
                 {task.priority}
@@ -85,7 +98,7 @@ export function TaskCard({
           </div>
           <div className="flex flex-wrap-reverse items-center justify-between gap-3 mt-2">
             <span className="text-xs text-muted-foreground">
-              {task.lastAdded}
+              {task.lastAdded ?? new Date(task.lastAdded).toLocaleDateString()}
             </span>
             <div className="flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
               {task.avatars.map((avatar, idx) => (
@@ -99,11 +112,11 @@ export function TaskCard({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {task.column !== "done" && (
+        {task.column !== 'done' && (
           <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
-              onMove(task.id, "done");
+              onMove(task.id, 'done');
             }}
             className="text-green-600 font-semibold hover:text-green-600 focus:text-green-600"
           >
@@ -118,7 +131,7 @@ export function TaskCard({
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             {columns
-              .filter((c) => c.key !== task.column && c.key !== "done")
+              .filter((c) => c.key !== task.column && c.key !== 'done')
               .map((c) => (
                 <DropdownMenuItem
                   key={c.key}
@@ -162,8 +175,9 @@ export function TaskCard({
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this task?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. Are you sure you want to delete "
-                {task.title}"?
+                This action cannot be undone. Are you sure you want to delete
+                &quot;
+                {task.title} &quot;?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

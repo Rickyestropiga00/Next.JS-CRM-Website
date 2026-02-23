@@ -1,12 +1,12 @@
-"use client";
-import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
-import { agents as initialAgents, Agent } from "../data";
-import { AgentsTableHeader } from "./table-header";
-import { AgentsTableBody } from "./table-body";
-import { AgentsPaginationBar } from "./pagination-bar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { agents as initialAgents, Agent } from '../data';
+import { AgentsTableHeader } from './table-header';
+import { AgentsTableBody } from './table-body';
+import { AgentsPaginationBar } from './pagination-bar';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,24 +17,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Dynamically import modals to reduce initial bundle size
 const EditAgentPopover = dynamic(
-  () => import("./edit-agent-popover").then((mod) => ({ default: mod.EditAgentPopover })),
+  () =>
+    import('./edit-agent-popover').then((mod) => ({
+      default: mod.EditAgentPopover,
+    })),
   { ssr: false }
 );
 
 const AddAgentPopover = dynamic(
-  () => import("./add-agent-popover").then((mod) => ({ default: mod.AddAgentPopover })),
+  () =>
+    import('./add-agent-popover').then((mod) => ({
+      default: mod.AddAgentPopover,
+    })),
   { ssr: false }
 );
 
 const AgentDetailsModal = dynamic(
-  () => import("./agent-details-modal").then((mod) => ({ default: mod.AgentDetailsModal })),
+  () =>
+    import('./agent-details-modal').then((mod) => ({
+      default: mod.AgentDetailsModal,
+    })),
   { ssr: false }
 );
-import { Trash, Plus } from "lucide-react";
+import { Trash, Plus } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -42,15 +51,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
+} from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
 
 export function AgentsTable() {
-  const [search, setSearch] = useState("");
-  const [role, setRole] = useState<string>("all");
-  const [status, setStatus] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<keyof Agent>("id");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState('');
+  const [role, setRole] = useState<string>('all');
+  const [status, setStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<keyof Agent>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [data, setData] = useState(initialAgents);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
@@ -61,8 +70,8 @@ export function AgentsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const roleOptions = ["Admin", "Agent", "Manager"];
-  const statusOptions = ["Active", "Inactive", "On Leave"];
+  const roleOptions = ['Admin', 'Agent', 'Manager'];
+  const statusOptions = ['Active', 'Inactive', 'On Leave'];
 
   // Filtering (search by name/email, role, status)
   const filtered = useMemo(() => {
@@ -70,8 +79,8 @@ export function AgentsTable() {
       const matchesSearch =
         a.name.toLowerCase().includes(search.toLowerCase()) ||
         a.email.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = role === "all" ? true : a.role === role;
-      const matchesStatus = status === "all" ? true : a.status === status;
+      const matchesRole = role === 'all' ? true : a.role === role;
+      const matchesStatus = status === 'all' ? true : a.status === status;
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [data, search, role, status]);
@@ -80,19 +89,19 @@ export function AgentsTable() {
   const sorted = useMemo(() => {
     if (!sortBy) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? "";
-      const bVal = b[sortBy] ?? "";
-      if (sortBy === "id") {
+      const aVal = a[sortBy] ?? '';
+      const bVal = b[sortBy] ?? '';
+      if (sortBy === 'id') {
         return (
           (aVal as string).localeCompare(bVal as string, undefined, {
             numeric: true,
-          }) * (sortDir === "asc" ? 1 : -1)
+          }) * (sortDir === 'asc' ? 1 : -1)
         );
       }
-      if (typeof aVal === "string" && typeof bVal === "string") {
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
         return (
           (aVal as string).localeCompare(bVal as string) *
-          (sortDir === "asc" ? 1 : -1)
+          (sortDir === 'asc' ? 1 : -1)
         );
       }
       return 0;
@@ -128,14 +137,14 @@ export function AgentsTable() {
 
   function handleAddComment(agentId: string, comment: string) {
     const timestamp = new Date().toISOString();
-    const formattedDate = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
-    const formattedTime = new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
+    const formattedTime = new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
     const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
 
@@ -155,10 +164,10 @@ export function AgentsTable() {
 
   function handleSort(col: keyof Agent) {
     if (sortBy === col) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortBy(col);
-      setSortDir("asc");
+      setSortDir('asc');
     }
   }
 
@@ -330,7 +339,9 @@ export function AgentsTable() {
       <AgentDetailsModal
         agent={
           selectedAgentId
-            ? data.find((a) => a.id === selectedAgentId) || null
+            ? data.find(
+                (a) => a.id === selectedAgentId || a._id === selectedAgentId
+              ) || null
             : null
         }
         isOpen={!!selectedAgentId}
