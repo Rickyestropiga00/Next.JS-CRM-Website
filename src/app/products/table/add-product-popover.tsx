@@ -1,16 +1,16 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Product, ProductStatus, ProductType } from "../data";
+} from '@/components/ui/select';
+import { Product, ProductStatus, ProductType } from '../data';
 
 interface AddProductPopoverProps {
   onAddProduct: (product: Product) => void;
@@ -35,20 +35,14 @@ export function AddProductPopover({
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
-  // Generate a unique temporary ID (31, 32, 33, etc.)
-  const generateTempId = (): string => {
-    const random = Math.floor(Math.random() * 70) + 31; // Generate 31 to 99
-    return random.toString();
-  };
-
   const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    type: "Physical" as ProductType,
-    stock: "",
-    price: "",
-    status: "Active" as ProductStatus,
-    image: "/products/product-1.webp", // Default image
+    name: '',
+    code: '',
+    type: 'Physical' as ProductType,
+    stock: '',
+    price: '',
+    status: 'Active' as ProductStatus,
+    image: '/products/product-1.webp', // Default image
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -56,13 +50,13 @@ export function AddProductPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        name: "",
-        code: "",
-        type: "Physical",
-        stock: "",
-        price: "",
-        status: "Active",
-        image: "/products/product-1.webp",
+        name: '',
+        code: '',
+        type: 'Physical',
+        stock: '',
+        price: '',
+        status: 'Active',
+        image: '/products/product-1.webp',
       });
       setErrors({});
     }
@@ -70,28 +64,28 @@ export function AddProductPopover({
 
   // Validation functions
   const validateName = (name: string): string | undefined => {
-    if (!name.trim()) return "Name is required";
+    if (!name.trim()) return 'Name is required';
     return undefined;
   };
 
   const validateCode = (code: string): string | undefined => {
-    if (!code.trim()) return "Product code is required";
+    if (!code.trim()) return 'Product code is required';
     return undefined;
   };
 
   const validatePrice = (price: string): string | undefined => {
-    if (!price.trim()) return "Price is required";
+    if (!price.trim()) return 'Price is required';
     const numPrice = parseFloat(price);
     if (isNaN(numPrice) || numPrice <= 0)
-      return "Price must be a positive number";
+      return 'Price must be a positive number';
     return undefined;
   };
 
   const validateStock = (stock: string): string | undefined => {
-    if (!stock.trim()) return "Stock is required";
+    if (!stock.trim()) return 'Stock is required';
     const numStock = parseInt(stock);
     if (isNaN(numStock) || numStock < 0)
-      return "Stock must be a non-negative number";
+      return 'Stock must be a non-negative number';
     return undefined;
   };
 
@@ -124,27 +118,57 @@ export function AddProductPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const newProduct: Product = {
-      id: generateTempId(), // Generate unique temporary ID
-      name: formData.name.trim(),
-      code: formData.code.trim(),
-      type: formData.type,
-      date: new Date().toISOString().split("T")[0],
-      stock: parseInt(formData.stock),
-      price: parseFloat(formData.price),
-      status: formData.status,
-      image: formData.image,
-    };
+    try {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          code: formData.code.trim(),
+          type: formData.type,
+          stock: parseInt(formData.stock),
+          price: parseFloat(formData.price),
+          status: formData.status,
+          image: formData.image,
+        }),
+      });
 
-    onAddProduct(newProduct);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+
+      switch (response.status) {
+        case 201:
+          onAddProduct(data); // update UI
+          break; // Success
+        case 400:
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save product');
+      }
+
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setErrors((prev) => ({
+        ...prev,
+        code:
+          error instanceof Error ? error.message : 'Failed to save product.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -200,7 +224,11 @@ export function AddProductPopover({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 sm:space-y-6"
+            encType="multipart/form-data"
+          >
             {/* Row 1: Name and Code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
@@ -212,7 +240,7 @@ export function AddProductPopover({
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.name ? "border-red-500" : ""
+                    errors.name ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter product name"
                 />
@@ -229,7 +257,7 @@ export function AddProductPopover({
                   value={formData.code}
                   onChange={(e) => handleCodeChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.code ? "border-red-500" : ""
+                    errors.code ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter product code"
                 />
@@ -297,7 +325,7 @@ export function AddProductPopover({
                   value={formData.price}
                   onChange={(e) => handlePriceChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.price ? "border-red-500" : ""
+                    errors.price ? 'border-red-500' : ''
                   }`}
                   placeholder="0.00"
                 />
@@ -316,7 +344,7 @@ export function AddProductPopover({
                   value={formData.stock}
                   onChange={(e) => handleStockChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.stock ? "border-red-500" : ""
+                    errors.stock ? 'border-red-500' : ''
                   }`}
                   placeholder="0"
                 />

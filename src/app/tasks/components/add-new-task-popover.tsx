@@ -1,17 +1,17 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Task, ColumnKey } from "../data";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Task, ColumnKey } from '../data';
 
 interface AddNewTaskPopoverProps {
   onAddNewTask: (tasks: Task) => void;
@@ -43,27 +43,27 @@ export function AddNewTaskPopover({
   // Get column label for display
   const getColumnLabel = (column: ColumnKey): string => {
     const columnLabels: Record<ColumnKey, string> = {
-      todo: "To Do",
-      inprogress: "In Progress",
-      inreview: "In Review",
-      done: "Done",
+      todo: 'To Do',
+      inprogress: 'In Progress',
+      inreview: 'In Review',
+      done: 'Done',
     };
     return columnLabels[column] || column;
   };
 
-    const [formData, setFormData] = useState<{
-        title: string;
-        description: string;
-        status: string;
-        priority: "LOW" | "MEDIUM" | "HIGH";
-        column: ColumnKey;
-    }>({
-        title: "",
-        description: "",
-        status: "DESIGN",
-        priority: "MEDIUM",
-        column: "todo", 
-    });
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    status: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    column: ColumnKey;
+  }>({
+    title: '',
+    description: '',
+    status: 'DESIGN',
+    priority: 'MEDIUM',
+    column: 'todo',
+  });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -71,11 +71,11 @@ export function AddNewTaskPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        title: "",
-        description: "",
-        status: "DESIGN",
-        priority: "MEDIUM",
-        column: "todo"
+        title: '',
+        description: '',
+        status: 'DESIGN',
+        priority: 'MEDIUM',
+        column: 'todo',
       });
       setErrors({});
     }
@@ -83,12 +83,12 @@ export function AddNewTaskPopover({
 
   // Validation functions
   const validateTitle = (title: string): string | undefined => {
-    if (!title.trim()) return "Title is required";
+    if (!title.trim()) return 'Title is required';
     return undefined;
   };
 
   const validateDescription = (description: string): string | undefined => {
-    if (!description.trim()) return "Description is required";
+    if (!description.trim()) return 'Description is required';
     return undefined;
   };
 
@@ -113,45 +113,63 @@ export function AddNewTaskPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    // Generate status color based on the selected status
-    const statusColors: Record<string, string> = {
-      DESIGN: "var(--badge-design)",
-      DEVELOPMENT: "var(--badge-development)",
-      TESTING: "var(--badge-testing)",
-      CONTENT: "var(--badge-content)",
-      MARKETING: "var(--badge-marketing)",
-      MEETING: "var(--badge-meeting)",
-      FOLLOW_UP: "var(--badge-followup)",
-    };
-
     // Generate default avatar for new task
     const defaultAvatar = {
-      src: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png",
-      alt: "@user",
-      fallback: "U",
+      src: 'https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png',
+      alt: '@user',
+      fallback: 'U',
     };
 
-    const newTask: Task = {
-      id: generateTempId(), // Generate unique temporary ID
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      status: formData.status,
-      statusColor: statusColors[formData.status] || "var(--badge-design)",
-      priority: formData.priority,
-      column: formData.column,
-      lastAdded: "Just now",
-      avatars: [defaultAvatar],
-    };
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          status: formData.status,
+          priority: formData.priority,
+          column: formData.column,
+          avatars: [defaultAvatar],
+        }),
+      });
 
-    onAddNewTask(newTask);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+
+      switch (response.status) {
+        case 201:
+          onAddNewTask(data); // update UI
+          break; // Success
+        case 400:
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save task');
+      }
+
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving task:', error);
+      setErrors((prev) => ({
+        ...prev,
+        description:
+          error instanceof Error ? error.message : 'Failed to save task.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -178,156 +196,151 @@ export function AddNewTaskPopover({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/50" onClick={handleCancel} />
-          {/* Modal Content */}
-          <div className="relative z-50 w-full max-w-[35rem] bg-background border rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <div className="space-y-4 sm:space-y-6">
-              <div className="space-y-2 sm:space-y-3">
-                <h4 className="font-medium text-sm sm:text-base">
-                  Add New Task
-                </h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Create a new task. This data is temporary and will reset on page
-                  reload.
-                </p>
-              </div>
-    
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                {/* Row 1: Title */}
-                <div className="space-y-2">
-                  <Label htmlFor="title" className="text-xs">
-                    Task Title
-                  </Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => handleTitleChange(e.target.value)}
-                    className={`h-8 sm:h-9 text-xs ${
-                      errors.title ? "border-red-500" : ""
-                    }`}
-                    placeholder="Enter task title"
-                  />
-                  {errors.title && (
-                    <p className="text-xs text-red-500">{errors.title}</p>
-                  )}
-                </div>
-    
-                {/* Row 2: Description */}
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-xs">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      handleDescriptionChange(e.target.value)
-                    }
-                    placeholder="Enter task description..."
-                    className={`h-16 sm:h-20 text-xs resize-none ${
-                      errors.description ? "border-red-500" : ""
-                    }`}
-                  />
-                  {errors.description && (
-                    <p className="text-xs text-red-500">{errors.description}</p>
-                  )}
-                </div>
-                  {/* Row 3: Column */}
-                <div className="space-y-2">
-                    <Label htmlFor="status" className="text-xs">
-                      Column
-                    </Label>
-                    <Select
-                      value={formData.column}
-                      onValueChange={(value: ColumnKey) =>
-                        setFormData({ ...formData, column: value })
-                      }
-                    >
-                      <SelectTrigger className="h-8 text-xs w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        
-                        <SelectItem value="todo">Todo</SelectItem>
-                        <SelectItem value="inprogress">Inprogress</SelectItem>
-                        <SelectItem value="inreview">Inreview</SelectItem>
-                        <SelectItem value="done">Done</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                </div>
-    
-                {/* Row 4: Status and Priority */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status" className="text-xs">
-                      Status
-                    </Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value: string) =>
-                        setFormData({ ...formData, status: value })
-                      }
-                    >
-                      <SelectTrigger className="h-8 text-xs w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DESIGN">Design</SelectItem>
-                        <SelectItem value="DEVELOPMENT">Development</SelectItem>
-                        <SelectItem value="TESTING">Testing</SelectItem>
-                        <SelectItem value="CONTENT">Content</SelectItem>
-                        <SelectItem value="MARKETING">Marketing</SelectItem>
-                        <SelectItem value="MEETING">Meeting</SelectItem>
-                        <SelectItem value="FOLLOW-UP">Follow-up</SelectItem>
-                        
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="priority" className="text-xs">
-                      Priority
-                    </Label>
-                    <Select
-                      value={formData.priority}
-                      onValueChange={(value: "LOW" | "MEDIUM" | "HIGH") =>
-                        setFormData({ ...formData, priority: value })
-                      }
-                    >
-                      <SelectTrigger className="h-8 text-xs w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="LOW">Low</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="HIGH">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-    
-                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancel}
-                    className="h-8 sm:h-7 text-xs order-2 sm:order-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmit}
-                    className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-                    disabled={!isFormValid()}
-                  >
-                    Add Task
-                  </Button>
-                </div>
-              </form>
-            </div>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50" onClick={handleCancel} />
+      {/* Modal Content */}
+      <div className="relative z-50 w-full max-w-[35rem] bg-background border rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-2 sm:space-y-3">
+            <h4 className="font-medium text-sm sm:text-base">Add New Task</h4>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Create a new task. This data is temporary and will reset on page
+              reload.
+            </p>
           </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Row 1: Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-xs">
+                Task Title
+              </Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className={`h-8 sm:h-9 text-xs ${
+                  errors.title ? 'border-red-500' : ''
+                }`}
+                placeholder="Enter task title"
+              />
+              {errors.title && (
+                <p className="text-xs text-red-500">{errors.title}</p>
+              )}
+            </div>
+
+            {/* Row 2: Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-xs">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  handleDescriptionChange(e.target.value)
+                }
+                placeholder="Enter task description..."
+                className={`h-16 sm:h-20 text-xs resize-none ${
+                  errors.description ? 'border-red-500' : ''
+                }`}
+              />
+              {errors.description && (
+                <p className="text-xs text-red-500">{errors.description}</p>
+              )}
+            </div>
+            {/* Row 3: Column */}
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-xs">
+                Column
+              </Label>
+              <Select
+                value={formData.column}
+                onValueChange={(value: ColumnKey) =>
+                  setFormData({ ...formData, column: value })
+                }
+              >
+                <SelectTrigger className="h-8 text-xs w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todo">Todo</SelectItem>
+                  <SelectItem value="inprogress">Inprogress</SelectItem>
+                  <SelectItem value="inreview">Inreview</SelectItem>
+                  <SelectItem value="done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Row 4: Status and Priority */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-xs">
+                  Status
+                </Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: string) =>
+                    setFormData({ ...formData, status: value })
+                  }
+                >
+                  <SelectTrigger className="h-8 text-xs w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DESIGN">Design</SelectItem>
+                    <SelectItem value="DEVELOPMENT">Development</SelectItem>
+                    <SelectItem value="TESTING">Testing</SelectItem>
+                    <SelectItem value="CONTENT">Content</SelectItem>
+                    <SelectItem value="MARKETING">Marketing</SelectItem>
+                    <SelectItem value="MEETING">Meeting</SelectItem>
+                    <SelectItem value="FOLLOW-UP">Follow-up</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority" className="text-xs">
+                  Priority
+                </Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') =>
+                    setFormData({ ...formData, priority: value })
+                  }
+                >
+                  <SelectTrigger className="h-8 text-xs w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                className="h-8 sm:h-7 text-xs order-2 sm:order-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                className="h-8 sm:h-7 text-xs order-1 sm:order-2"
+                disabled={!isFormValid()}
+              >
+                Add Task
+              </Button>
+            </div>
+          </form>
         </div>
+      </div>
+    </div>
   );
 }

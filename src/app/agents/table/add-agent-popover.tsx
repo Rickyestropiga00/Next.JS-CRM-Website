@@ -1,23 +1,23 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ModalWrapper } from "@/components/shared/modal-wrapper";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import {
   validateRequired,
   validateEmail,
   validatePhone,
-} from "@/lib/validations";
-import { Agent } from "../data";
+} from '@/lib/validations';
+import { Agent } from '../data';
 
 interface AddAgentPopoverProps {
   onAddAgent: (agent: Agent) => void;
@@ -44,15 +44,15 @@ export function AddAgentPopover({
   // Generate a unique temporary ID (A31, A32, A33, etc.)
   const generateTempId = (): string => {
     const random = Math.floor(Math.random() * 70) + 31; // Generate A31 to A99
-    return `A${random.toString().padStart(2, "0")}`;
+    return `A${random.toString().padStart(2, '0')}`;
   };
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    role: "Agent" as Agent["role"],
-    status: "Active" as Agent["status"],
-    notes: "",
+    name: '',
+    email: '',
+    phone: '',
+    role: 'Agent' as Agent['role'],
+    status: 'Active' as Agent['status'],
+    notes: '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -60,12 +60,12 @@ export function AddAgentPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        role: "Agent",
-        status: "Active",
-        notes: "",
+        name: '',
+        email: '',
+        phone: '',
+        role: 'Agent',
+        status: 'Active',
+        notes: '',
       });
       setErrors({});
     }
@@ -73,7 +73,7 @@ export function AddAgentPopover({
 
   // Validation functions using shared utilities
   const validateName = (name: string): string | undefined => {
-    return validateRequired(name, "Name", 1);
+    return validateRequired(name, 'Name', 1);
   };
 
   const validateForm = (): boolean => {
@@ -101,28 +101,66 @@ export function AddAgentPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const newAgent: Agent = {
-      id: generateTempId(), // Generate unique temporary ID
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      role: formData.role,
-      status: formData.status,
-      assignedCustomers: [],
-      createdAt: new Date().toISOString().split("T")[0],
-      lastLogin: new Date().toISOString(),
-      notes: formData.notes.trim(),
-    };
+    try {
+      const response = await fetch('/api/agents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          role: formData.role.trim(),
+          status: formData.status.trim(),
+          assignedCustomers: [], // New agents start with no assigned customers
+          notes: formData.notes.trim(),
+        }),
+      });
 
-    onAddAgent(newAgent);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+        console.log('STATUS:', response.status);
+        console.log('DATA:', data);
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+
+      switch (response.status) {
+        case 201:
+          onAddAgent(data); // update UI
+          break; // Success
+        case 400:
+          if (data.field) {
+            setErrors((prev) => ({
+              ...prev,
+              [data.field]: data.error,
+            }));
+            return;
+          }
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save agent');
+      }
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving agent:', error);
+
+      setErrors((prev) => ({
+        ...prev,
+        description:
+          error instanceof Error ? error.message : 'Failed to save agent.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -175,7 +213,7 @@ export function AddAgentPopover({
                 value={formData.name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.name ? "border-red-500" : ""
+                  errors.name ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter agent name"
               />
@@ -193,7 +231,7 @@ export function AddAgentPopover({
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.phone ? "border-red-500" : ""
+                  errors.phone ? 'border-red-500' : ''
                 }`}
                 placeholder="+1234567890"
               />
@@ -215,7 +253,7 @@ export function AddAgentPopover({
                 value={formData.email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.email ? "border-red-500" : ""
+                  errors.email ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter email address"
               />
@@ -230,7 +268,7 @@ export function AddAgentPopover({
                 </Label>
                 <Select
                   value={formData.role}
-                  onValueChange={(value: "Admin" | "Agent" | "Manager") =>
+                  onValueChange={(value: 'Admin' | 'Agent' | 'Manager') =>
                     setFormData({ ...formData, role: value })
                   }
                 >
@@ -250,7 +288,7 @@ export function AddAgentPopover({
                 </Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: "Active" | "Inactive" | "On Leave") =>
+                  onValueChange={(value: 'Active' | 'Inactive' | 'On Leave') =>
                     setFormData({ ...formData, status: value })
                   }
                 >

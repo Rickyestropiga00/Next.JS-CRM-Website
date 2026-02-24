@@ -1,14 +1,14 @@
-import React from "react";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react';
+import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Pencil } from "lucide-react";
-import { StatusBadge } from "@/components/shared/status-badge";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
+import { StatusBadge } from '@/components/shared/status-badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { formatPhone } from '@/utils/formatters';
 
 interface TableBodyProps {
   paginated: any[];
@@ -56,7 +57,7 @@ export function CustomersTableBody({
         const commentCount = countComments(c.comment);
         return (
           <TableRow
-            key={c.id}
+            key={c.id || c._id}
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={(e) => {
               // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -64,11 +65,11 @@ export function CustomersTableBody({
               if (
                 target.closest('input[type="checkbox"]') ||
                 target.closest('[role="menuitem"]') ||
-                target.closest("button")
+                target.closest('button')
               ) {
                 return;
               }
-              onCustomerClick(c.id);
+              onCustomerClick(c.id || c._id);
             }}
           >
             <TableCell className="w-8">
@@ -83,16 +84,20 @@ export function CustomersTableBody({
             <TableCell className="pl-4 w-[60px] font-mono">{c.id}</TableCell>
             <TableCell className="w-[150px]">{c.name}</TableCell>
             <TableCell className="w-[200px]">{c.email}</TableCell>
-            <TableCell className="w-[120px]">{c.phone}</TableCell>
-            <TableCell className="w-[120px]">{c.company || "-"}</TableCell>
+            <TableCell className="w-[120px]">{formatPhone(c.phone)}</TableCell>
+            <TableCell className="w-[120px]">{c.company || '-'}</TableCell>
             <TableCell className="w-[100px]">
               <StatusBadge status={c.status} type="customer" />
             </TableCell>
-            <TableCell className="w-[120px]">{c.lastContacted}</TableCell>
-            <TableCell className="w-[120px]">{c.createdAt}</TableCell>
+            <TableCell className="w-[120px]">
+              {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-'}
+            </TableCell>
+            <TableCell className="w-[120px]">
+              {c.createdAt?.split('T')[0]}
+            </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
-              <div className="truncate" title={c.notes || ""}>
-                {c.notes || "-"}
+              <div className="truncate" title={c.notes || ''}>
+                {c.notes || '-'}
               </div>
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
@@ -102,7 +107,7 @@ export function CustomersTableBody({
                     {commentCount}
                   </span>
                 ) : (
-                  "-"
+                  '-'
                 )}
               </div>
             </TableCell>

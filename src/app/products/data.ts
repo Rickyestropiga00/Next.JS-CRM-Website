@@ -2,6 +2,7 @@ export type ProductStatus = 'Active' | 'Disabled';
 export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 
 export interface Product {
+  _id?: string; // For MongoDB documents
   id: string;
   name: string;
   code: string;
@@ -12,6 +13,7 @@ export interface Product {
   status: ProductStatus;
   image: string;
   comment?: string;
+  createdAt?: string; // For MongoDB documents
 }
 
 export const products: Product[] = [
@@ -237,7 +239,10 @@ export const products: Product[] = [
   },
 ];
 
-
-
 export const productStatuses: ProductStatus[] = ['Active', 'Disabled'];
-export const productTypes: ProductType[] = ['Physical', 'Digital', 'Service', 'Subscription'];
+export const productTypes: ProductType[] = [
+  'Physical',
+  'Digital',
+  'Service',
+  'Subscription',
+];

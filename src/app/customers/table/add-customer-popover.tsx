@@ -1,23 +1,23 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ModalWrapper } from "@/components/shared/modal-wrapper";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import {
   validateRequired,
   validateEmail,
   validatePhone,
-} from "@/lib/validations";
-import { Customer, CustomerStatus } from "../data";
+} from '@/lib/validations';
+import { Customer, CustomerStatus } from '../data';
 
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
@@ -48,12 +48,12 @@ export function AddCustomerPopover({
   };
 
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    status: "Lead" as CustomerStatus,
-    notes: "",
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    status: 'Lead' as CustomerStatus,
+    notes: '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -61,12 +61,12 @@ export function AddCustomerPopover({
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        status: "Lead",
-        notes: "",
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        status: 'Lead',
+        notes: '',
       });
       setErrors({});
     }
@@ -74,7 +74,7 @@ export function AddCustomerPopover({
 
   // Validation functions using shared utilities
   const validateName = (name: string): string | undefined => {
-    return validateRequired(name, "Name", 1);
+    return validateRequired(name, 'Name', 1);
   };
 
   const validateForm = (): boolean => {
@@ -102,27 +102,60 @@ export function AddCustomerPopover({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const newCustomer: Customer = {
-      id: generateTempId(), // Generate unique temporary ID
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      company: formData.company.trim() || undefined,
-      status: formData.status,
-      lastContacted: new Date().toISOString().split("T")[0],
-      createdAt: new Date().toISOString().split("T")[0],
-      notes: formData.notes.trim() || undefined,
-    };
+    try {
+      const response = await fetch('/api/customer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          status: formData.status.trim(),
+          notes: formData.notes.trim(),
+        }),
+      });
 
-    onAddCustomer(newCustomer);
-    // Let parent component handle closing
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Invalid response from server');
+      }
+      switch (response.status) {
+        case 201:
+          onAddCustomer(data); // update UI
+          break; // Success
+        case 400:
+          if (data.field) {
+            setErrors((prev) => ({
+              ...prev,
+              [data.field]: data.error,
+            }));
+            return;
+          }
+          throw new Error(data.error || 'Validation error');
+        default:
+          throw new Error('Failed to save customer');
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      setErrors((prev) => ({
+        ...prev,
+        description:
+          error instanceof Error ? error.message : 'Failed to save task.',
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -175,7 +208,7 @@ export function AddCustomerPopover({
                 value={formData.name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.name ? "border-red-500" : ""
+                  errors.name ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter customer name"
               />
@@ -193,7 +226,7 @@ export function AddCustomerPopover({
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.phone ? "border-red-500" : ""
+                  errors.phone ? 'border-red-500' : ''
                 }`}
                 placeholder="+1234567890"
               />
@@ -215,7 +248,7 @@ export function AddCustomerPopover({
                 value={formData.email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.email ? "border-red-500" : ""
+                  errors.email ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter email address"
               />

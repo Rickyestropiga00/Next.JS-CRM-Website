@@ -1,6 +1,7 @@
 export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
 
 export interface Customer {
+  _id?: string; // For MongoDB documents
   id: string;
   name: string;
   email: string;
@@ -344,4 +345,4 @@ export const customers: Customer[] = [
     createdAt: '2024-03-23',
     notes: 'Requested onboarding.',
   },
-]; 
+];

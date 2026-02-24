@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   products as initialProducts,
   ProductStatus,
   ProductType,
   Product,
-} from "../data";
-import { ProductsTableHeader } from "./table-header";
-import { ProductsTableBody } from "./table-body";
-import { ProductsPaginationBar } from "./pagination-bar";
+} from '../data';
+import { ProductsTableHeader } from './table-header';
+import { ProductsTableBody } from './table-body';
+import { ProductsPaginationBar } from './pagination-bar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,25 +19,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Dynamically import modals to reduce initial bundle size
 const EditProductPopover = dynamic(
-  () => import("./edit-product-popover").then((mod) => ({ default: mod.EditProductPopover })),
+  () =>
+    import('./edit-product-popover').then((mod) => ({
+      default: mod.EditProductPopover,
+    })),
   { ssr: false }
 );
 
 const AddProductPopover = dynamic(
-  () => import("./add-product-popover").then((mod) => ({ default: mod.AddProductPopover })),
+  () =>
+    import('./add-product-popover').then((mod) => ({
+      default: mod.AddProductPopover,
+    })),
   { ssr: false }
 );
 
 const ProductDetailsModal = dynamic(
-  () => import("./product-details-modal").then((mod) => ({ default: mod.ProductDetailsModal })),
+  () =>
+    import('./product-details-modal').then((mod) => ({
+      default: mod.ProductDetailsModal,
+    })),
   { ssr: false }
 );
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -45,16 +54,16 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Trash, Plus } from "lucide-react";
+} from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { Trash, Plus } from 'lucide-react';
 
 export function ProductsTable() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string>("all");
-  const [type, setType] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<keyof Product>("id");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<string>('all');
+  const [type, setType] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<keyof Product>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [data, setData] = useState(initialProducts);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
@@ -67,13 +76,13 @@ export function ProductsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const statusOptions: ProductStatus[] = ["Active", "Disabled"];
+  const statusOptions: ProductStatus[] = ['Active', 'Disabled'];
 
   const typeOptions: ProductType[] = [
-    "Physical",
-    "Digital",
-    "Service",
-    "Subscription",
+    'Physical',
+    'Digital',
+    'Service',
+    'Subscription',
   ];
 
   // Filtering
@@ -82,8 +91,8 @@ export function ProductsTable() {
       const matchesSearch =
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.code.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = status === "all" ? true : p.status === status;
-      const matchesType = type === "all" ? true : p.type === type;
+      const matchesStatus = status === 'all' ? true : p.status === status;
+      const matchesType = type === 'all' ? true : p.type === type;
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [data, search, status, type]);
@@ -92,36 +101,36 @@ export function ProductsTable() {
   const sorted = useMemo(() => {
     if (!sortBy) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? "";
-      const bVal = b[sortBy] ?? "";
+      const aVal = a[sortBy] ?? '';
+      const bVal = b[sortBy] ?? '';
 
-      if (sortBy === "id") {
+      if (sortBy === 'id') {
         const aNum = Number(aVal);
         const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === "asc" ? -1 : 1;
-        if (aNum > bNum) return sortDir === "asc" ? 1 : -1;
+        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
+        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (sortBy === "price" || sortBy === "stock") {
+      if (sortBy === 'price' || sortBy === 'stock') {
         const aNum = Number(aVal);
         const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === "asc" ? -1 : 1;
-        if (aNum > bNum) return sortDir === "asc" ? 1 : -1;
+        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
+        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (sortBy === "date") {
+      if (sortBy === 'date') {
         const aDate = new Date(aVal as string);
         const bDate = new Date(bVal as string);
-        if (aDate < bDate) return sortDir === "asc" ? -1 : 1;
-        if (aDate > bDate) return sortDir === "asc" ? 1 : -1;
+        if (aDate < bDate) return sortDir === 'asc' ? -1 : 1;
+        if (aDate > bDate) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
 
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
         return 0;
       }
       return 0;
@@ -160,10 +169,10 @@ export function ProductsTable() {
 
   function handleSort(col: keyof Product) {
     if (sortBy === col) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(col);
-      setSortDir("asc");
+      setSortDir('asc');
     }
   }
 
@@ -331,7 +340,9 @@ export function ProductsTable() {
       <ProductDetailsModal
         product={
           selectedProductId
-            ? data.find((p) => p.id === selectedProductId) || null
+            ? data.find(
+                (p) => p.id === selectedProductId || p._id === selectedProductId
+              ) || null
             : null
         }
         isOpen={!!selectedProductId}
