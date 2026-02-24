@@ -8,7 +8,7 @@ const SESSION_KEY = 'crm_session';
 // Find user by ID
 export async function findUserById(id: string) {
   await dbConnect();
-  return await User.findById(id); 
+  return await User.findById(id);
 }
 
 // Hash password
@@ -32,7 +32,11 @@ export async function verifyPassword(
 }
 
 // Create new user
-export async function createUser(email: string, password: string, name: string): Promise<IUser> {
+export async function createUser(
+  email: string,
+  password: string,
+  name: string
+): Promise<IUser> {
   await dbConnect();
   const hashedPassword = await hashPassword(password);
   const user = await User.create({
@@ -53,10 +57,10 @@ export async function isAuthenticated(): Promise<boolean> {
 export async function getCurrentUser(): Promise<IUser | null> {
   const cookieStore = await cookies();
   const userId = cookieStore.get(SESSION_KEY)?.value;
-  
+
   if (!userId) return null;
-  
+
   await dbConnect();
-  return User.findById(userId).select('-password');
+  return User.findById(userId);
 }
 export { SESSION_KEY };

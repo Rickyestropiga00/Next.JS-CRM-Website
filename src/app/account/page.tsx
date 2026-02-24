@@ -1,33 +1,35 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
-import { DarkModeToggle } from "@/components/dark-mode-toggle";
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { AppSidebar } from '@/components/app-sidebar';
+import { DarkModeToggle } from '@/components/dark-mode-toggle';
+import { toast } from 'sonner';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/breadcrumb';
+import { Separator } from '@/components/ui/separator';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { navGroups, getAllNavItems } from "@/components/app-navigation";
+} from '@/components/ui/sidebar';
+import { navGroups, getAllNavItems } from '@/components/app-navigation';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   User,
   Mail,
@@ -38,25 +40,120 @@ import {
   Palette,
   Globe,
   Key,
-} from "lucide-react";
+  Loader,
+} from 'lucide-react';
+import { set } from 'mongoose';
 
 export default function AccountPage() {
   const pathname = usePathname();
   const navItems = getAllNavItems(navGroups);
   const active = navItems.find((item) => pathname.startsWith(item.url));
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch('/api/user/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+      credentials: 'include',
+    });
+
+    let data: any = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = { error: 'Server did not return valid JSON' };
+    }
+
+    switch (res.status) {
+      case 200:
+        toast.success(data.message, { id: toastId });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        break;
+      case 400:
+        setMessage(data.error);
+        break;
+      case 500:
+        setMessage(data.error);
+        break;
+    }
+  };
+
+  const handleUpdateAccountInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isUpdating) return;
+    setIsUpdating(true);
+    const toastId = 'account-update';
+
+    toast.loading('Saving changes...', { id: toastId });
+
+    const res = await fetch('/api/user/update-account-information', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user),
+      credentials: 'include',
+    });
+
+    let data: any = {};
+
+    try {
+      data = await res.json();
+    } catch {
+      data = { error: 'Server did not return valid JSON' };
+    }
+
+    switch (res.status) {
+      case 200:
+        toast.success(data.message, { id: toastId });
+        break;
+      case 400:
+        setMessage(data.error);
+        break;
+      case 500:
+        setMessage(data.error);
+        break;
+    }
+    setIsUpdating(false);
+  };
 
   // Mock user data - in a real app this would come from your auth context
-  const user = {
-    name: "John Doe",
-    email: "john.doe@company.com",
-    avatar: "/api/placeholder/150/150",
-    phone: "+1 (555) 123-4567",
-    company: "Acme Corporation",
-    role: "Administrator",
-    location: "New York, NY",
-    joinDate: "January 2024",
-    lastLogin: "2 hours ago",
+  const mockUser = {
+    name: 'John Doe',
+    email: 'john.doe@company.com',
+    avatar: '/api/placeholder/150/150',
+    phone: '+1 (555) 123-4567',
+    company: 'Acme Corporation',
+    role: 'Administrator',
+    location: 'New York, NY',
+    joinDate: 'January 2024',
+    lastLogin: '2 hours ago',
   };
+
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/me', {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null));
+  }, []);
+
+  if (!user) return <Loader className="mx-auto mt-20 animate-spin" />;
 
   return (
     <SidebarProvider>
@@ -111,56 +208,75 @@ export default function AccountPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="text-lg">
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm">
-                        Change Photo
+                  <form
+                    onSubmit={handleUpdateAccountInfo}
+                    className="space-y-6"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage
+                          src={mockUser.avatar}
+                          alt={mockUser.name}
+                        />
+                        <AvatarFallback className="text-lg">
+                          {mockUser.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-2">
+                        <Button variant="outline" size="sm">
+                          Change Photo
+                        </Button>
+                        <p className="text-sm text-muted-foreground">
+                          JPG, PNG or GIF. Max size 2MB.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          value={user?.name}
+                          onChange={(e) =>
+                            setUser({ ...user, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={user?.email}
+                          onChange={(e) =>
+                            setUser({ ...user, email: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input id="phone" defaultValue={mockUser.phone} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="company">Company</Label>
+                        <Input id="company" defaultValue={mockUser.company} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input id="location" defaultValue={mockUser.location} />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button disabled={isUpdating} type="submit">
+                        {isUpdating ? 'Saving...' : 'Save Changes'}
                       </Button>
-                      <p className="text-sm text-muted-foreground">
-                        JPG, PNG or GIF. Max size 2MB.
-                      </p>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" defaultValue={user.name} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        defaultValue={user.email}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" defaultValue={user.phone} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company</Label>
-                      <Input id="company" defaultValue={user.company} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input id="location" defaultValue={user.location} />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button>Save Changes</Button>
-                  </div>
+                  </form>
                 </CardContent>
               </Card>
 
@@ -176,23 +292,48 @@ export default function AccountPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">
-                      Confirm New Password
-                    </Label>
-                    <Input id="confirm-password" type="password" />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button>Update Password</Button>
-                  </div>
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Current Password</Label>
+                      <Input
+                        id="current-password"
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">New Password</Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">
+                        Confirm New Password
+                      </Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button type="submit">Update Password</Button>
+                    </div>
+
+                    <div>
+                      {message && (
+                        <p className="text-sm text-red-500 font-bold">
+                          {message}
+                        </p>
+                      )}
+                    </div>
+                  </form>
                 </CardContent>
               </Card>
             </div>
@@ -212,38 +353,42 @@ export default function AccountPage() {
                         Role:
                       </span>
                     </div>
-                    <Badge variant="secondary">{user.role}</Badge>
+                    <Badge className="capitalize" variant="secondary">
+                      {user?.role}
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {user.email}
+                      {user?.email}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {user.company}
+                      {mockUser.company}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {user.location}
+                      {mockUser.location}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
                       Member since:
                     </span>
-                    <span className="text-sm font-medium">{user.joinDate}</span>
+                    <span className="text-sm font-medium">
+                      {mockUser.joinDate}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
                       Last login:
                     </span>
                     <span className="text-sm font-medium">
-                      {user.lastLogin}
+                      {mockUser.lastLogin}
                     </span>
                   </div>
                 </CardContent>
