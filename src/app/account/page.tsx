@@ -42,7 +42,6 @@ import {
   Key,
   Loader,
 } from 'lucide-react';
-import { set } from 'mongoose';
 
 export default function AccountPage() {
   const pathname = usePathname();
@@ -73,7 +72,7 @@ export default function AccountPage() {
 
     switch (res.status) {
       case 200:
-        toast.success(data.message, { id: toastId });
+        toast.success(data.message);
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
