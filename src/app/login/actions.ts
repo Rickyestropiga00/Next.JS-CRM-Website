@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { findUserByEmail, verifyPassword, SESSION_KEY } from '@/lib/auth';
 import { error } from 'console';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import User from '@/models/User';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid Email Address'),
@@ -44,6 +45,11 @@ export async function loginAction(
     if (!userId) {
       return { error: 'User ID missing' };
     }
+
+    await User.updateOne(
+      { _id: user._id },
+      { $currentDate: { lastLogin: true } }
+    );
 
     cookieStore.set(SESSION_KEY, userId, {
       httpOnly: true,

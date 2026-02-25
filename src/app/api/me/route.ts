@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser, SESSION_KEY } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    const cookieStore = cookies();
-    console.log('Cookies:', (await cookieStore).get(SESSION_KEY)?.value);
 
     if (!user) {
       return NextResponse.json({ user: null }, { status: 401 });
@@ -16,7 +13,12 @@ export async function GET() {
       user: {
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        company: user.company,
         role: user.role,
+        location: user.location,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
       },
     });
   } catch (err) {
