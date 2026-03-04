@@ -1,18 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Task } from "../data";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Task } from '../data';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface EditTaskPopoverProps {
   task: Task;
@@ -45,12 +47,12 @@ export function EditTaskPopover({
 
   // Validation functions
   const validateTitle = (title: string): string | undefined => {
-    if (!title.trim()) return "Title is required";
+    if (!title.trim()) return 'Title is required';
     return undefined;
   };
 
   const validateDescription = (description: string): string | undefined => {
-    if (!description.trim()) return "Description is required";
+    if (!description.trim()) return 'Description is required';
     return undefined;
   };
 
@@ -75,25 +77,61 @@ export function EditTaskPopover({
     );
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      // Update statusColor based on the selected status
-      const statusColors: Record<string, string> = {
-        DESIGN: "var(--badge-design)",
-        DEVELOPMENT: "var(--badge-development)",
-        TESTING: "var(--badge-testing)",
-        CONTENT: "var(--badge-content)",
-        MARKETING: "var(--badge-marketing)",
-        MEETING: "var(--badge-meeting)",
-        "FOLLOW-UP": "var(--badge-followup)",
-      };
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      const updatedTask = {
-        ...formData,
-        statusColor: statusColors[formData.status] || formData.statusColor,
-      };
+    if (!validateForm()) return;
 
-      onSave(updatedTask);
+    const taskId = getId(task);
+    if (taskId) {
+      try {
+        const res = await fetch(`/api/task/${formData._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        let result: any = {};
+
+        try {
+          result = await res.json();
+        } catch {
+          result = { error: 'Server did not return a  valid JSON' };
+        }
+        switch (res.status) {
+          case 200:
+            onSave(result.data);
+            onClose();
+            console.log(result.message);
+            return;
+          case 500:
+            throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      if (validateForm()) {
+        // Update statusColor based on the selected status
+        const statusColors: Record<string, string> = {
+          DESIGN: 'var(--badge-design)',
+          DEVELOPMENT: 'var(--badge-development)',
+          TESTING: 'var(--badge-testing)',
+          CONTENT: 'var(--badge-content)',
+          MARKETING: 'var(--badge-marketing)',
+          MEETING: 'var(--badge-meeting)',
+          'FOLLOW-UP': 'var(--badge-followup)',
+        };
+
+        const updatedTask = {
+          ...formData,
+          statusColor: statusColors[formData.status] || formData.statusColor,
+        };
+
+        onSave(updatedTask);
+      }
     }
   };
 
@@ -145,7 +183,7 @@ export function EditTaskPopover({
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.title ? "border-red-500" : ""
+                  errors.title ? 'border-red-500' : ''
                 }`}
                 placeholder="Enter task title"
               />
@@ -167,7 +205,7 @@ export function EditTaskPopover({
                 }
                 placeholder="Enter task description..."
                 className={`h-16 sm:h-20 text-xs resize-none ${
-                  errors.description ? "border-red-500" : ""
+                  errors.description ? 'border-red-500' : ''
                 }`}
               />
               {errors.description && (
@@ -207,7 +245,7 @@ export function EditTaskPopover({
                 </Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(value: "LOW" | "MEDIUM" | "HIGH") =>
+                  onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') =>
                     setFormData({ ...formData, priority: value })
                   }
                 >
@@ -231,7 +269,7 @@ export function EditTaskPopover({
               <Select
                 value={formData.column}
                 onValueChange={(
-                  value: "todo" | "inprogress" | "inreview" | "done"
+                  value: 'todo' | 'inprogress' | 'inreview' | 'done'
                 ) => setFormData({ ...formData, column: value })}
               >
                 <SelectTrigger className="h-8 text-xs w-full">

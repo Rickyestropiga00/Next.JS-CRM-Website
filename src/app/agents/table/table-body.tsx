@@ -22,11 +22,13 @@ import {
 import { Agent } from '../data';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatPhone } from '@/utils/formatters';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface TableBodyProps {
   paginated: Agent[];
   selected: string[];
-  onSelectRow: (id: string, checked: boolean) => void;
+  onSelectRow: (agent: Agent, checked: boolean) => void;
   onDelete: (id: string) => void;
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
@@ -51,6 +53,31 @@ export function AgentsTableBody({
     const matches = comment.match(/---\n📝 Comment by/g);
     return matches ? matches.length : 0;
   };
+  const handleDelete = async (agent: any) => {
+    const agentId = getId(agent);
+    if (agentId) {
+      try {
+        const res = await fetch(`/api/agent/${agent._id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+
+        if (res.status === 200) {
+          onDelete(agent._id);
+          setDeleteDialogId(null);
+          toast.success(data.message);
+        } else {
+          toast.error(data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Something went wrong');
+      }
+    } else {
+      onDelete(agent.id);
+      setDeleteDialogId(null);
+    }
+  };
 
   return (
     <TableBody>
@@ -58,7 +85,7 @@ export function AgentsTableBody({
         const commentCount = countComments(a.comment);
         return (
           <TableRow
-            key={a.id || a._id}
+            key={getId(a)}
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={(e) => {
               // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -70,14 +97,14 @@ export function AgentsTableBody({
               ) {
                 return;
               }
-              onAgentClick(a.id || a._id!);
+              onAgentClick(getId(a)!);
             }}
           >
             <TableCell className="w-8">
               <Checkbox
                 className="ml-2"
-                checked={selected.includes(a.id)}
-                onCheckedChange={(checked) => onSelectRow(a.id, !!checked)}
+                checked={selected.includes(getId(a))}
+                onCheckedChange={(checked) => onSelectRow(a, !!checked)}
                 aria-label={`Select row for ${a.name}`}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -129,7 +156,7 @@ export function AgentsTableBody({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setEditAgentId(a.id)}>
+                  <DropdownMenuItem onClick={() => setEditAgentId(getId(a))}>
                     <Pencil className="h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
@@ -168,8 +195,7 @@ export function AgentsTableBody({
                         </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => {
-                            onDelete(a.id);
-                            setDeleteDialogId(null);
+                            handleDelete(a);
                           }}
                           className="cursor-pointer"
                         >

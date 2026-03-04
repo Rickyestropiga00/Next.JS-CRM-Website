@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Pencil, Trash, Move, CircleCheckBig } from 'lucide-react';
 import { Task, ColumnKey } from '../data';
+import { timeAgo } from '@/utils/formatters';
+import { getId } from '@/utils/helper';
 
 const statusColors: Record<string, string> = {
   DESIGN: 'var(--badge-design)',
@@ -53,6 +55,86 @@ export function TaskCard({
   setDeleteDialogId,
 }: TaskCardProps) {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+
+  const handleDelete = async (task: any) => {
+    const taskId = getId(task);
+    if (taskId) {
+      try {
+        const res = await fetch(`/api/task/${task._id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+
+        if (res.status === 200) {
+          onDelete(task._id);
+          setDeleteDialogId(null);
+        } else {
+          console.error(data.error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      onDelete(task.id);
+      setDeleteDialogId(null);
+    }
+  };
+
+  const handleMarkAsDone = async () => {
+    const taskId = getId(task);
+    if (taskId) {
+      try {
+        const res = await fetch(`/api/task/${task._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ column: 'done' }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to update task');
+        }
+
+        // Update local state AFTER successful DB update
+        onMove(taskId, 'done');
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      onMove(task.id, 'done');
+    }
+  };
+
+  const handleMoveTask = async (newColumn: ColumnKey) => {
+    const taskId = getId(task);
+
+    if (taskId) {
+      try {
+        const res = await fetch(`/api/task/${taskId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ column: newColumn }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to update task');
+        }
+
+        // Update local state AFTER successful DB update
+        onMove(taskId, newColumn);
+        setIsDropdownOpen(false);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      onMove(task.id, newColumn);
+    }
+  };
 
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -98,7 +180,7 @@ export function TaskCard({
           </div>
           <div className="flex flex-wrap-reverse items-center justify-between gap-3 mt-2">
             <span className="text-xs text-muted-foreground">
-              {task.lastAdded ?? new Date(task.lastAdded).toLocaleDateString()}
+              {timeAgo(task.createdAt)}
             </span>
             <div className="flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
               {task.avatars.map((avatar, idx) => (
@@ -116,7 +198,7 @@ export function TaskCard({
           <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
-              onMove(task.id, 'done');
+              handleMarkAsDone();
             }}
             className="text-green-600 font-semibold hover:text-green-600 focus:text-green-600"
           >
@@ -137,7 +219,7 @@ export function TaskCard({
                   key={c.key}
                   onSelect={(e) => {
                     e.preventDefault();
-                    onMove(task.id, c.key);
+                    handleMoveTask(c.key); // generic move
                   }}
                 >
                   {c.label}
@@ -148,7 +230,7 @@ export function TaskCard({
         <DropdownMenuItem
           onSelect={(e) => {
             e.preventDefault();
-            onEdit(task.id);
+            onEdit(getId(task));
             setIsDropdownOpen(false); // Close the dropdown
           }}
         >
@@ -189,7 +271,7 @@ export function TaskCard({
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  onDelete(task.id);
+                  handleDelete(task);
                   setDeleteDialogId(null);
                 }}
                 className="cursor-pointer"

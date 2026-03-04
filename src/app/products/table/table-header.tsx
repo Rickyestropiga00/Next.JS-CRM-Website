@@ -1,15 +1,16 @@
-import React from "react";
-import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
-import { Product } from "../data";
+import React from 'react';
+import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowUpDown } from 'lucide-react';
+import { Product } from '../data';
+import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {
   selected: string[];
   paginated: { id: string }[];
   onSelectAll: (checked: boolean) => void;
   sortBy: keyof Product;
-  sortDir: "asc" | "desc";
+  sortDir: 'asc' | 'desc';
   onSort: (col: keyof Product) => void;
 }
 
@@ -19,14 +20,14 @@ const sortableCols: {
   className?: string;
   sortable?: boolean;
 }[] = [
-  { key: "id", label: "ID", className: "pl-4 w-[60px]", sortable: true },
-  { key: "name", label: "Name", className: "w-[200px]", sortable: true },
-  { key: "code", label: "Code", className: "w-[120px]", sortable: true },
-  { key: "type", label: "Type", className: "w-[100px]", sortable: false },
-  { key: "date", label: "Date", className: "w-[120px]", sortable: true },
-  { key: "stock", label: "Stock", className: "w-[80px]", sortable: true },
-  { key: "price", label: "Price", className: "w-[100px]", sortable: true },
-  { key: "status", label: "Status", className: "w-[120px]", sortable: false },
+  { key: 'id', label: 'ID', className: 'pl-4 w-[60px]', sortable: true },
+  { key: 'name', label: 'Name', className: 'w-[200px]', sortable: true },
+  { key: 'code', label: 'Code', className: 'w-[120px]', sortable: true },
+  { key: 'type', label: 'Type', className: 'w-[100px]', sortable: false },
+  { key: 'date', label: 'Date', className: 'w-[120px]', sortable: true },
+  { key: 'stock', label: 'Stock', className: 'w-[80px]', sortable: true },
+  { key: 'price', label: 'Price', className: 'w-[100px]', sortable: true },
+  { key: 'status', label: 'Status', className: 'w-[120px]', sortable: false },
 ];
 
 function RenderSortableHead({
@@ -52,13 +53,13 @@ function RenderSortableHead({
         <ArrowUpDown
           className={`h-4 w-4 transition-opacity duration-150 ${
             isActive
-              ? "opacity-100 text-primary"
-              : "opacity-0 group-hover:opacity-100 text-muted-foreground"
+              ? 'opacity-100 text-primary'
+              : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
           }`}
           style={{
             transform:
-              isActive && sortDir === "desc" ? "rotate(180deg)" : undefined,
-            transition: "transform 0.15s",
+              isActive && sortDir === 'desc' ? 'rotate(180deg)' : undefined,
+            transition: 'transform 0.15s',
           }}
         />
       </span>
@@ -81,10 +82,10 @@ export function ProductsTableHeader({
           <Checkbox
             className="ml-2"
             checked={
-              paginated.every((c) => selected.includes(c.id)) &&
+              paginated.every((c) => selected.includes(getId(c))) &&
               paginated.length > 0
             }
-            onCheckedChange={(checked: boolean | "indeterminate") =>
+            onCheckedChange={(checked: boolean | 'indeterminate') =>
               onSelectAll(!!checked)
             }
             aria-label="Select all"

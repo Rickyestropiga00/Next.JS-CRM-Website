@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { agents as initialAgents, Agent } from '../data';
+import { agents as initialAgents, Agent, agents } from '../data';
 import { AgentsTableHeader } from './table-header';
 import { AgentsTableBody } from './table-body';
 import { AgentsPaginationBar } from './pagination-bar';
@@ -53,6 +53,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
+import { getId } from '@/utils/helper';
+import { toast } from 'sonner';
 
 export function AgentsTable() {
   const [search, setSearch] = useState('');
@@ -120,12 +122,14 @@ export function AgentsTable() {
   }, [rowsPerPage, totalPages]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((a) => a.id !== id));
+    setData((prev) => prev.filter((a) => getId(a) !== id));
   }
 
   function handleEdit(updatedAgent: Agent) {
     setData((prev) =>
-      prev.map((agent) => (agent.id === updatedAgent.id ? updatedAgent : agent))
+      prev.map((agent) =>
+        getId(agent) === getId(updatedAgent) ? updatedAgent : agent
+      )
     );
   }
 
@@ -174,25 +178,60 @@ export function AgentsTable() {
   function handleSelectAll(checked: boolean) {
     if (checked) {
       setSelected((prev) => [
-        ...prev.filter((id) => !paginated.some((a) => a.id === id)),
-        ...paginated.map((a) => a.id),
+        ...prev.filter((id) => !paginated.some((a) => getId(a) === id)),
+        ...paginated.map((a) => getId(a)),
       ]);
     } else {
       setSelected((prev) =>
-        prev.filter((id) => !paginated.some((a) => a.id === id))
+        prev.filter((id) => !paginated.some((a) => getId(a) === id))
       );
     }
   }
 
-  function handleSelectRow(id: string, checked: boolean) {
-    setSelected((prev) =>
-      checked ? [...prev, id] : prev.filter((sid) => sid !== id)
-    );
+  function handleSelectRow(agent: Agent, checked: boolean) {
+    const agentId = getId(agent);
+
+    if (!agentId) return;
+
+    if (checked) {
+      setSelected((prev) =>
+        prev.includes(agentId) ? prev : [...prev, agentId]
+      );
+    } else {
+      setSelected((prev) => prev.filter((s) => s !== agentId));
+    }
   }
 
-  function handleDeleteSelected() {
-    setData((prev) => prev.filter((a) => !selected.includes(a.id)));
-    setSelected([]);
+  async function handleDeleteSelected() {
+    try {
+      const res = await fetch('/api/bulk-delete?type=agent', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setData((prev) =>
+          prev.filter(
+            (a) =>
+              !(a._id && selected.includes(a._id)) &&
+              !(a.id && selected.includes(a.id))
+          )
+        );
+
+        setSelected([]);
+        setShowConfirm(false);
+
+        toast.success(data.message);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong');
+    }
   }
 
   return (
@@ -315,7 +354,7 @@ export function AgentsTable() {
       {/* Edit Agent Modal - Rendered outside table structure */}
       {editAgentId && (
         <EditAgentPopover
-          agent={data.find((a) => a.id === editAgentId)!}
+          agent={data.find((a) => getId(a) === editAgentId)!}
           onSave={(updatedAgent) => {
             handleEdit(updatedAgent);
             setEditAgentId(null);
@@ -339,9 +378,7 @@ export function AgentsTable() {
       <AgentDetailsModal
         agent={
           selectedAgentId
-            ? data.find(
-                (a) => a.id === selectedAgentId || a._id === selectedAgentId
-              ) || null
+            ? data.find((a) => getId(a) === selectedAgentId) || null
             : null
         }
         isOpen={!!selectedAgentId}

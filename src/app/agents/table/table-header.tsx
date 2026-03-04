@@ -1,15 +1,16 @@
-import React from "react";
-import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
-import { Agent } from "../data";
+import React from 'react';
+import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowUpDown } from 'lucide-react';
+import { Agent } from '../data';
+import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {
   selected: string[];
   paginated: { id: string }[];
   onSelectAll: (checked: boolean) => void;
   sortBy: keyof Agent;
-  sortDir: "asc" | "desc";
+  sortDir: 'asc' | 'desc';
   onSort: (col: keyof Agent) => void;
 }
 
@@ -20,39 +21,39 @@ const sortableCols: {
   sortable?: boolean;
 }[] = [
   {
-    key: "id",
-    label: "ID",
-    className: "pl-4 w-[70px]",
+    key: 'id',
+    label: 'ID',
+    className: 'pl-4 w-[70px]',
     sortable: true,
   },
-  { key: "name", label: "Name", className: "w-[150px]", sortable: true },
-  { key: "email", label: "Email", className: "w-[220px]", sortable: true },
-  { key: "phone", label: "Phone", className: "w-[120px]", sortable: false },
-  { key: "role", label: "Role", className: "w-[100px]", sortable: false },
-  { key: "status", label: "Status", className: "w-[100px]", sortable: false },
+  { key: 'name', label: 'Name', className: 'w-[150px]', sortable: true },
+  { key: 'email', label: 'Email', className: 'w-[220px]', sortable: true },
+  { key: 'phone', label: 'Phone', className: 'w-[120px]', sortable: false },
+  { key: 'role', label: 'Role', className: 'w-[100px]', sortable: false },
+  { key: 'status', label: 'Status', className: 'w-[100px]', sortable: false },
   {
-    key: "assignedCustomers",
-    label: "Assigned Customers",
-    className: "w-[150px]",
+    key: 'assignedCustomers',
+    label: 'Assigned Customers',
+    className: 'w-[150px]',
     sortable: false,
   },
   {
-    key: "createdAt",
-    label: "Created At",
-    className: "w-[120px]",
+    key: 'createdAt',
+    label: 'Created At',
+    className: 'w-[120px]',
     sortable: true,
   },
   {
-    key: "lastLogin",
-    label: "Last Login",
-    className: "w-[120px]",
+    key: 'lastLogin',
+    label: 'Last Login',
+    className: 'w-[120px]',
     sortable: true,
   },
-  { key: "notes", label: "Notes", className: "w-[180px]", sortable: true },
+  { key: 'notes', label: 'Notes', className: 'w-[180px]', sortable: true },
   {
-    key: "comment",
-    label: "Comment",
-    className: "w-[180px] text-center",
+    key: 'comment',
+    label: 'Comment',
+    className: 'w-[180px] text-center',
     sortable: false,
   },
 ];
@@ -80,13 +81,13 @@ function RenderSortableHead({
         <ArrowUpDown
           className={`h-4 w-4 transition-opacity duration-150 ${
             isActive
-              ? "opacity-100 text-primary"
-              : "opacity-0 group-hover:opacity-100 text-muted-foreground"
+              ? 'opacity-100 text-primary'
+              : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
           }`}
           style={{
             transform:
-              isActive && sortDir === "desc" ? "rotate(180deg)" : undefined,
-            transition: "transform 0.15s",
+              isActive && sortDir === 'desc' ? 'rotate(180deg)' : undefined,
+            transition: 'transform 0.15s',
           }}
         />
       </span>
@@ -109,10 +110,10 @@ export function AgentsTableHeader({
           <Checkbox
             className="ml-2"
             checked={
-              paginated.every((a) => selected.includes(a.id)) &&
+              paginated.every((a) => selected.includes(getId(a))) &&
               paginated.length > 0
             }
-            onCheckedChange={(checked: boolean | "indeterminate") =>
+            onCheckedChange={(checked: boolean | 'indeterminate') =>
               onSelectAll(!!checked)
             }
             aria-label="Select all"

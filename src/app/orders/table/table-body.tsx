@@ -20,11 +20,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Order } from '../data';
+import { getId } from '@/utils/helper';
 
 interface TableBodyProps {
   paginated: any[];
   selected: string[];
-  onSelectRow: (id: string, checked: boolean) => void;
+  onSelectRow: (order: Order, checked: boolean) => void;
   onDelete: (id: string) => void;
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
@@ -57,11 +60,40 @@ export function OrdersTableBody({
     return address;
   };
 
+  const handleDelete = async (order: any) => {
+    const orderId = getId(order);
+    if (orderId) {
+      try {
+        const res = await fetch(`/api/order/${order._id}`, {
+          method: 'DELETE',
+        });
+
+        const data = await res.json();
+        switch (res.status) {
+          case 200:
+            onDelete(order._id);
+            setDeleteDialogId(null);
+            toast.success(data.message);
+            break;
+          default:
+            toast.error(data.error);
+            break;
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong');
+      }
+    } else {
+      onDelete(order.id);
+      setDeleteDialogId(null);
+    }
+  };
+
   return (
     <TableBody className="pl-5">
       {paginated.map((order) => (
         <TableRow
-          key={order.id || order._id}
+          key={getId(order)}
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={(e) => {
             // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -73,14 +105,14 @@ export function OrdersTableBody({
             ) {
               return;
             }
-            onOrderClick(order.id || order._id);
+            onOrderClick(getId(order));
           }}
         >
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
-              checked={selected.includes(order.id)}
-              onCheckedChange={(checked) => onSelectRow(order.id, !!checked)}
+              checked={selected.includes(getId(order))}
+              onCheckedChange={(checked) => onSelectRow(order, !!checked)}
               aria-label={`Select row for ${order.id}`}
             />
           </TableCell>
@@ -88,8 +120,9 @@ export function OrdersTableBody({
             {order.id}
           </TableCell>
           <TableCell className="w-[120px]">
-            {new Date(order.date).toLocaleDateString() ||
-              order.createdAt?.split('T')[0]}
+            {order.date && !isNaN(new Date(order.date).getTime())
+              ? new Date(order.date).toLocaleDateString()
+              : new Date(order.createdAt?.split('T')[0]).toLocaleDateString()}
           </TableCell>
           <TableCell className="w-[150px] font-medium">
             {order.customer}
@@ -128,21 +161,21 @@ export function OrdersTableBody({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditOrderId(order.id)}>
+                <DropdownMenuItem onClick={() => setEditOrderId(getId(order))}>
                   <Pencil className="h-4 w-4" />
                   Edit
                 </DropdownMenuItem>
                 <AlertDialog
-                  open={deleteDialogId === order.id}
+                  open={deleteDialogId === getId(order)}
                   onOpenChange={(open) =>
-                    setDeleteDialogId(open ? order.id : null)
+                    setDeleteDialogId(open ? getId(order) : null)
                   }
                 >
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem
                       onSelect={(e) => {
                         e.preventDefault();
-                        setDeleteDialogId(order.id);
+                        setDeleteDialogId(getId(order));
                       }}
                       className="text-primary focus:text-primary font-semibold"
                     >
@@ -155,7 +188,7 @@ export function OrdersTableBody({
                       <AlertDialogTitle>Delete this order?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. Are you sure you want to
-                        delete order {order.id}?
+                        delete order {order.name}?
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -167,8 +200,7 @@ export function OrdersTableBody({
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
-                          onDelete(order.id);
-                          setDeleteDialogId(null);
+                          handleDelete(order);
                         }}
                         className="cursor-pointer"
                       >

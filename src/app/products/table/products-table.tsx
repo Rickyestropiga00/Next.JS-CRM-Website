@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   products as initialProducts,
@@ -57,6 +57,8 @@ import {
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 export function ProductsTable() {
   const [search, setSearch] = useState('');
@@ -150,7 +152,7 @@ export function ProductsTable() {
   }, [rowsPerPage, totalPages]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((p) => p.id !== id));
+    setData((prev) => prev.filter((p) => getId(p) !== id));
   }
 
   function handleAddProduct(newProduct: Product) {
@@ -162,7 +164,7 @@ export function ProductsTable() {
   function handleEdit(updatedProduct: Product) {
     setData((prev) =>
       prev.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product
+        getId(product) === getId(updatedProduct) ? updatedProduct : product
       )
     );
   }
@@ -178,24 +180,63 @@ export function ProductsTable() {
 
   function handleSelectAll(checked: boolean) {
     if (checked) {
-      setSelected(paginated.map((p) => p.id));
+      setSelected((prev) => [
+        ...prev.filter((id) => !paginated.some((c) => getId(c) === id)),
+        ...paginated.map((c) => getId(c)),
+      ]);
     } else {
-      setSelected([]);
+      setSelected((prev) =>
+        prev.filter((id) => !paginated.some((c) => getId(c) === id))
+      );
     }
   }
 
-  function handleSelectRow(id: string, checked: boolean) {
+  function handleSelectRow(product: Product, checked: boolean) {
+    const productId = getId(product);
+
+    if (!productId) return;
+
     if (checked) {
-      setSelected((prev) => [...prev, id]);
+      setSelected((prev) =>
+        prev.includes(productId) ? prev : [...prev, productId]
+      );
     } else {
-      setSelected((prev) => prev.filter((s) => s !== id));
+      setSelected((prev) => prev.filter((s) => s !== productId));
     }
   }
 
-  function handleDeleteSelected() {
-    setData((prev) => prev.filter((p) => !selected.includes(p.id)));
-    setSelected([]);
-    setShowConfirm(false);
+  async function handleDeleteSelected() {
+    console.log('Selected IDs:', selected);
+
+    try {
+      const res = await fetch('/api/bulk-delete?type=product', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setData((prev) =>
+          prev.filter(
+            (p) =>
+              !(p._id && selected.includes(p._id)) &&
+              !(p.id && selected.includes(p.id))
+          )
+        );
+
+        setSelected([]);
+        setShowConfirm(false);
+
+        toast.success(data.message);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong');
+    }
   }
 
   return (
@@ -318,7 +359,7 @@ export function ProductsTable() {
       {/* Edit Product Modal - Rendered outside table structure */}
       {editProductId && (
         <EditProductPopover
-          product={data.find((p) => p.id === editProductId)!}
+          product={data.find((p) => getId(p) === editProductId)!}
           onSave={(updatedProduct) => {
             handleEdit(updatedProduct);
             setEditProductId(null);
@@ -340,9 +381,7 @@ export function ProductsTable() {
       <ProductDetailsModal
         product={
           selectedProductId
-            ? data.find(
-                (p) => p.id === selectedProductId || p._id === selectedProductId
-              ) || null
+            ? data.find((p) => getId(p) === selectedProductId) || null
             : null
         }
         isOpen={!!selectedProductId}

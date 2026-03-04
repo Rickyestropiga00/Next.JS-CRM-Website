@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppSidebar } from '@/components/app-sidebar';
 import { DarkModeToggle } from '@/components/dark-mode-toggle';
-import { toast } from 'sonner';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,41 +17,16 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { navGroups, getAllNavItems } from '@/components/app-navigation';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import {
-  User,
-  Mail,
-  MapPin,
-  Building,
-  Shield,
-  Bell,
-  Palette,
-  Globe,
-  Key,
-  Loader,
-} from 'lucide-react';
-import { timeAgo } from '@/utils/formatters';
+import { Loader } from 'lucide-react';
+import PersonalInformationCard from './components/personal-information-card';
+import AccountSecurityCard from './components/account-security-card';
+import AccountSummaryCard from './components/account-summary-card';
+import QuickActionsCard from './components/quick-actions-card';
 
 export default function AccountPage() {
   const pathname = usePathname();
   const navItems = getAllNavItems(navGroups);
   const active = navItems.find((item) => pathname.startsWith(item.url));
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
   const [initialUser, setInitialUser] = useState<typeof user>(null);
   const [user, setUser] = useState<{
     name: string;
@@ -64,77 +38,6 @@ export default function AccountPage() {
     createdAt: string;
     lastLogin: string;
   } | null>(null);
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const res = await fetch('/api/user/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
-      credentials: 'include',
-    });
-
-    let data: any = {};
-    try {
-      data = await res.json();
-    } catch {
-      data = { error: 'Server did not return valid JSON' };
-    }
-
-    switch (res.status) {
-      case 200:
-        toast.success(data.message);
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        break;
-      case 400:
-        setMessage(data.error);
-        break;
-      case 500:
-        setMessage(data.error);
-        break;
-    }
-  };
-
-  const handleUpdateAccountInfo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isUpdating) return;
-    setIsUpdating(true);
-    const toastId = 'account-update';
-
-    toast.loading('Saving changes...', { id: toastId });
-
-    const res = await fetch('/api/user/update-account-information', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(user),
-      credentials: 'include',
-    });
-
-    let data: any = {};
-
-    try {
-      data = await res.json();
-    } catch {
-      data = { error: 'Server did not return valid JSON' };
-    }
-
-    switch (res.status) {
-      case 200:
-        toast.success(data.message, { id: toastId });
-        setInitialUser(user);
-        break;
-      case 400:
-        toast.error(data.error, { id: toastId });
-        break;
-      case 500:
-        toast.error(data.error, { id: toastId });
-        break;
-    }
-    setIsUpdating(false);
-  };
 
   useEffect(() => {
     fetch('/api/me', {
@@ -149,38 +52,7 @@ export default function AccountPage() {
       .catch(() => setUser(null));
   }, []);
 
-  const hasChanges =
-    user && initialUser
-      ? JSON.stringify({
-          name: user.name,
-          email: user.email,
-          phone: user.phone || '',
-          company: user.company || '',
-          location: user.location || '',
-        }) !==
-        JSON.stringify({
-          name: initialUser.name,
-          email: initialUser.email,
-          phone: initialUser.phone || '',
-          company: initialUser.company || '',
-          location: initialUser.location || '',
-        })
-      : false;
-
   if (!user) return <Loader className="mx-auto mt-20 animate-spin" />;
-
-  // Mock user data - in a real app this would come from your auth context
-  const mockUser = {
-    name: 'John Doe',
-    email: 'john.doe@company.com',
-    avatar: '/api/placeholder/150/150',
-    phone: '+1 (555) 123-4567',
-    company: 'Acme Corporation',
-    role: 'Administrator',
-    location: 'New York, NY',
-    joinDate: 'January 2024',
-    lastLogin: '2 hours ago',
-  };
 
   return (
     <SidebarProvider>
@@ -224,267 +96,24 @@ export default function AccountPage() {
             {/* Profile Information */}
             <div className="lg:col-span-2 space-y-6">
               {/* Personal Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Personal Information
-                  </CardTitle>
-                  <CardDescription>
-                    Update your personal details and contact information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
-                      <AvatarFallback className="text-lg">
-                        {user?.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm">
-                        Change Photo
-                      </Button>
-                      <p className="text-sm text-muted-foreground">
-                        JPG, PNG or GIF. Max size 2MB.
-                      </p>
-                    </div>
-                  </div>
-                  <form
-                    onSubmit={handleUpdateAccountInfo}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                          id="name"
-                          value={user?.name}
-                          onChange={(e) =>
-                            setUser({ ...user, name: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={user?.email}
-                          onChange={(e) =>
-                            setUser({ ...user, email: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          value={user?.phone || ''}
-                          onChange={(e) =>
-                            setUser({ ...user, phone: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="company">Company</Label>
-                        <Input
-                          id="company"
-                          value={user?.company || ''}
-                          onChange={(e) =>
-                            setUser({ ...user, company: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={user?.location || ''}
-                          onChange={(e) =>
-                            setUser({ ...user, location: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button
-                        disabled={isUpdating || !hasChanges}
-                        type="submit"
-                        className={
-                          !hasChanges ? 'opacity-50 cursor-pointer!' : ''
-                        }
-                      >
-                        {isUpdating ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+              <PersonalInformationCard
+                user={user}
+                setUser={setUser}
+                initialUser={initialUser}
+                setInitialUser={setInitialUser}
+              />
 
               {/* Account Security */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Security
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your password and security settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <form onSubmit={handleChangePassword} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">
-                        Confirm New Password
-                      </Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex justify-end">
-                      <Button type="submit">Update Password</Button>
-                    </div>
-
-                    <div>
-                      {message && (
-                        <p className="text-sm text-red-500 font-bold">
-                          {message}
-                        </p>
-                      )}
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+              <AccountSecurityCard />
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Account Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Role:
-                      </span>
-                    </div>
-                    <Badge className="capitalize" variant="secondary">
-                      {user?.role}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {user?.email}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {user?.company}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {user?.location}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      Member since:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {new Date(user?.createdAt).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      Last login:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {timeAgo(user?.lastLogin)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+              <AccountSummaryCard user={user} />
 
               {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    size="sm"
-                  >
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notification Settings
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    size="sm"
-                  >
-                    <Palette className="h-4 w-4 mr-2" />
-                    Appearance
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    size="sm"
-                  >
-                    <Globe className="h-4 w-4 mr-2" />
-                    Language & Region
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    size="sm"
-                  >
-                    <Key className="h-4 w-4 mr-2" />
-                    API Keys
-                  </Button>
-                </CardContent>
-              </Card>
+              <QuickActionsCard />
             </div>
           </div>
         </div>

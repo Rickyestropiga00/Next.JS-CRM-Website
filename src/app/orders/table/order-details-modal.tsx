@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Order } from "../data";
-import { StatusBadge } from "@/components/shared/status-badge";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Order } from '../data';
+import { StatusBadge } from '@/components/shared/status-badge';
 import {
   ShoppingBag,
   Package,
@@ -18,7 +18,8 @@ import {
   Truck,
   Calendar,
   User,
-} from "lucide-react";
+} from 'lucide-react';
+import { getId } from '@/utils/helper';
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -27,7 +28,7 @@ interface OrderDetailsModalProps {
 }
 
 const formatPrice = (price: number) => {
-  return `$${price.toLocaleString("en-US", {
+  return `$${price.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -42,25 +43,25 @@ export function OrderDetailsModal({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "Physical":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-      case "Digital":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Service":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
+      case 'Physical':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'Digital':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Service':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
-      case "Paid":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Unpaid":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case 'Paid':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Unpaid':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
@@ -77,9 +78,9 @@ export function OrderDetailsModal({
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center">
               <span className="text-lg font-bold text-white">
                 {order.customer
-                  .split(" ")
+                  .split(' ')
                   .map((n) => n[0])
-                  .join("")
+                  .join('')
                   .toUpperCase()}
               </span>
             </div>
@@ -90,12 +91,14 @@ export function OrderDetailsModal({
               <div className="flex items-center justify-center gap-2">
                 <StatusBadge status={order.status} type="order" />
                 <Badge
-                  className={`${getPaymentStatusColor(order.payment)} px-2 py-0.5 text-xs`}
+                  className={`${getPaymentStatusColor(
+                    order.payment
+                  )} px-2 py-0.5 text-xs`}
                 >
                   {order.payment}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {order.id}
+                  ID: {getId(order)}
                 </span>
               </div>
             </div>
@@ -139,7 +142,9 @@ export function OrderDetailsModal({
                     Type
                   </p>
                   <Badge
-                    className={`${getTypeColor(order.productType)} px-2 py-0.5 text-xs`}
+                    className={`${getTypeColor(
+                      order.productType
+                    )} px-2 py-0.5 text-xs`}
                   >
                     {order.productType}
                   </Badge>
@@ -161,7 +166,9 @@ export function OrderDetailsModal({
                     Status
                   </p>
                   <Badge
-                    className={`${getPaymentStatusColor(order.payment)} px-2 py-0.5 text-xs`}
+                    className={`${getPaymentStatusColor(
+                      order.payment
+                    )} px-2 py-0.5 text-xs`}
                   >
                     {order.payment}
                   </Badge>
@@ -170,7 +177,9 @@ export function OrderDetailsModal({
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     Total Amount
                   </p>
-                  <p className="text-xs font-semibold">{formatPrice(order.total)}</p>
+                  <p className="text-xs font-semibold">
+                    {formatPrice(order.total)}
+                  </p>
                 </div>
               </div>
             </div>

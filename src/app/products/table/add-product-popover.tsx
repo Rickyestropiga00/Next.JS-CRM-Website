@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Product, ProductStatus, ProductType } from '../data';
+import { toast } from 'sonner';
 
 interface AddProductPopoverProps {
   onAddProduct: (product: Product) => void;
@@ -126,7 +127,7 @@ export function AddProductPopover({
     }
 
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch('/api/product', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -163,10 +164,12 @@ export function AddProductPopover({
       if (onClose) onClose();
     } catch (error) {
       console.error('Error saving product:', error);
+      const message =
+        error instanceof Error ? error.message : 'Failed to save product.';
+
       setErrors((prev) => ({
         ...prev,
-        code:
-          error instanceof Error ? error.message : 'Failed to save product.',
+        code: message,
       }));
     }
   };

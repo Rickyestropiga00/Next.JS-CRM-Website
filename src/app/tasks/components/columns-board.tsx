@@ -1,6 +1,7 @@
-import React from "react";
-import { Task, ColumnKey } from "../data";
-import { TaskCard } from "./task-card";
+import React from 'react';
+import { Task, ColumnKey } from '../data';
+import { TaskCard } from './task-card';
+import { getId } from '@/utils/helper';
 
 interface ColumnsBoardProps {
   columns: { key: ColumnKey; label: string }[];
@@ -28,7 +29,7 @@ export function ColumnsBoard({
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 ${
-        isSidebarCollapsed ? "lg:grid-cols-4" : "lg:grid-cols-2 xl:grid-cols-4"
+        isSidebarCollapsed ? 'lg:grid-cols-4' : 'lg:grid-cols-2 xl:grid-cols-4'
       } gap-4 p-4 items-start`}
     >
       {columns.map((col) => {
@@ -55,7 +56,7 @@ export function ColumnsBoard({
             </div>
             {columnTasks.map((task) => (
               <TaskCard
-                key={task.id}
+                key={getId(task)}
                 task={task}
                 columns={columns}
                 onMove={onMoveTask}

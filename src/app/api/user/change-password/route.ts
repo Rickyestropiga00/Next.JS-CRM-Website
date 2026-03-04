@@ -46,6 +46,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const isSameNewPassword = await verifyPassword(newPassword, user.password);
+
+    if (isSameNewPassword) {
+      return NextResponse.json(
+        { error: 'New password must be different from current password' },
+        { status: 400 }
+      );
+    }
+
     const hashedNewPassword = await hashPassword(newPassword);
     user.password = hashedNewPassword;
     await user.save();

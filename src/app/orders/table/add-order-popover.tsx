@@ -38,12 +38,6 @@ export function AddOrderPopover({
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
-  // Generate a unique temporary ID (ORD-031, ORD-032, ORD-033, etc.)
-  const generateTempId = (): string => {
-    const random = Math.floor(Math.random() * 70) + 31; // Generate 31 to 99
-    return `ORD-${random.toString().padStart(3, '0')}`;
-  };
-
   const [formData, setFormData] = useState({
     customer: '',
     address: '',
@@ -190,7 +184,7 @@ export function AddOrderPopover({
       switch (response.status) {
         case 201:
           onAddOrder(data); // update UI
-          break; // Success
+          break;
         case 400:
           throw new Error(data.error || 'Validation error');
         default:
