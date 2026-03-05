@@ -1,40 +1,44 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useTasks } from "@/hooks/use-tasks";
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useTasks } from '@/hooks/use-tasks';
+import { getId } from '@/utils/helper';
 
 // Dynamically import modal to reduce initial bundle size
 const AddNewTaskPopover = dynamic(
-  () => import("@/app/tasks/components/add-new-task-popover").then((mod) => ({ default: mod.AddNewTaskPopover })),
+  () =>
+    import('@/app/tasks/components/add-new-task-popover').then((mod) => ({
+      default: mod.AddNewTaskPopover,
+    })),
   { ssr: false }
 );
 
 export function TasksSection() {
   const { tasks: taskList, addTask, isLoading } = useTasks();
   const [selectedTaskCategory, setSelectedTaskCategory] =
-    useState<string>("todo");
+    useState<string>('todo');
   const [showAddNewTask, setShowAddNewTask] = useState<boolean>(false);
 
   // Calculate task statistics from current tasks
   const taskCount = useMemo(() => {
-    const todoTasks = taskList.filter((task) => task.column === "todo").length;
+    const todoTasks = taskList.filter((task) => task.column === 'todo').length;
     const inProgressTasks = taskList.filter(
-      (task) => task.column === "inprogress"
+      (task) => task.column === 'inprogress'
     ).length;
     const inReviewTasks = taskList.filter(
-      (task) => task.column === "inreview"
+      (task) => task.column === 'inreview'
     ).length;
-    const doneTasks = taskList.filter((task) => task.column === "done").length;
+    const doneTasks = taskList.filter((task) => task.column === 'done').length;
     const totalTasks = taskList.length;
 
     return {
@@ -56,13 +60,13 @@ export function TasksSection() {
     return (
       <Card>
         <CardContent className="px-4 py-8">
-          <div className="text-center text-muted-foreground">Loading tasks...</div>
+          <div className="text-center text-muted-foreground">
+            Loading tasks...
+          </div>
         </CardContent>
       </Card>
     );
   }
-
-
 
   return (
     <Card>
@@ -88,25 +92,25 @@ export function TasksSection() {
             <SelectTrigger className="flex items-center gap-3 bg-muted px-3 py-4 lg:py-3 rounded-full w-fit border-0 hover:bg-muted/80 transition-colors">
               <div className="flex items-center justify-center w-6 h-6 lg:w-5 lg:h-5 rounded-full bg-primary text-primary-foreground text-sm lg:text-xs font-semibold">
                 {selectedTaskCategory
-                  ? selectedTaskCategory === "todo"
+                  ? selectedTaskCategory === 'todo'
                     ? taskCount.todo
-                    : selectedTaskCategory === "inprogress"
+                    : selectedTaskCategory === 'inprogress'
                     ? taskCount.inProgress
-                    : selectedTaskCategory === "inreview"
+                    : selectedTaskCategory === 'inreview'
                     ? taskCount.inReview
                     : taskCount.done
                   : taskCount.total}
               </div>
               <span className="text-sm lg:text-xs font-medium">
                 {selectedTaskCategory
-                  ? selectedTaskCategory === "todo"
-                    ? "To Do"
-                    : selectedTaskCategory === "inprogress"
-                    ? "In Progress"
-                    : selectedTaskCategory === "inreview"
-                    ? "In Review"
-                    : "Done"
-                  : "On Going Tasks"}
+                  ? selectedTaskCategory === 'todo'
+                    ? 'To Do'
+                    : selectedTaskCategory === 'inprogress'
+                    ? 'In Progress'
+                    : selectedTaskCategory === 'inreview'
+                    ? 'In Review'
+                    : 'Done'
+                  : 'On Going Tasks'}
               </span>
             </SelectTrigger>
             <SelectContent>
@@ -124,7 +128,7 @@ export function TasksSection() {
                 .filter((task) => task.column === selectedTaskCategory)
                 .map((task) => (
                   <div
-                    key={task.id}
+                    key={getId(task)}
                     className="bg-muted/50 p-3 lg:p-2 rounded-lg"
                   >
                     <div className="flex items-start justify-between gap-2">

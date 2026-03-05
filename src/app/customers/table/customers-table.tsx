@@ -56,6 +56,8 @@ import {
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 export function CustomersTable() {
   const [search, setSearch] = useState('');
@@ -125,7 +127,7 @@ export function CustomersTable() {
   }, [rowsPerPage, totalPages]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((c) => c.id !== id));
+    setData((prev) => prev.filter((c) => c.id !== id && c._id !== id));
   }
 
   function handleAddCustomer(newCustomer: Customer) {
@@ -137,7 +139,7 @@ export function CustomersTable() {
   function handleEdit(updatedCustomer: Customer) {
     setData((prev) =>
       prev.map((customer) =>
-        customer.id === updatedCustomer.id ? updatedCustomer : customer
+        getId(customer) === getId(updatedCustomer) ? updatedCustomer : customer
       )
     );
   }
@@ -181,26 +183,57 @@ export function CustomersTable() {
   function handleSelectAll(checked: boolean) {
     if (checked) {
       setSelected((prev) => [
-        ...prev.filter((id) => !paginated.some((c) => c.id === id)),
-        ...paginated.map((c) => c.id),
+        ...prev.filter((id) => !paginated.some((c) => getId(c) === id)),
+        ...paginated.map((c) => getId(c)),
       ]);
     } else {
       setSelected((prev) =>
-        prev.filter((id) => !paginated.some((c) => c.id === id))
+        prev.filter((id) => !paginated.some((c) => getId(c) === id))
       );
     }
   }
 
-  function handleSelectRow(id: string, checked: boolean) {
-    setSelected((prev) =>
-      checked ? [...prev, id] : prev.filter((sid) => sid !== id)
-    );
+  function handleSelectRow(customer: Customer, checked: boolean) {
+    const customerId = getId(customer);
+
+    if (!customerId) return;
+
+    if (checked) {
+      setSelected((prev) =>
+        prev.includes(customerId) ? prev : [...prev, customerId]
+      );
+    } else {
+      setSelected((prev) => prev.filter((s) => s !== customerId));
+    }
   }
 
-  function handleDeleteSelected() {
-    setData((prev) => prev.filter((c) => !selected.includes(c.id)));
-    setSelected([]);
-    setShowConfirm(false);
+  async function handleDeleteSelected() {
+    try {
+      const res = await fetch('/api/bulk-delete?type=customer', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setData((prev) =>
+          prev.filter(
+            (c) =>
+              !(c._id && selected.includes(c._id)) &&
+              !(c.id && selected.includes(c.id))
+          )
+        );
+        setSelected([]);
+        setShowConfirm(false);
+
+        toast.success(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong');
+    }
   }
 
   return (
@@ -308,7 +341,7 @@ export function CustomersTable() {
       {/* Edit Customer Modal - Rendered outside table structure */}
       {editCustomerId && (
         <EditCustomerPopover
-          customer={data.find((c) => c.id === editCustomerId)!}
+          customer={data.find((c) => getId(c) === editCustomerId)!}
           onSave={(updatedCustomer) => {
             handleEdit(updatedCustomer);
             setEditCustomerId(null);
@@ -332,10 +365,7 @@ export function CustomersTable() {
       <CustomerDetailsModal
         customer={
           selectedCustomerId
-            ? data.find(
-                (c) =>
-                  c.id === selectedCustomerId || c._id === selectedCustomerId
-              ) || null
+            ? data.find((c) => getId(c) === selectedCustomerId) || null
             : null
         }
         isOpen={!!selectedCustomerId}

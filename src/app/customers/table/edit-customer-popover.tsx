@@ -1,20 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ModalWrapper } from "@/components/shared/modal-wrapper";
-import { validateEmail, validatePhone } from "@/lib/validations";
-import { Customer, CustomerStatus } from "../data";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ModalWrapper } from '@/components/shared/modal-wrapper';
+import { validateEmail, validatePhone } from '@/lib/validations';
+import { Customer, CustomerStatus } from '../data';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface EditCustomerPopoverProps {
   customer: Customer;
@@ -36,6 +38,7 @@ export function EditCustomerPopover({
 }: EditCustomerPopoverProps) {
   const [formData, setFormData] = useState<Customer>(customer);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Reset form data when customer changes or popover opens
   React.useEffect(() => {
@@ -63,9 +66,65 @@ export function EditCustomerPopover({
     return !validateEmail(formData.email) && !validatePhone(formData.phone);
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formData);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm() || isUpdating) return;
+    setIsUpdating(true);
+    const toastId = 'customer-update';
+
+    toast.loading('Saving changes...', { id: toastId });
+
+    const customerId = getId(customer);
+
+    if (customerId) {
+      try {
+        const res = await fetch(`/api/customer/${formData._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        let result: any = {};
+
+        try {
+          result = await res.json();
+        } catch {
+          result = { error: 'Server did not return valid JSON' };
+        }
+
+        switch (res.status) {
+          case 200:
+            toast.success(result.message, { id: toastId });
+            onSave(result.data);
+            onClose();
+            return;
+          case 400:
+            const newErrors: ValidationErrors = {};
+
+            const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
+
+            fields.forEach((field) => {
+              if (result.error?.toLowerCase().includes(field)) {
+                newErrors[field] = result.error;
+              }
+            });
+
+            setErrors(newErrors);
+            toast.dismiss(toastId);
+            break;
+          case 500:
+            throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsUpdating(false);
+      }
+    } else {
+      if (validateForm()) {
+        onSave(formData);
+      }
     }
   };
 
@@ -109,7 +168,7 @@ export function EditCustomerPopover({
               </Label>
               <Input
                 id="name"
-                value={formData.name}
+                value={formData?.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
@@ -122,7 +181,7 @@ export function EditCustomerPopover({
               </Label>
               <Input
                 id="company"
-                value={formData.company || ""}
+                value={formData?.company || ''}
                 onChange={(e) =>
                   setFormData({ ...formData, company: e.target.value })
                 }
@@ -144,7 +203,7 @@ export function EditCustomerPopover({
                 value={formData.email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.email ? "border-red-500" : ""
+                  errors.email ? 'border-red-500' : ''
                 }`}
               />
               {errors.email && (
@@ -161,7 +220,7 @@ export function EditCustomerPopover({
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.phone ? "border-red-500" : ""
+                  errors.phone ? 'border-red-500' : ''
                 }`}
                 placeholder="+1234567890"
               />
@@ -201,7 +260,7 @@ export function EditCustomerPopover({
             </Label>
             <Textarea
               id="notes"
-              value={formData.notes || ""}
+              value={formData.notes || ''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setFormData({ ...formData, notes: e.target.value })
               }

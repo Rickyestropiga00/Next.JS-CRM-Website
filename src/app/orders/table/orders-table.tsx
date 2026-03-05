@@ -57,6 +57,8 @@ import {
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
+import { getId } from '@/utils/helper';
+import { toast } from 'sonner';
 
 export function OrdersTable() {
   const [search, setSearch] = useState('');
@@ -154,7 +156,9 @@ export function OrdersTable() {
   }, [rowsPerPage, totalPages]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((order) => order.id !== id));
+    setData((prev) =>
+      prev.filter((order) => order.id !== id && order._id !== id)
+    );
   }
 
   function handleAddOrder(newOrder: Order) {
@@ -165,7 +169,9 @@ export function OrdersTable() {
 
   function handleEdit(updatedOrder: Order) {
     setData((prev) =>
-      prev.map((order) => (order.id === updatedOrder.id ? updatedOrder : order))
+      prev.map((order) =>
+        getId(order) === getId(updatedOrder) ? updatedOrder : order
+      )
     );
   }
 
@@ -180,24 +186,59 @@ export function OrdersTable() {
 
   function handleSelectAll(checked: boolean) {
     if (checked) {
-      setSelected(paginated.map((order) => order.id));
+      setSelected((prev) => [
+        ...prev.filter((id) => !paginated.some((c) => getId(c) === id)),
+        ...paginated.map((c) => getId(c)),
+      ]);
     } else {
-      setSelected([]);
+      setSelected((prev) =>
+        prev.filter((id) => !paginated.some((c) => getId(c) === id))
+      );
     }
   }
 
-  function handleSelectRow(id: string, checked: boolean) {
+  function handleSelectRow(order: Order, checked: boolean) {
+    const orderId = getId(order);
+
+    if (!orderId) return;
+
     if (checked) {
-      setSelected((prev) => [...prev, id]);
+      setSelected((prev) =>
+        prev.includes(orderId) ? prev : [...prev, orderId]
+      );
     } else {
-      setSelected((prev) => prev.filter((s) => s !== id));
+      setSelected((prev) => prev.filter((s) => s !== orderId));
     }
   }
 
-  function handleDeleteSelected() {
-    setData((prev) => prev.filter((order) => !selected.includes(order.id)));
-    setSelected([]);
-    setShowConfirm(false);
+  async function handleDeleteSelected() {
+    try {
+      const res = await fetch('/api/bulk-delete?type=order', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setData((prev) =>
+          prev.filter(
+            (p) =>
+              !(p._id && selected.includes(p._id)) &&
+              !(p.id && selected.includes(p.id))
+          )
+        );
+        setSelected([]);
+        setShowConfirm(false);
+
+        toast.success(data.message);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong');
+    }
   }
 
   return (
@@ -335,7 +376,7 @@ export function OrdersTable() {
       {/* Edit Order Modal - Rendered outside table structure */}
       {editOrderId && (
         <EditOrderPopover
-          order={data.find((o) => o.id === editOrderId)!}
+          order={data.find((o) => getId(o) === editOrderId)!}
           onSave={(updatedOrder) => {
             handleEdit(updatedOrder);
             setEditOrderId(null);
@@ -358,9 +399,7 @@ export function OrdersTable() {
       <OrderDetailsModal
         order={
           selectedOrderId
-            ? data.find(
-                (o) => o.id === selectedOrderId || o._id === selectedOrderId
-              ) || null
+            ? data.find((o) => getId(o) === selectedOrderId) || null
             : null
         }
         isOpen={!!selectedOrderId}

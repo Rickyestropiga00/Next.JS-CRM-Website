@@ -21,11 +21,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Product } from '../data';
+import { getId } from '@/utils/helper';
 
 interface TableBodyProps {
   paginated: any[];
   selected: string[];
-  onSelectRow: (id: string, checked: boolean) => void;
+  onSelectRow: (product: Product, checked: boolean) => void;
   onDelete: (id: string) => void;
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
@@ -57,11 +60,37 @@ export function ProductsTableBody({
     return stock.toString();
   };
 
+  const handleDelete = async (product: any) => {
+    const productId = getId(product);
+    if (productId) {
+      try {
+        const res = await fetch(`/api/product/${product._id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+
+        if (res.status === 200) {
+          onDelete(product._id);
+          setDeleteDialogId(null);
+          toast.success(data.message);
+        } else {
+          toast.error(data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Something went wrong');
+      }
+    } else {
+      onDelete(product.id);
+      setDeleteDialogId(null);
+    }
+  };
+
   return (
     <TableBody className="pl-5">
       {paginated.map((p) => (
         <TableRow
-          key={p.id || p._id}
+          key={getId(p)}
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={(e) => {
             // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -73,14 +102,14 @@ export function ProductsTableBody({
             ) {
               return;
             }
-            onProductClick(p.id || p._id);
+            onProductClick(getId(p));
           }}
         >
           <TableCell className="w-8">
             <Checkbox
               className="ml-2"
-              checked={selected.includes(p.id)}
-              onCheckedChange={(checked) => onSelectRow(p.id, !!checked)}
+              checked={selected.includes(getId(p))}
+              onCheckedChange={(checked) => onSelectRow(p, !!checked)}
               aria-label={`Select row for ${p.name}`}
             />
           </TableCell>
@@ -126,7 +155,7 @@ export function ProductsTableBody({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditProductId(p.id)}>
+                <DropdownMenuItem onClick={() => setEditProductId(getId(p))}>
                   <Pencil className="h-4 w-4" />
                   Edit
                 </DropdownMenuItem>
@@ -163,8 +192,7 @@ export function ProductsTableBody({
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
-                          onDelete(p.id);
-                          setDeleteDialogId(null);
+                          handleDelete(p);
                         }}
                         className="cursor-pointer"
                       >

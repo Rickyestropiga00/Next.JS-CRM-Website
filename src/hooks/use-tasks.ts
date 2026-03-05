@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { Task } from "@/app/tasks/data";
-import { tasks as initialTasks } from "@/app/tasks/data";
+import { useState, useEffect, useCallback } from 'react';
+import { Task } from '@/app/tasks/data';
+import { tasks as initialTasks } from '@/app/tasks/data';
+import { getId } from '@/utils/helper';
 
 // In-memory storage (shared across components, resets on refresh)
 let sharedTasks: Task[] = initialTasks;
 
 // Helper to dispatch update events
 function dispatchTasksUpdate() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("tasks-updated"));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tasks-updated'));
   }
 }
 
@@ -30,9 +31,9 @@ export function useTasks() {
       setTasks([...sharedTasks]);
     };
 
-    window.addEventListener("tasks-updated", handleTasksUpdate);
+    window.addEventListener('tasks-updated', handleTasksUpdate);
     return () => {
-      window.removeEventListener("tasks-updated", handleTasksUpdate);
+      window.removeEventListener('tasks-updated', handleTasksUpdate);
     };
   }, []);
 
@@ -49,14 +50,14 @@ export function useTasks() {
   }, []);
 
   const deleteTask = useCallback((taskId: string) => {
-    sharedTasks = sharedTasks.filter((t) => t.id !== taskId);
+    sharedTasks = sharedTasks.filter((t) => getId(t) !== taskId);
     dispatchTasksUpdate();
     setTasks([...sharedTasks]);
   }, []);
 
-  const moveTask = useCallback((taskId: string, newColumn: Task["column"]) => {
+  const moveTask = useCallback((taskId: string, newColumn: Task['column']) => {
     sharedTasks = sharedTasks.map((t) =>
-      t.id === taskId ? { ...t, column: newColumn } : t
+      getId(t) === taskId ? { ...t, column: newColumn } : t
     );
     dispatchTasksUpdate();
     setTasks([...sharedTasks]);

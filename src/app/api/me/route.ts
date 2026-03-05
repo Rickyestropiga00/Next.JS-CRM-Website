@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -13,6 +13,12 @@ export async function GET() {
       user: {
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        company: user.company,
+        role: user.role,
+        location: user.location,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
       },
     });
   } catch (err) {

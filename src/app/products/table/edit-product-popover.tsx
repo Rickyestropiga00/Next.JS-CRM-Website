@@ -1,17 +1,19 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Product, ProductStatus, ProductType } from "../data";
+} from '@/components/ui/select';
+import { Product, ProductStatus, ProductType } from '../data';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface EditProductPopoverProps {
   product: Product;
@@ -35,6 +37,7 @@ export function EditProductPopover({
 }: EditProductPopoverProps) {
   const [formData, setFormData] = useState<Product>(product);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Reset form data when product changes or popover opens
   React.useEffect(() => {
@@ -46,32 +49,32 @@ export function EditProductPopover({
 
   // Validation functions
   const validateName = (name: string): string | undefined => {
-    if (!name.trim()) return "Product name is required";
+    if (!name.trim()) return 'Product name is required';
     if (name.trim().length < 2)
-      return "Product name must be at least 2 characters";
+      return 'Product name must be at least 2 characters';
     return undefined;
   };
 
   const validateCode = (code: string): string | undefined => {
-    if (!code.trim()) return "Product code is required";
+    if (!code.trim()) return 'Product code is required';
     if (code.trim().length < 3)
-      return "Product code must be at least 3 characters";
+      return 'Product code must be at least 3 characters';
     return undefined;
   };
 
   const validatePrice = (price: number): string | undefined => {
-    if (price <= 0) return "Price must be greater than 0";
-    if (price > 999999.99) return "Price cannot exceed $999,999.99";
+    if (price <= 0) return 'Price must be greater than 0';
+    if (price > 999999.99) return 'Price cannot exceed $999,999.99';
     return undefined;
   };
 
   const validateStock = (
     stock: number,
-    type: ProductType,
+    type: ProductType
   ): string | undefined => {
-    if (type === "Physical" && stock < 0) return "Stock cannot be negative";
-    if (type === "Physical" && stock > 999999)
-      return "Stock cannot exceed 999,999";
+    if (type === 'Physical' && stock < 0) return 'Stock cannot be negative';
+    if (type === 'Physical' && stock > 999999)
+      return 'Stock cannot exceed 999,999';
     return undefined;
   };
 
@@ -104,9 +107,65 @@ export function EditProductPopover({
     );
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formData);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm() || isUpdating) return;
+    setIsUpdating(true);
+    const toastId = 'product-update';
+    toast.loading('Saving changes...', { id: toastId });
+    const productId = getId(product);
+    if (productId) {
+      try {
+        const res = await fetch(`/api/product/${formData._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        let result: any = {};
+
+        try {
+          result = await res.json();
+        } catch {
+          result = { error: 'Server did not return valid JSON' };
+        }
+
+        switch (res.status) {
+          case 200:
+            onClose();
+            toast.success(result.message, { id: toastId });
+            onSave(result.data);
+            console.log(result.message);
+            return;
+          case 400:
+            const newErrors: ValidationErrors = {};
+
+            const fields: (keyof ValidationErrors)[] = ['code'];
+
+            fields.forEach((field) => {
+              if (result.error?.toLowerCase().includes(field)) {
+                newErrors[field] = result.error;
+              }
+            });
+
+            setErrors(newErrors);
+            toast.dismiss(toastId);
+            break;
+          case 500:
+            throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.dismiss(toastId);
+      } finally {
+        setIsUpdating(false);
+      }
+    } else {
+      if (validateForm()) {
+        onSave(formData);
+      }
     }
   };
 
@@ -153,7 +212,7 @@ export function EditProductPopover({
   const handleTypeChange = (value: ProductType) => {
     setFormData({ ...formData, type: value });
     // Reset stock to 0 for non-physical products
-    if (value !== "Physical") {
+    if (value !== 'Physical') {
       setFormData((prev) => ({ ...prev, stock: 0 }));
     }
     // Clear stock error if type changes
@@ -191,7 +250,7 @@ export function EditProductPopover({
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.name ? "border-red-500" : ""
+                    errors.name ? 'border-red-500' : ''
                   }`}
                 />
                 {errors.name && (
@@ -207,7 +266,7 @@ export function EditProductPopover({
                   value={formData.code}
                   onChange={(e) => handleCodeChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.code ? "border-red-500" : ""
+                    errors.code ? 'border-red-500' : ''
                   }`}
                   placeholder="e.g., LP-PRO-001"
                 />
@@ -270,7 +329,7 @@ export function EditProductPopover({
                   value={formData.price}
                   onChange={(e) => handlePriceChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.price ? "border-red-500" : ""
+                    errors.price ? 'border-red-500' : ''
                   }`}
                   placeholder="0.00"
                 />
@@ -289,15 +348,15 @@ export function EditProductPopover({
                   value={formData.stock}
                   onChange={(e) => handleStockChange(e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
-                    errors.stock ? "border-red-500" : ""
+                    errors.stock ? 'border-red-500' : ''
                   }`}
                   placeholder="0"
-                  disabled={formData.type !== "Physical"}
+                  disabled={formData.type !== 'Physical'}
                 />
                 {errors.stock && (
                   <p className="text-xs text-red-500">{errors.stock}</p>
                 )}
-                {formData.type !== "Physical" && (
+                {formData.type !== 'Physical' && (
                   <p className="text-xs text-muted-foreground">
                     Not applicable for {formData.type.toLowerCase()} products
                   </p>

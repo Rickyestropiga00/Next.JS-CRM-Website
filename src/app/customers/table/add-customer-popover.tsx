@@ -41,12 +41,6 @@ export function AddCustomerPopover({
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
-  // Generate a unique temporary ID (31, 32, 33, etc.)
-  const generateTempId = (): string => {
-    const random = Math.floor(Math.random() * 70) + 31; // Generate 31 to 99
-    return random.toString();
-  };
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -137,14 +131,18 @@ export function AddCustomerPopover({
           onAddCustomer(data); // update UI
           break; // Success
         case 400:
-          if (data.field) {
-            setErrors((prev) => ({
-              ...prev,
-              [data.field]: data.error,
-            }));
-            return;
-          }
-          throw new Error(data.error || 'Validation error');
+          const newErrors: ValidationErrors = {};
+
+          const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
+
+          fields.forEach((field) => {
+            if (data.error?.toLowerCase().includes(field)) {
+              newErrors[field] = data.error;
+            }
+          });
+
+          setErrors(newErrors);
+          break;
         default:
           throw new Error('Failed to save customer');
       }

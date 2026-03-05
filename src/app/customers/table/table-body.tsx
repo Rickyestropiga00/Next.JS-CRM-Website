@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { Customer } from '../data';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,11 +22,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { formatPhone } from '@/utils/formatters';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface TableBodyProps {
   paginated: any[];
   selected: string[];
-  onSelectRow: (id: string, checked: boolean) => void;
+  onSelectRow: (customer: Customer, checked: boolean) => void;
   onDelete: (id: string) => void;
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
@@ -51,13 +54,39 @@ export function CustomersTableBody({
     return matches ? matches.length : 0;
   };
 
+  const handleDelete = async (customer: any) => {
+    const customerId = getId(customer);
+    if (customerId) {
+      try {
+        const res = await fetch(`/api/customer/${customer._id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+
+        if (res.status === 200) {
+          onDelete(customer._id);
+          setDeleteDialogId(null);
+          toast.success(data.message);
+        } else {
+          toast.error(data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Something went wrong');
+      }
+    } else {
+      onDelete(customer.id);
+      setDeleteDialogId(null);
+    }
+  };
+
   return (
     <TableBody className="pl-5">
       {paginated.map((c) => {
         const commentCount = countComments(c.comment);
         return (
           <TableRow
-            key={c.id || c._id}
+            key={getId(c)}
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={(e) => {
               // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -69,14 +98,14 @@ export function CustomersTableBody({
               ) {
                 return;
               }
-              onCustomerClick(c.id || c._id);
+              onCustomerClick(getId(c));
             }}
           >
             <TableCell className="w-8">
               <Checkbox
                 className="ml-2"
-                checked={selected.includes(c.id)}
-                onCheckedChange={(checked) => onSelectRow(c.id, !!checked)}
+                checked={selected.includes(getId(c))}
+                onCheckedChange={(checked) => onSelectRow(c, !!checked)}
                 aria-label={`Select row for ${c.name}`}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -123,21 +152,21 @@ export function CustomersTableBody({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setEditCustomerId(c.id)}>
+                  <DropdownMenuItem onClick={() => setEditCustomerId(getId(c))}>
                     <Pencil className="h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
                   <AlertDialog
-                    open={deleteDialogId === c.id}
+                    open={deleteDialogId === getId(c)}
                     onOpenChange={(open) =>
-                      setDeleteDialogId(open ? c.id : null)
+                      setDeleteDialogId(open ? getId(c) : null)
                     }
                   >
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem
                         onSelect={(e) => {
                           e.preventDefault();
-                          setDeleteDialogId(c.id);
+                          setDeleteDialogId(getId(c));
                         }}
                         className="text-primary focus:text-primary font-semibold"
                       >
@@ -164,7 +193,7 @@ export function CustomersTableBody({
                         </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => {
-                            onDelete(c.id);
+                            handleDelete(c);
                             setDeleteDialogId(null);
                           }}
                           className="cursor-pointer"

@@ -1,23 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ModalWrapper } from "@/components/shared/modal-wrapper";
+} from '@/components/ui/select';
+import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import {
   validateRequired,
   validateNumber,
   validatePrice,
-} from "@/lib/validations";
-import { Order, OrderStatus, PaymentStatus } from "../data";
+} from '@/lib/validations';
+import { Order, OrderStatus, PaymentStatus } from '../data';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
 
 interface EditOrderPopoverProps {
   order: Order;
@@ -40,6 +42,7 @@ export function EditOrderPopover({
 }: EditOrderPopoverProps) {
   const [formData, setFormData] = useState<Order>(order);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Reset form data when order changes or popover opens
   React.useEffect(() => {
@@ -51,15 +54,15 @@ export function EditOrderPopover({
 
   // Validation functions using shared utilities
   const validateCustomer = (customer: string): string | undefined => {
-    return validateRequired(customer, "Customer name");
+    return validateRequired(customer, 'Customer name');
   };
 
   const validateQuantity = (quantity: number): string | undefined => {
-    return validateNumber(quantity, "Quantity", 0, 999);
+    return validateNumber(quantity, 'Quantity', 0, 999);
   };
 
   const validateTotal = (total: number): string | undefined => {
-    return validatePrice(total, "Total");
+    return validatePrice(total, 'Total');
   };
 
   const validateForm = (): boolean => {
@@ -87,9 +90,54 @@ export function EditOrderPopover({
     );
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formData);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm() || isUpdating) return;
+    setIsUpdating(true);
+    const toastId = 'order-update';
+
+    toast.loading('Saving changes...', { id: toastId });
+
+    const orderId = getId(order);
+
+    if (orderId) {
+      try {
+        const res = await fetch(`/api/order/${formData._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        let result: any = {};
+
+        try {
+          result = await res.json();
+        } catch {
+          result = { error: 'Server did not return a valid JSON' };
+        }
+
+        switch (res.status) {
+          case 200:
+            onSave(result.data);
+            onClose();
+            toast.success(result.message, { id: toastId });
+            console.log(result.message);
+            return;
+          case 500:
+            throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.dismiss(toastId);
+      } finally {
+        setIsUpdating(false);
+      }
+    } else {
+      if (validateForm()) {
+        onSave(formData);
+      }
     }
   };
 
@@ -145,7 +193,7 @@ export function EditOrderPopover({
               </Label>
               <Input
                 id="id"
-                value={formData.id}
+                value={getId(formData)}
                 disabled
                 className="h-8 sm:h-9 text-xs bg-muted"
               />
@@ -180,7 +228,7 @@ export function EditOrderPopover({
                 value={formData.customer}
                 onChange={(e) => handleCustomerChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.customer ? "border-red-500" : ""
+                  errors.customer ? 'border-red-500' : ''
                 }`}
               />
               {errors.customer && (
@@ -269,7 +317,7 @@ export function EditOrderPopover({
                 value={formData.quantity}
                 onChange={(e) => handleQuantityChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.quantity ? "border-red-500" : ""
+                  errors.quantity ? 'border-red-500' : ''
                 }`}
                 placeholder="1"
               />
@@ -293,7 +341,7 @@ export function EditOrderPopover({
                 value={formData.total}
                 onChange={(e) => handleTotalChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.total ? "border-red-500" : ""
+                  errors.total ? 'border-red-500' : ''
                 }`}
                 placeholder="0.00"
               />

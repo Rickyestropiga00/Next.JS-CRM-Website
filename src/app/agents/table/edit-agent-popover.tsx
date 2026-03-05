@@ -1,20 +1,21 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ModalWrapper } from "@/components/shared/modal-wrapper";
-import { validateEmail, validatePhone } from "@/lib/validations";
-import { Agent } from "../data";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ModalWrapper } from '@/components/shared/modal-wrapper';
+import { validateEmail, validatePhone } from '@/lib/validations';
+import { Agent } from '../data';
+import { toast } from 'sonner';
 
 interface EditAgentPopoverProps {
   agent: Agent;
@@ -36,6 +37,7 @@ export function EditAgentPopover({
 }: EditAgentPopoverProps) {
   const [formData, setFormData] = useState<Agent>(agent);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Reset form data when agent changes or popover opens
   React.useEffect(() => {
@@ -63,9 +65,67 @@ export function EditAgentPopover({
     return !validateEmail(formData.email) && !validatePhone(formData.phone);
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formData);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm() || isUpdating) return;
+    setIsUpdating(true);
+    const toastId = 'agent-update';
+
+    toast.loading('Saving changes...', { id: toastId });
+    const agentId = agent._id ?? null;
+
+    if (agentId) {
+      try {
+        const res = await fetch(`/api/agent/${formData._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        let result: any = {};
+
+        try {
+          result = await res.json();
+        } catch {
+          result = { error: 'Server did not return valid JSON' };
+        }
+
+        switch (res.status) {
+          case 200:
+            toast.success(result.message, { id: toastId });
+            onSave(result.data);
+            onClose();
+            console.log(result.message);
+            return;
+          case 400:
+            const newErrors: ValidationErrors = {};
+
+            const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
+
+            fields.forEach((field) => {
+              if (result.error?.toLowerCase().includes(field)) {
+                newErrors[field] = result.error;
+              }
+            });
+
+            setErrors(newErrors);
+            toast.dismiss(toastId);
+            break;
+          case 500:
+            throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsUpdating(false);
+      }
+    } else {
+      if (validateForm()) {
+        onSave(formData);
+      }
     }
   };
 
@@ -126,7 +186,7 @@ export function EditAgentPopover({
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.phone ? "border-red-500" : ""
+                  errors.phone ? 'border-red-500' : ''
                 }`}
                 placeholder="+1234567890"
               />
@@ -148,7 +208,7 @@ export function EditAgentPopover({
                 value={formData.email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
-                  errors.email ? "border-red-500" : ""
+                  errors.email ? 'border-red-500' : ''
                 }`}
               />
               {errors.email && (
@@ -162,7 +222,7 @@ export function EditAgentPopover({
                 </Label>
                 <Select
                   value={formData.role}
-                  onValueChange={(value: "Admin" | "Agent" | "Manager") =>
+                  onValueChange={(value: 'Admin' | 'Agent' | 'Manager') =>
                     setFormData({ ...formData, role: value })
                   }
                 >
@@ -182,7 +242,7 @@ export function EditAgentPopover({
                 </Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: "Active" | "Inactive" | "On Leave") =>
+                  onValueChange={(value: 'Active' | 'Inactive' | 'On Leave') =>
                     setFormData({ ...formData, status: value })
                   }
                 >
@@ -206,7 +266,7 @@ export function EditAgentPopover({
             </Label>
             <Textarea
               id="notes"
-              value={formData.notes || ""}
+              value={formData.notes || ''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setFormData({ ...formData, notes: e.target.value })
               }

@@ -1,15 +1,16 @@
-import React from "react";
-import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
-import { Order } from "../data";
+import React from 'react';
+import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowUpDown } from 'lucide-react';
+import { Order } from '../data';
+import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {
   selected: string[];
   paginated: { id: string }[];
   onSelectAll: (checked: boolean) => void;
   sortBy: keyof Order;
-  sortDir: "asc" | "desc";
+  sortDir: 'asc' | 'desc';
   onSort: (col: keyof Order) => void;
 }
 
@@ -19,25 +20,25 @@ const sortableCols: {
   className?: string;
   sortable?: boolean;
 }[] = [
-  { key: "id", label: "Order ID", className: "pl-4 w-[120px]", sortable: true },
-  { key: "date", label: "Date", className: "w-[120px]", sortable: true },
+  { key: 'id', label: 'Order ID', className: 'pl-4 w-[120px]', sortable: true },
+  { key: 'date', label: 'Date', className: 'w-[120px]', sortable: true },
   {
-    key: "customer",
-    label: "Customer",
-    className: "w-[150px]",
+    key: 'customer',
+    label: 'Customer',
+    className: 'w-[150px]',
     sortable: true,
   },
-  { key: "address", label: "Address", className: "w-[200px]", sortable: false },
-  { key: "product", label: "Product", className: "w-[180px]", sortable: true },
+  { key: 'address', label: 'Address', className: 'w-[200px]', sortable: false },
+  { key: 'product', label: 'Product', className: 'w-[180px]', sortable: true },
   {
-    key: "quantity",
-    label: "Quantity",
-    className: "w-[100px]",
+    key: 'quantity',
+    label: 'Quantity',
+    className: 'w-[100px]',
     sortable: true,
   },
-  { key: "total", label: "Total", className: "w-[100px]", sortable: true },
-  { key: "payment", label: "Payment", className: "w-[100px]", sortable: false },
-  { key: "status", label: "Status", className: "w-[120px]", sortable: false },
+  { key: 'total', label: 'Total', className: 'w-[100px]', sortable: true },
+  { key: 'payment', label: 'Payment', className: 'w-[100px]', sortable: false },
+  { key: 'status', label: 'Status', className: 'w-[120px]', sortable: false },
 ];
 
 function RenderSortableHead({
@@ -63,13 +64,13 @@ function RenderSortableHead({
         <ArrowUpDown
           className={`h-4 w-4 transition-opacity duration-150 ${
             isActive
-              ? "opacity-100 text-primary"
-              : "opacity-0 group-hover:opacity-100 text-muted-foreground"
+              ? 'opacity-100 text-primary'
+              : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
           }`}
           style={{
             transform:
-              isActive && sortDir === "desc" ? "rotate(180deg)" : undefined,
-            transition: "transform 0.15s",
+              isActive && sortDir === 'desc' ? 'rotate(180deg)' : undefined,
+            transition: 'transform 0.15s',
           }}
         />
       </span>
@@ -92,10 +93,10 @@ export function OrdersTableHeader({
           <Checkbox
             className="ml-2"
             checked={
-              paginated.every((c) => selected.includes(c.id)) &&
+              paginated.every((c) => selected.includes(getId(c))) &&
               paginated.length > 0
             }
-            onCheckedChange={(checked: boolean | "indeterminate") =>
+            onCheckedChange={(checked: boolean | 'indeterminate') =>
               onSelectAll(!!checked)
             }
             aria-label="Select all"

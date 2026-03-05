@@ -109,7 +109,7 @@ export function AddAgentPopover({
     }
 
     try {
-      const response = await fetch('/api/agents', {
+      const response = await fetch('/api/agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ export function AddAgentPopover({
       switch (response.status) {
         case 201:
           onAddAgent(data); // update UI
-          break; // Success
+          break;
         case 400:
           if (data.field) {
             setErrors((prev) => ({

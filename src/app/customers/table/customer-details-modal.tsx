@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Customer } from "../data";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Customer } from '../data';
 import {
   X,
   Mail,
@@ -21,7 +21,7 @@ import {
   FileText,
   MessageSquare,
   Send,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface CustomerDetailsModalProps {
   customer: Customer | null;
@@ -36,31 +36,31 @@ export function CustomerDetailsModal({
   onClose,
   onAddComment,
 }: CustomerDetailsModalProps) {
-  const [newComment, setNewComment] = useState("");
+  const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!customer) return null;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Lead":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Prospect":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "Inactive":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+      case 'Active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Lead':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Prospect':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
@@ -70,16 +70,16 @@ export function CustomerDetailsModal({
     setIsSubmitting(true);
     try {
       await onAddComment(customer.id, newComment.trim());
-      setNewComment("");
+      setNewComment('');
     } catch (error) {
-      console.error("Failed to add comment:", error);
+      console.error('Failed to add comment:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleAddComment();
     }
@@ -88,7 +88,7 @@ export function CustomerDetailsModal({
   const parseNotesAndComments = (notes: string) => {
     if (!notes) return { regularNotes: [], comments: [] };
 
-    const sections = notes.split("---").filter((section) => section.trim());
+    const sections = notes.split('---').filter((section) => section.trim());
     const regularNotes: string[] = [];
     const comments: Array<{
       author: string;
@@ -97,16 +97,16 @@ export function CustomerDetailsModal({
     }> = [];
 
     sections.forEach((section) => {
-      const lines = section.trim().split("\n");
-      const commentLine = lines.find((line) => line.includes("📝 Comment by"));
-      const dateLine = lines.find((line) => line.includes("📅"));
+      const lines = section.trim().split('\n');
+      const commentLine = lines.find((line) => line.includes('📝 Comment by'));
+      const dateLine = lines.find((line) => line.includes('📅'));
 
       if (commentLine && dateLine) {
         // This is a comment
-        const content = lines.slice(3).join("\n").trim(); // Skip header lines
+        const content = lines.slice(3).join('\n').trim(); // Skip header lines
         comments.push({
-          author: commentLine.replace("📝 Comment by ", ""),
-          date: dateLine.replace("📅 ", ""),
+          author: commentLine.replace('📝 Comment by ', ''),
+          date: dateLine.replace('📅 ', ''),
           content: content,
         });
       } else {
@@ -186,9 +186,9 @@ export function CustomerDetailsModal({
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center">
               <span className="text-lg font-bold text-white">
                 {customer.name
-                  .split(" ")
+                  .split(' ')
                   .map((n) => n[0])
-                  .join("")
+                  .join('')
                   .toUpperCase()}
               </span>
             </div>
@@ -250,7 +250,7 @@ export function CustomerDetailsModal({
                   Organization
                 </p>
                 <p className="text-xs">
-                  {customer.company || "No company specified"}
+                  {customer.company || 'No company specified'}
                 </p>
               </div>
             </div>
@@ -325,7 +325,7 @@ export function CustomerDetailsModal({
           {onAddComment &&
             (() => {
               const { comments } = parseNotesAndComments(
-                customer.comment || ""
+                customer.comment || ''
               );
               return (
                 <div className="bg-card border rounded-lg p-4 space-y-4">
@@ -366,7 +366,7 @@ export function CustomerDetailsModal({
                         size="sm"
                         className="h-7 px-3 text-xs cursor-pointer"
                       >
-                        {isSubmitting ? "Adding..." : "Add Comment"}
+                        {isSubmitting ? 'Adding...' : 'Add Comment'}
                       </Button>
                     </div>
                   </div>
