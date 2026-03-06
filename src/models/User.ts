@@ -9,6 +9,8 @@ export interface IUser extends Document {
   company?: string;
   location?: string;
   role: 'admin' | 'manager' | 'agent';
+  avatar?: Buffer;
+  avatarType?: string;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +50,12 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ['admin', 'manager', 'agent'],
       default: 'agent',
+    },
+    avatar: {
+      type: Buffer,
+    },
+    avatarType: {
+      type: String,
     },
     lastLogin: {
       type: Date,

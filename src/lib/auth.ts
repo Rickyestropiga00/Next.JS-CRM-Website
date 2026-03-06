@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import dbConnect from './mongodb';
 import User, { IUser } from '@/models/User';
+import mongoose from 'mongoose';
 
 const SESSION_KEY = 'crm_session';
 
@@ -61,6 +62,7 @@ export async function getCurrentUser(): Promise<IUser | null> {
   if (!userId) return null;
 
   await dbConnect();
-  return User.findById(userId);
+  const user = await User.findById(new mongoose.Types.ObjectId(userId));
+  return user;
 }
 export { SESSION_KEY };

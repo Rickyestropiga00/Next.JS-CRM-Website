@@ -3,17 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { timeAgo } from '@/utils/formatters';
 import { Building, Mail, MapPin, User } from 'lucide-react';
 import React from 'react';
-
-type UserType = {
-  name: string;
-  email: string;
-  role: string;
-  phone?: string;
-  company?: string;
-  location?: string;
-  createdAt: string;
-  lastLogin: string;
-};
+import { UserType } from '../page';
 
 interface Props {
   user: UserType;
