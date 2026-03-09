@@ -32,6 +32,7 @@ const PersonalInformationCard = ({
   const [preview, setPreview] = useState<string | null>(null);
   const [imageVersion, setImageVersion] = useState(Date.now());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasAvatar = !!user.avatar || !!preview;
 
   const handleUpdateAccountInfo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +69,14 @@ const PersonalInformationCard = ({
     switch (res.status) {
       case 200:
         toast.success(data.message, { id: toastId });
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                avatar: preview,
+              }
+            : prev
+        );
         setInitialUser(user);
         setSelectedFile(null);
         setPreview(null);
@@ -107,9 +116,7 @@ const PersonalInformationCard = ({
     });
 
     if (res.ok) {
-      setPreview(null);
       setSelectedFile(null);
-      setImageVersion(Date.now());
       setUser((prev) =>
         prev
           ? {
@@ -118,6 +125,8 @@ const PersonalInformationCard = ({
             }
           : prev
       );
+      setPreview(null);
+      setImageVersion(Date.now());
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -139,7 +148,7 @@ const PersonalInformationCard = ({
       <CardContent className="space-y-6">
         <form onSubmit={handleUpdateAccountInfo} className="space-y-6">
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-20 w-20 ">
               <div className="relative group">
                 <AvatarImage
                   className="bg-muted flex size-full items-center justify-center rounded-full text-lg object-contain group-hover:brightness-50"
@@ -151,12 +160,18 @@ const PersonalInformationCard = ({
 
                 <Button
                   onClick={handleDeleteAvatar}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                  className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs px-2 py-1 rounded transition cursor-pointer
+                      ${
+                        !hasAvatar
+                          ? 'hidden'
+                          : 'opacity-0 group-hover:opacity-100'
+                      }`}
                 >
                   {' '}
                   <Trash2 />{' '}
                 </Button>
               </div>
+
               <AvatarFallback className="bg-muted flex size-full items-center justify-center rounded-full text-lg">
                 {user.name
                   .split(' ')
