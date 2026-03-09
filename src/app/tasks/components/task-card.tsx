@@ -180,7 +180,7 @@ export function TaskCard({
           </div>
           <div className="flex flex-wrap-reverse items-center justify-between gap-3 mt-2">
             <span className="text-xs text-muted-foreground">
-              {timeAgo(task.createdAt)}
+              {task.lastAdded ?? timeAgo(task.createdAt)}
             </span>
             <div className="flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
               {task.avatars.map((avatar, idx) => (

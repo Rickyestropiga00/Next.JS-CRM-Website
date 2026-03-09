@@ -23,21 +23,26 @@ import AccountSecurityCard from './components/account-security-card';
 import AccountSummaryCard from './components/account-summary-card';
 import QuickActionsCard from './components/quick-actions-card';
 
+export type UserType = {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone?: string;
+  company?: string;
+  location?: string;
+  avatar?: string | null;
+  avatarType?: string | null;
+  createdAt: string;
+  lastLogin: string;
+};
+
 export default function AccountPage() {
   const pathname = usePathname();
   const navItems = getAllNavItems(navGroups);
   const active = navItems.find((item) => pathname.startsWith(item.url));
-  const [initialUser, setInitialUser] = useState<typeof user>(null);
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    role: string;
-    phone?: string;
-    company?: string;
-    location?: string;
-    createdAt: string;
-    lastLogin: string;
-  } | null>(null);
+  const [initialUser, setInitialUser] = useState<UserType | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     fetch('/api/me', {
@@ -51,8 +56,6 @@ export default function AccountPage() {
       })
       .catch(() => setUser(null));
   }, []);
-
-  if (!user) return <Loader className="mx-auto mt-20 animate-spin" />;
 
   return (
     <SidebarProvider>
@@ -95,13 +98,16 @@ export default function AccountPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Information */}
             <div className="lg:col-span-2 space-y-6">
+              {!user && <Loader className="animate-spin mx-auto" />}
               {/* Personal Information */}
-              <PersonalInformationCard
-                user={user}
-                setUser={setUser}
-                initialUser={initialUser}
-                setInitialUser={setInitialUser}
-              />
+              {user && initialUser && (
+                <PersonalInformationCard
+                  user={user}
+                  setUser={setUser}
+                  initialUser={initialUser}
+                  setInitialUser={setInitialUser}
+                />
+              )}
 
               {/* Account Security */}
               <AccountSecurityCard />
@@ -109,8 +115,9 @@ export default function AccountPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {!user && <Loader className="animate-spin mx-auto " />}
               {/* Account Summary */}
-              <AccountSummaryCard user={user} />
+              {user && <AccountSummaryCard user={user} />}
 
               {/* Quick Actions */}
               <QuickActionsCard />
