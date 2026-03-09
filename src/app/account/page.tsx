@@ -31,8 +31,8 @@ export type UserType = {
   phone?: string;
   company?: string;
   location?: string;
-  avatar?: string;
-  avatarType?: string;
+  avatar?: string | null;
+  avatarType?: string | null;
   createdAt: string;
   lastLogin: string;
 };

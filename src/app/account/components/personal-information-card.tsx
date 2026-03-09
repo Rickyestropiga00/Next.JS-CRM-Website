@@ -9,8 +9,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import { Loader, User } from 'lucide-react';
-import React, { useState } from 'react';
+import { Loader, Trash2, User } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { UserType } from '../page';
 
@@ -30,6 +30,8 @@ const PersonalInformationCard = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [imageVersion, setImageVersion] = useState(Date.now());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdateAccountInfo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +71,7 @@ const PersonalInformationCard = ({
         setInitialUser(user);
         setSelectedFile(null);
         setPreview(null);
+        setImageVersion(Date.now());
         break;
       case 400:
         toast.error(data.error, { id: toastId });
@@ -98,6 +101,29 @@ const PersonalInformationCard = ({
           }) || selectedFile !== null
       : false;
 
+  const handleDeleteAvatar = async () => {
+    const res = await fetch(`/api/user/avatar/${user._id}`, {
+      method: 'DELETE',
+    });
+
+    if (res.ok) {
+      setPreview(null);
+      setSelectedFile(null);
+      setImageVersion(Date.now());
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              avatar: undefined,
+            }
+          : prev
+      );
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   if (!user) return <Loader className="mx-auto mt-20 animate-spin" />;
   return (
     <Card>
@@ -114,11 +140,23 @@ const PersonalInformationCard = ({
         <form onSubmit={handleUpdateAccountInfo} className="space-y-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage
-                className="bg-muted flex size-full items-center justify-center rounded-full text-lg object-contain"
-                src={preview || `/api/user/avatar/${user._id}`}
-                alt={user.name}
-              />
+              <div className="relative group">
+                <AvatarImage
+                  className="bg-muted flex size-full items-center justify-center rounded-full text-lg object-contain group-hover:brightness-50"
+                  src={
+                    preview || `/api/user/avatar/${user._id}?v=${imageVersion}`
+                  }
+                  alt={user.name}
+                />
+
+                <Button
+                  onClick={handleDeleteAvatar}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                >
+                  {' '}
+                  <Trash2 />{' '}
+                </Button>
+              </div>
               <AvatarFallback className="bg-muted flex size-full items-center justify-center rounded-full text-lg">
                 {user.name
                   .split(' ')
@@ -129,6 +167,7 @@ const PersonalInformationCard = ({
 
             <div className="space-y-2">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 hidden
