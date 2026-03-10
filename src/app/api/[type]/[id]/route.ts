@@ -34,6 +34,29 @@ export async function PUT(
     const body = await req.json();
     const Model = modelMap[type];
 
+    if (type === 'agent') {
+      const { assign = [], unassign = [] } = body;
+
+      if (assign.length) {
+        await Agents.findByIdAndUpdate(id, {
+          $addToSet: { assignedCustomers: { $each: assign } },
+        });
+      }
+
+      if (unassign.length) {
+        await Agents.findByIdAndUpdate(id, {
+          $pull: { assignedCustomers: { $in: unassign } },
+        });
+      }
+
+      const updatedAgent = await Agents.findById(id);
+
+      return NextResponse.json({
+        success: true,
+        data: updatedAgent,
+      });
+    }
+
     const updated = await Model.findByIdAndUpdate(id, body, { new: true });
 
     if (!updated) {
