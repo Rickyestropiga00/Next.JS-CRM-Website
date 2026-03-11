@@ -61,3 +61,59 @@ export async function POST(
     );
   }
 }
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ type: string }> }
+) {
+  try {
+    await dbConnect();
+    const { type } = await params;
+    const url = new URL(req.url);
+    const agentId = url.searchParams.get('agentId');
+    if (!type || !modelMap[type]) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
+    const Model = await modelMap[type];
+
+    if (type === 'customer') {
+      const currentAgent = await Agents.findById(agentId);
+      const allAgents = await Agents.find({}, { assignedCustomers: 1 });
+      const allAssignedCustomerIds = allAgents
+        .map((a) => a.assignedCustomers || [])
+        .flat();
+
+      const assignedCustomers = await Customer.find({
+        _id: { $in: currentAgent.assignedCustomers || [] },
+      });
+
+      const unassignedCustomers = await Customer.find({
+        _id: { $nin: allAssignedCustomerIds || [] },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          assigned: assignedCustomers,
+          unAssigned: unassignedCustomers,
+        },
+        { status: 200 }
+      );
+    }
+    const findRes = await Model.find();
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: findRes,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: 'Something went wrong' },
+      { status: 500 }
+    );
+  }
+}

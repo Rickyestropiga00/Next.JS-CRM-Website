@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
+import { MoreHorizontal, Trash, Pencil, ClipboardCheck } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ interface TableBodyProps {
   setDeleteDialogId: (id: string | null) => void;
   setEditAgentId: (id: string | null) => void;
   onAgentClick: (id: string) => void;
+  setAssignCustomerAgentId: (id: string | null) => void;
 }
 
 export function AgentsTableBody({
@@ -45,6 +46,7 @@ export function AgentsTableBody({
   setDeleteDialogId,
   setEditAgentId,
   onAgentClick,
+  setAssignCustomerAgentId,
 }: TableBodyProps) {
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
@@ -204,6 +206,12 @@ export function AgentsTableBody({
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  <DropdownMenuItem
+                    onClick={() => setAssignCustomerAgentId(getId(a))}
+                  >
+                    <ClipboardCheck />
+                    Assign
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

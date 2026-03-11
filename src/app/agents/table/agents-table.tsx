@@ -55,6 +55,7 @@ import {
 import { Table } from '@/components/ui/table';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
+import AssignCustomerPopover from './assign-customer-popover';
 
 export function AgentsTable() {
   const [search, setSearch] = useState('');
@@ -71,6 +72,10 @@ export function AgentsTable() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showAssignCustomer, setShowAssignCustomer] = useState(false);
+  const [assignCustomerAgentId, setAssignCustomerAgentId] = useState<
+    string | null
+  >(null);
 
   const roleOptions = ['Admin', 'Agent', 'Manager'];
   const statusOptions = ['Active', 'Inactive', 'On Leave'];
@@ -336,6 +341,7 @@ export function AgentsTable() {
               setDeleteDialogId={setDeleteDialogId}
               setEditAgentId={setEditAgentId}
               onAgentClick={setSelectedAgentId}
+              setAssignCustomerAgentId={setAssignCustomerAgentId}
             />
           </Table>
         </div>
@@ -385,6 +391,18 @@ export function AgentsTable() {
         onClose={() => setSelectedAgentId(null)}
         onAddComment={handleAddComment}
       />
+
+      {/* Assign Customer Modal - Rendered outside table structure */}
+      {assignCustomerAgentId && (
+        <AssignCustomerPopover
+          agent={data.find((a) => getId(a) === assignCustomerAgentId)!}
+          onSave={(updatedAgent) => {
+            handleEdit(updatedAgent);
+          }}
+          onClose={() => setAssignCustomerAgentId(null)}
+          open={true}
+        />
+      )}
     </>
   );
 }

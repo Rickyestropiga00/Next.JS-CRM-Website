@@ -39,10 +39,12 @@ const agentsSchema = new Schema<IAgents>(
       type: String,
       required: [true, 'Status is required'],
     },
-    assignedCustomers: {
-      type: [String],
-      default: [],
-    },
+    assignedCustomers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer',
+      },
+    ],
     notes: {
       type: String,
     },
