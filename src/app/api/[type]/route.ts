@@ -6,6 +6,7 @@ import Order from '@/models/Orders';
 import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
+import { generateCustomId } from '@/lib/generate-id';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -30,6 +31,24 @@ export async function POST(
 
     const body = await req.json();
     const Model = await modelMap[type];
+
+    if (type === 'order') {
+      const orderId = await generateCustomId('ORD', 'orderId');
+      body.orderId = orderId;
+    }
+
+    if (type === 'product') {
+      const productId = await generateCustomId('PRD', 'productId');
+      body.productId = productId;
+    }
+    if (type === 'customer') {
+      const customerId = await generateCustomId('CUST', 'customerId');
+      body.customerId = customerId;
+    }
+    if (type === 'agent') {
+      const agentId = await generateCustomId('AGNT', 'agentId');
+      body.agentId = agentId;
+    }
 
     const created = await Model.create(body);
 

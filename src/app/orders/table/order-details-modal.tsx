@@ -98,7 +98,7 @@ export function OrderDetailsModal({
                   {order.payment}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {getId(order)}
+                  ID: {order.orderId}
                 </span>
               </div>
             </div>

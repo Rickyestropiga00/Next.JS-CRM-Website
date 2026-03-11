@@ -110,7 +110,9 @@ export function CustomersTableBody({
                 onClick={(e) => e.stopPropagation()}
               />
             </TableCell>
-            <TableCell className="pl-4 w-[60px] font-mono">{c.id}</TableCell>
+            <TableCell className="pl-4 w-[60px] font-mono">
+              {c.id || c.customerId}
+            </TableCell>
             <TableCell className="w-[150px]">{c.name}</TableCell>
             <TableCell className="w-[200px]">{c.email}</TableCell>
             <TableCell className="w-[120px]">{formatPhone(c.phone)}</TableCell>

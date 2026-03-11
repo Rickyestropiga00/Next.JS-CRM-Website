@@ -205,7 +205,7 @@ export function CustomerDetailsModal({
                   {customer.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {customer.id}
+                  ID: {customer.id || customer.customerId}
                 </span>
               </div>
             </div>

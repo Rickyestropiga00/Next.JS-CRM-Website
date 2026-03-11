@@ -117,7 +117,7 @@ export function OrdersTableBody({
             />
           </TableCell>
           <TableCell className="pl-4 w-[120px] font-mono text-sm">
-            {order.id}
+            {order.id || order.orderId}
           </TableCell>
           <TableCell className="w-[120px]">
             {order.date && !isNaN(new Date(order.date).getTime())

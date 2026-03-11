@@ -4,6 +4,7 @@ export type PaymentStatus = 'Paid' | 'Unpaid';
 export interface Order {
   _id?: string; // For MongoDB documents
   id: string;
+  orderId?: string;
   date: string; // ISO date string
   customer: string;
   address: string;

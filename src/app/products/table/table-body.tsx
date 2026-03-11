@@ -113,7 +113,9 @@ export function ProductsTableBody({
               aria-label={`Select row for ${p.name}`}
             />
           </TableCell>
-          <TableCell className="pl-4 w-[60px] font-mono">{p.id}</TableCell>
+          <TableCell className="pl-4 w-[60px] font-mono">
+            {p.id || p.productId}
+          </TableCell>
           <TableCell className="w-[200px]">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-sm overflow-hidden bg-muted">

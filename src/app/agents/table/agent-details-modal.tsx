@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Agent } from "../data";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Agent } from '../data';
 import {
   Mail,
   Phone,
@@ -19,7 +19,7 @@ import {
   FileText,
   MessageSquare,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface AgentDetailsModalProps {
   agent: Agent | null;
@@ -34,53 +34,53 @@ export function AgentDetailsModal({
   onClose,
   onAddComment,
 }: AgentDetailsModalProps) {
-  const [newComment, setNewComment] = useState("");
+  const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!agent) return null;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Inactive":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      case "On Leave":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case 'Active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'On Leave':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "Admin":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-      case "Manager":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Agent":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
+      case 'Admin':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'Manager':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Agent':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
@@ -90,16 +90,16 @@ export function AgentDetailsModal({
     setIsSubmitting(true);
     try {
       await onAddComment(agent.id, newComment.trim());
-      setNewComment("");
+      setNewComment('');
     } catch (error) {
-      console.error("Failed to add comment:", error);
+      console.error('Failed to add comment:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleAddComment();
     }
@@ -108,7 +108,7 @@ export function AgentDetailsModal({
   const parseNotesAndComments = (notes: string) => {
     if (!notes) return { regularNotes: [], comments: [] };
 
-    const sections = notes.split("---").filter((section) => section.trim());
+    const sections = notes.split('---').filter((section) => section.trim());
     const regularNotes: string[] = [];
     const comments: Array<{
       author: string;
@@ -117,16 +117,16 @@ export function AgentDetailsModal({
     }> = [];
 
     sections.forEach((section) => {
-      const lines = section.trim().split("\n");
-      const commentLine = lines.find((line) => line.includes("📝 Comment by"));
-      const dateLine = lines.find((line) => line.includes("📅"));
+      const lines = section.trim().split('\n');
+      const commentLine = lines.find((line) => line.includes('📝 Comment by'));
+      const dateLine = lines.find((line) => line.includes('📅'));
 
       if (commentLine && dateLine) {
         // This is a comment
-        const content = lines.slice(3).join("\n").trim(); // Skip header lines
+        const content = lines.slice(3).join('\n').trim(); // Skip header lines
         comments.push({
-          author: commentLine.replace("📝 Comment by ", ""),
-          date: dateLine.replace("📅 ", ""),
+          author: commentLine.replace('📝 Comment by ', ''),
+          date: dateLine.replace('📅 ', ''),
           content: content,
         });
       } else {
@@ -159,7 +159,7 @@ export function AgentDetailsModal({
       author: string;
       date: string;
       content: string;
-    }>,
+    }>
   ) => {
     if (comments.length === 0) return null;
 
@@ -204,9 +204,9 @@ export function AgentDetailsModal({
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center">
               <span className="text-lg font-bold text-white">
                 {agent.name
-                  .split(" ")
+                  .split(' ')
                   .map((n) => n[0])
-                  .join("")
+                  .join('')
                   .toUpperCase()}
               </span>
             </div>
@@ -217,7 +217,7 @@ export function AgentDetailsModal({
               <div className="flex items-center justify-center gap-2">
                 <Badge
                   className={`${getStatusColor(
-                    agent.status,
+                    agent.status
                   )} px-2 py-0.5 text-xs`}
                 >
                   {agent.status}
@@ -228,7 +228,7 @@ export function AgentDetailsModal({
                   {agent.role}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {agent.id}
+                  ID: {agent.id || agent.agentId}
                 </span>
               </div>
             </div>
@@ -319,9 +319,9 @@ export function AgentDetailsModal({
                 <p className="text-xs">
                   {agent.assignedCustomers.length > 0
                     ? `${agent.assignedCustomers.length} customer${
-                        agent.assignedCustomers.length !== 1 ? "s" : ""
+                        agent.assignedCustomers.length !== 1 ? 's' : ''
                       } assigned`
-                    : "No customers assigned"}
+                    : 'No customers assigned'}
                 </p>
               </div>
             </div>
@@ -338,7 +338,7 @@ export function AgentDetailsModal({
               </div>
               {(() => {
                 const { regularNotes } = parseNotesAndComments(
-                  agent.notes || "",
+                  agent.notes || ''
                 );
                 return regularNotes.length > 0 ? (
                   renderRegularNotes(regularNotes)
@@ -356,7 +356,7 @@ export function AgentDetailsModal({
           {/* Comments Section */}
           {onAddComment &&
             (() => {
-              const { comments } = parseNotesAndComments(agent.comment || "");
+              const { comments } = parseNotesAndComments(agent.comment || '');
               return (
                 <div className="bg-card border rounded-lg p-4 space-y-4">
                   <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export function AgentDetailsModal({
                         size="sm"
                         className="h-7 px-3 text-xs cursor-pointer"
                       >
-                        {isSubmitting ? "Adding..." : "Add Comment"}
+                        {isSubmitting ? 'Adding...' : 'Add Comment'}
                       </Button>
                     </div>
                   </div>

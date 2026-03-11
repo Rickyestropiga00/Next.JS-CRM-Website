@@ -4,6 +4,7 @@ export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 export type ProductStatus = 'Active' | 'Disabled';
 
 export interface IProduct extends Document {
+  productId: string;
   name: string;
   code: string;
   type: ProductType;
@@ -18,6 +19,11 @@ export interface IProduct extends Document {
 
 const productSchema = new Schema<IProduct>(
   {
+    productId: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     name: {
       type: String,
       required: [true, 'Product name is required'],

@@ -4,6 +4,7 @@ export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 export interface Product {
   _id?: string; // For MongoDB documents
   id: string;
+  productId?: string;
   name: string;
   code: string;
   type: ProductType;

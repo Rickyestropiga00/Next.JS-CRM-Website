@@ -4,6 +4,7 @@ export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
 export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface IOrder extends Document {
+  orderId: string;
   customer: string;
   address: string;
   product: string;
@@ -20,6 +21,11 @@ export interface IOrder extends Document {
 
 const orderSchema = new Schema<IOrder>(
   {
+    orderId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     customer: {
       type: String,
       required: [true, 'Customer name is required'],

@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
 
 export interface ICustomer extends Document {
+  customerId: string;
   name: string;
   email: string;
   phone: string;
@@ -18,6 +19,11 @@ export interface ICustomer extends Document {
 
 const customerSchema = new Schema<ICustomer>(
   {
+    customerId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: [true, 'Name is required'],

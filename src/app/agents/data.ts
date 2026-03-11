@@ -1,6 +1,7 @@
 export type Agent = {
   _id?: string; // For MongoDB documents
   id: string;
+  agentId?: string;
   name: string;
   email: string;
   phone: string;
