@@ -90,12 +90,13 @@ export async function GET(
     const { type } = await params;
     const url = new URL(req.url);
     const agentId = url.searchParams.get('agentId');
+    const customerId = url.searchParams.get('customerId');
     if (!type || !modelMap[type]) {
       return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
     }
     const Model = await modelMap[type];
 
-    if (type === 'customer') {
+    if (type === 'customer' && agentId) {
       const currentAgent = await Agents.findById(agentId);
       const allAgents = await Agents.find({}, { assignedCustomers: 1 });
       const allAssignedCustomerIds = allAgents
@@ -119,7 +120,23 @@ export async function GET(
         { status: 200 }
       );
     }
-    const findRes = await Model.find();
+
+    let findRes;
+
+    if (type === 'order') {
+      const query: any = {};
+      if (customerId) {
+        query.customer = customerId;
+      }
+      findRes = await Model.find(query)
+        .populate({
+          path: 'customer',
+          select: 'name',
+        })
+        .lean();
+    } else {
+      findRes = await Model.find();
+    }
 
     return NextResponse.json(
       {

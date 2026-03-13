@@ -20,6 +20,7 @@ import {
   User,
 } from 'lucide-react';
 import { getId } from '@/utils/helper';
+import { custom } from 'zod';
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -64,6 +65,10 @@ export function OrderDetailsModal({
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
+  const customerName =
+    typeof order.customer === 'string'
+      ? order.customer
+      : order.customer?.name ?? 'Unknown';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -77,7 +82,7 @@ export function OrderDetailsModal({
           <div className="text-center space-y-2">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center">
               <span className="text-lg font-bold text-white">
-                {order.customer
+                {customerName
                   .split(' ')
                   .map((n) => n[0])
                   .join('')
@@ -86,7 +91,7 @@ export function OrderDetailsModal({
             </div>
             <div className="space-y-1">
               <h2 className="text-xl font-bold text-foreground">
-                {order.customer}
+                {customerName}
               </h2>
               <div className="flex items-center justify-center gap-2">
                 <StatusBadge status={order.status} type="order" />
@@ -118,7 +123,7 @@ export function OrderDetailsModal({
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
                   Name
                 </p>
-                <p className="text-xs">{order.customer}</p>
+                <p className="text-xs">{customerName}</p>
               </div>
             </div>
 

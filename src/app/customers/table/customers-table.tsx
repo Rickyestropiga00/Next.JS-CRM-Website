@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   customers as initialCustomers,
@@ -58,6 +58,8 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
+import { fetchData } from '@/lib/api/fetch-data';
+import ViewOrderModal from './view-order-modal';
 
 export function CustomersTable() {
   const [search, setSearch] = useState('');
@@ -75,6 +77,9 @@ export function CustomersTable() {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [viewOrderCustomerId, setViewOrderCustomerId] = useState<string | null>(
+    null
+  );
   const statusOptions: CustomerStatus[] = [
     'Lead',
     'Active',
@@ -235,6 +240,14 @@ export function CustomersTable() {
       toast.error('Something went wrong');
     }
   }
+  useEffect(() => {
+    const getCustomer = async () => {
+      const res = await fetchData('customer');
+      setData([...res.data, ...initialCustomers]);
+    };
+
+    getCustomer();
+  }, []);
 
   return (
     <>
@@ -323,6 +336,7 @@ export function CustomersTable() {
               setDeleteDialogId={setDeleteDialogId}
               setEditCustomerId={setEditCustomerId}
               onCustomerClick={setSelectedCustomerId}
+              setViewOrderCustomerId={setViewOrderCustomerId}
             />
           </Table>
         </div>
@@ -372,6 +386,13 @@ export function CustomersTable() {
         onClose={() => setSelectedCustomerId(null)}
         onAddComment={handleAddComment}
       />
+      {viewOrderCustomerId && (
+        <ViewOrderModal
+          customer={data.find((c) => getId(c) === viewOrderCustomerId)!}
+          onClose={() => setViewOrderCustomerId(null)}
+          open={true}
+        />
+      )}
     </>
   );
 }

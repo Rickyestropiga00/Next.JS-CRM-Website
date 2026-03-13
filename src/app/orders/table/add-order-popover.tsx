@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Order, OrderStatus, PaymentStatus } from '../data';
-import { set } from 'mongoose';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { fetchData } from '@/lib/api/fetch-data';
+import { Customer } from '@/types/interface';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -34,12 +43,13 @@ export function AddOrderPopover({
   onClose,
 }: AddOrderPopoverProps) {
   const [internalIsOpen] = useState(false);
+  const [customer, setCustomer] = useState<Customer[]>([]);
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
   const [formData, setFormData] = useState({
-    customer: '',
+    customer: null as Customer | null,
     address: '',
     product: '',
     productType: 'Physical' as
@@ -54,12 +64,13 @@ export function AddOrderPopover({
     status: 'Pending' as OrderStatus,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [inputValue, setInputValue] = useState('');
 
   // Reset form data when popover opens
   React.useEffect(() => {
     if (isModalOpen) {
       setFormData({
-        customer: '',
+        customer: null as Customer | null,
         address: '',
         product: '',
         productType: 'Physical',
@@ -74,8 +85,8 @@ export function AddOrderPopover({
   }, [isModalOpen]);
 
   // Validation functions
-  const validateCustomer = (customer: string): string | undefined => {
-    if (!customer.trim()) return 'Customer is required';
+  const validateCustomer = (customer: Customer | null): string | undefined => {
+    if (!customer) return 'Customer is required';
     return undefined;
   };
 
@@ -161,7 +172,7 @@ export function AddOrderPopover({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customer: formData.customer.trim(),
+          customer: formData.customer?._id,
           address: formData.address.trim(),
           product: formData.product.trim(),
           productType: formData.productType,
@@ -183,7 +194,13 @@ export function AddOrderPopover({
 
       switch (response.status) {
         case 201:
-          onAddOrder(data); // update UI
+          const orderWithCustomerObject: Order = {
+            ...data,
+            customer: formData.customer,
+          };
+
+          onAddOrder(orderWithCustomerObject); // update UI
+          setInputValue('');
           break;
         case 400:
           throw new Error(data.error || 'Validation error');
@@ -205,14 +222,8 @@ export function AddOrderPopover({
   const handleCancel = () => {
     if (onClose) {
       onClose();
+      setInputValue('');
     }
-  };
-
-  const handleCustomerChange = (value: string) => {
-    setFormData({ ...formData, customer: value });
-    // Always validate and update errors when customer changes
-    const customerError = validateCustomer(value);
-    setErrors((prev) => ({ ...prev, customer: customerError }));
   };
 
   const handleAddressChange = (value: string) => {
@@ -250,6 +261,18 @@ export function AddOrderPopover({
     setErrors((prev) => ({ ...prev, total: totalError }));
   };
 
+  useEffect(() => {
+    const loadCustomer = async () => {
+      try {
+        const res = await fetchData('customer');
+        setCustomer(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadCustomer();
+  }, []);
+
   if (!isModalOpen) return null;
 
   return (
@@ -274,15 +297,42 @@ export function AddOrderPopover({
                 <Label htmlFor="customer" className="text-xs">
                   Customer
                 </Label>
-                <Input
-                  id="customer"
-                  value={formData.customer}
-                  onChange={(e) => handleCustomerChange(e.target.value)}
-                  className={`h-8 sm:h-9 text-xs ${
-                    errors.customer ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter customer name"
-                />
+
+                <Combobox
+                  items={customer.map((c) => ({ label: c.name, value: c._id }))}
+                  value={formData.customer?._id || ''}
+                  onValueChange={(value) => {
+                    const selected =
+                      customer.find((c) => c._id === value) || null;
+                    setFormData({ ...formData, customer: selected });
+                    setInputValue(selected?.name || '');
+                  }}
+                >
+                  <ComboboxInput
+                    placeholder="Select a customer"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onBlur={() => {
+                      const matched = customer.find(
+                        (c) => c.name === inputValue
+                      );
+                      if (!matched) {
+                        setInputValue('');
+                        setFormData({ ...formData, customer: null });
+                      }
+                    }}
+                  />
+                  <ComboboxContent>
+                    <ComboboxEmpty>No customer found.</ComboboxEmpty>
+                    <ComboboxList>
+                      {(item) => (
+                        <ComboboxItem key={item.value} value={item.value}>
+                          {item.label}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="product" className="text-xs">

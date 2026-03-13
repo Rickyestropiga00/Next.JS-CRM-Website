@@ -1,3 +1,4 @@
+'use client';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import React, { useEffect, useState } from 'react';
 import { Agent } from '../data';

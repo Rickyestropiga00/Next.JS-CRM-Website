@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   orders as initialOrders,
@@ -59,6 +59,7 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
+import { fetchData } from '@/lib/api/fetch-data';
 
 export function OrdersTable() {
   const [search, setSearch] = useState('');
@@ -89,9 +90,13 @@ export function OrdersTable() {
   // Filtering
   const filtered = useMemo(() => {
     return data.filter((order) => {
+      const customerName =
+        typeof order.customer === 'string'
+          ? order.customer
+          : order.customer?.name ?? 'Unknown';
       const matchesSearch =
         (order.id ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (order.customer ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (customerName ?? '').toLowerCase().includes(search.toLowerCase()) ||
         (order.product ?? '').toLowerCase().includes(search.toLowerCase()) ||
         String(order.quantity ?? '').includes(search.toLowerCase());
       const matchesStatus = status === 'all' ? true : order.status === status;

@@ -5,7 +5,7 @@ export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface IOrder extends Document {
   orderId: string;
-  customer: string;
+  customer: mongoose.Types.ObjectId;
   address: string;
   product: string;
   productType: string;
@@ -27,7 +27,8 @@ const orderSchema = new Schema<IOrder>(
       unique: true,
     },
     customer: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Customer',
       required: [true, 'Customer name is required'],
     },
     address: {
