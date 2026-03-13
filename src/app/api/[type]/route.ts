@@ -6,6 +6,7 @@ import Order from '@/models/Orders';
 import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
+import { generateCustomId } from '@/lib/generate-id';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -30,6 +31,24 @@ export async function POST(
 
     const body = await req.json();
     const Model = await modelMap[type];
+
+    if (type === 'order') {
+      const orderId = await generateCustomId('ORD', 'orderId');
+      body.orderId = orderId;
+    }
+
+    if (type === 'product') {
+      const productId = await generateCustomId('PRD', 'productId');
+      body.productId = productId;
+    }
+    if (type === 'customer') {
+      const customerId = await generateCustomId('CUST', 'customerId');
+      body.customerId = customerId;
+    }
+    if (type === 'agent') {
+      const agentId = await generateCustomId('AGNT', 'agentId');
+      body.agentId = agentId;
+    }
 
     const created = await Model.create(body);
 
@@ -71,12 +90,13 @@ export async function GET(
     const { type } = await params;
     const url = new URL(req.url);
     const agentId = url.searchParams.get('agentId');
+    const customerId = url.searchParams.get('customerId');
     if (!type || !modelMap[type]) {
       return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
     }
     const Model = await modelMap[type];
 
-    if (type === 'customer') {
+    if (type === 'customer' && agentId) {
       const currentAgent = await Agents.findById(agentId);
       const allAgents = await Agents.find({}, { assignedCustomers: 1 });
       const allAssignedCustomerIds = allAgents
@@ -100,7 +120,23 @@ export async function GET(
         { status: 200 }
       );
     }
-    const findRes = await Model.find();
+
+    let findRes;
+
+    if (type === 'order') {
+      const query: any = {};
+      if (customerId) {
+        query.customer = customerId;
+      }
+      findRes = await Model.find(query)
+        .populate({
+          path: 'customer',
+          select: 'name',
+        })
+        .lean();
+    } else {
+      findRes = await Model.find();
+    }
 
     return NextResponse.json(
       {

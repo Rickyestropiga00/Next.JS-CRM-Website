@@ -111,7 +111,9 @@ export function AgentsTableBody({
                 onClick={(e) => e.stopPropagation()}
               />
             </TableCell>
-            <TableCell className="pl-4 w-[70px] font-mono">{a.id}</TableCell>
+            <TableCell className="pl-4 w-[70px] font-mono">
+              {a.id || a.agentId}
+            </TableCell>
             <TableCell className="w-[150px]">{a.name}</TableCell>
             <TableCell className="w-[220px]">{a.email}</TableCell>
             <TableCell className="w-[120px]">{formatPhone(a.phone)}</TableCell>

@@ -124,7 +124,7 @@ export function ProductDetailsModal({
                   {product.type}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {product.id}
+                  ID: {product.id || product.productId}
                 </span>
               </div>
             </div>

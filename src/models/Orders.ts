@@ -4,7 +4,8 @@ export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
 export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface IOrder extends Document {
-  customer: string;
+  orderId: string;
+  customer: mongoose.Types.ObjectId;
   address: string;
   product: string;
   productType: string;
@@ -20,8 +21,14 @@ export interface IOrder extends Document {
 
 const orderSchema = new Schema<IOrder>(
   {
-    customer: {
+    orderId: {
       type: String,
+      required: true,
+      unique: true,
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Customer',
       required: [true, 'Customer name is required'],
     },
     address: {

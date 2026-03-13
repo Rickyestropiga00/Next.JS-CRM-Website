@@ -68,7 +68,7 @@ export function EditOrderPopover({
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
 
-    const customerError = validateCustomer(formData.customer);
+    const customerError = validateCustomer(String(formData.customer));
     if (customerError) newErrors.customer = customerError;
 
     const quantityError = validateQuantity(formData.quantity);
@@ -84,7 +84,7 @@ export function EditOrderPopover({
   // Check if form is valid for enabling/disabling save button
   const isFormValid = (): boolean => {
     return (
-      !validateCustomer(formData.customer) &&
+      !validateCustomer(String(formData.customer)) &&
       !validateQuantity(formData.quantity) &&
       !validateTotal(formData.total)
     );
@@ -225,7 +225,11 @@ export function EditOrderPopover({
               </Label>
               <Input
                 id="customer"
-                value={formData.customer}
+                value={
+                  typeof formData.customer === 'string'
+                    ? formData.customer
+                    : formData.customer?.name ?? ''
+                }
                 onChange={(e) => handleCustomerChange(e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.customer ? 'border-red-500' : ''

@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export type roleType = 'Admin' | 'Agent' | 'Manager';
 export type statusType = 'Active' | 'Inactive' | 'On Leave';
 export interface IAgents extends Document {
+  agentId: string;
   name: string;
   email: string;
   phone: string;
@@ -17,6 +18,11 @@ export interface IAgents extends Document {
 
 const agentsSchema = new Schema<IAgents>(
   {
+    agentId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: [true, 'Name is required'],

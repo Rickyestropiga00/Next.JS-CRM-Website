@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Trash, Pencil } from 'lucide-react';
+import { MoreHorizontal, Trash, Pencil, Eye } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Customer } from '../data';
 import {
@@ -24,6 +24,7 @@ import {
 import { formatPhone } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
+import { fetchData } from '@/lib/api/fetch-data';
 
 interface TableBodyProps {
   paginated: any[];
@@ -34,6 +35,7 @@ interface TableBodyProps {
   setDeleteDialogId: (id: string | null) => void;
   setEditCustomerId: (id: string | null) => void;
   onCustomerClick: (id: string) => void;
+  setViewOrderCustomerId: (id: string | null) => void;
 }
 
 export function CustomersTableBody({
@@ -45,6 +47,7 @@ export function CustomersTableBody({
   setDeleteDialogId,
   setEditCustomerId,
   onCustomerClick,
+  setViewOrderCustomerId,
 }: TableBodyProps) {
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
@@ -110,7 +113,9 @@ export function CustomersTableBody({
                 onClick={(e) => e.stopPropagation()}
               />
             </TableCell>
-            <TableCell className="pl-4 w-[60px] font-mono">{c.id}</TableCell>
+            <TableCell className="pl-4 w-[60px] font-mono">
+              {c.id || c.customerId}
+            </TableCell>
             <TableCell className="w-[150px]">{c.name}</TableCell>
             <TableCell className="w-[200px]">{c.email}</TableCell>
             <TableCell className="w-[120px]">{formatPhone(c.phone)}</TableCell>
@@ -203,6 +208,12 @@ export function CustomersTableBody({
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  <DropdownMenuItem
+                    onClick={() => setViewOrderCustomerId(getId(c))}
+                  >
+                    <Eye />
+                    View Order
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

@@ -3,6 +3,7 @@ export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
 export interface Customer {
   _id?: string; // For MongoDB documents
   id: string;
+  customerId?: string;
   name: string;
   email: string;
   phone: string;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { Order } from '../data';
 import { getId } from '@/utils/helper';
+import { fetchData } from '@/lib/api/fetch-data';
 
 interface TableBodyProps {
   paginated: any[];
@@ -117,7 +118,7 @@ export function OrdersTableBody({
             />
           </TableCell>
           <TableCell className="pl-4 w-[120px] font-mono text-sm">
-            {order.id}
+            {order.id || order.orderId}
           </TableCell>
           <TableCell className="w-[120px]">
             {order.date && !isNaN(new Date(order.date).getTime())
@@ -125,7 +126,7 @@ export function OrdersTableBody({
               : new Date(order.createdAt?.split('T')[0]).toLocaleDateString()}
           </TableCell>
           <TableCell className="w-[150px] font-medium">
-            {order.customer}
+            {order.customer.name ?? order.customer}
           </TableCell>
           <TableCell className="w-[200px] text-sm text-muted-foreground">
             {formatAddress(order.address)}

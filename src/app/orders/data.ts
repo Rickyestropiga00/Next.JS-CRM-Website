@@ -1,11 +1,14 @@
+import { Customer } from '@/types/interface';
+
 export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
 export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface Order {
   _id?: string; // For MongoDB documents
   id: string;
+  orderId?: string;
   date: string; // ISO date string
-  customer: string;
+  customer?: string | Customer;
   address: string;
   product: string;
   productType: string;
