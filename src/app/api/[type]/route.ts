@@ -33,20 +33,38 @@ export async function POST(
     const Model = await modelMap[type];
 
     if (type === 'order') {
-      const orderId = await generateCustomId('ORD', 'orderId');
+      const orderId = await generateCustomId(
+        'orderId',
+        (seq) => `ORD-${String(seq).padStart(3, '0')}`
+      );
       body.orderId = orderId;
     }
 
     if (type === 'product') {
-      const productId = await generateCustomId('PRD', 'productId');
+      const productId = await generateCustomId(
+        'productId',
+        (seq) => `PRD-${String(seq).padStart(3, '0')}`
+      );
       body.productId = productId;
     }
+
     if (type === 'customer') {
-      const customerId = await generateCustomId('CUST', 'customerId');
+      // Static mock data uses IDs 1–30, so real DB IDs start at 31
+      const customerId = await generateCustomId(
+        'customerId',
+        (seq) => String(seq),
+        30
+      );
       body.customerId = customerId;
     }
+
     if (type === 'agent') {
-      const agentId = await generateCustomId('AGNT', 'agentId');
+      // Static mock data uses A01–A30, so real DB IDs start at A31
+      const agentId = await generateCustomId(
+        'agentId',
+        (seq) => `A${String(seq).padStart(2, '0')}`,
+        30
+      );
       body.agentId = agentId;
     }
 
