@@ -1,13 +1,13 @@
-import React from 'react';
-import { TableBody, TableRow, TableCell } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from "react";
+import { TableBody, TableRow, TableCell } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Trash, Pencil, ClipboardCheck } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Trash, Pencil, ClipboardCheck } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,12 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Agent } from '../data';
-import { StatusBadge } from '@/components/shared/status-badge';
-import { formatPhone } from '@/utils/formatters';
-import { toast } from 'sonner';
-import { getId } from '@/utils/helper';
+} from "@/components/ui/alert-dialog";
+import { Agent } from "../data";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { formatPhone } from "@/utils/formatters";
+import { toast } from "sonner";
+import { getId } from "@/utils/helper";
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -60,7 +60,7 @@ export function AgentsTableBody({
     if (agentId) {
       try {
         const res = await fetch(`/api/agent/${agent._id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         const data = await res.json();
 
@@ -73,7 +73,7 @@ export function AgentsTableBody({
         }
       } catch (err) {
         console.error(err);
-        toast.error('Something went wrong');
+        toast.error("Something went wrong");
       }
     } else {
       onDelete(agent.id);
@@ -95,7 +95,7 @@ export function AgentsTableBody({
               if (
                 target.closest('input[type="checkbox"]') ||
                 target.closest('[role="menuitem"]') ||
-                target.closest('button')
+                target.closest("button")
               ) {
                 return;
               }
@@ -124,17 +124,17 @@ export function AgentsTableBody({
             <TableCell className="w-[150px]">
               {a.assignedCustomers.length > 0
                 ? `${a.assignedCustomers.length} assigned`
-                : '-'}
+                : "-"}
             </TableCell>
             <TableCell className="w-[120px]">
-              {a.createdAt?.split('T')[0]}
+              {a.createdAt?.split("T")[0]}
             </TableCell>
             <TableCell className="w-[120px]">
-              {a.lastLogin ? new Date(a.lastLogin).toLocaleDateString() : '-'}
+              {a.lastLogin ? new Date(a.lastLogin).toLocaleDateString() : "-"}
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
-              <div className="truncate" title={a.notes || ''}>
-                {a.notes || '-'}
+              <div className="truncate" title={a.notes || ""}>
+                {a.notes || "-"}
               </div>
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
@@ -144,7 +144,7 @@ export function AgentsTableBody({
                     {commentCount}
                   </span>
                 ) : (
-                  '-'
+                  "-"
                 )}
               </div>
             </TableCell>
