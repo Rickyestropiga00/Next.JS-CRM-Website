@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,9 +17,19 @@ import {
   validateNumber,
   validatePrice,
 } from '@/lib/validations';
-import { Order, OrderStatus, PaymentStatus } from '../data';
+import { OrderStatus, PaymentStatus } from '../data';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
+import { Customer, Order } from '@/types/interface';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { fetchData } from '@/lib/api/fetch-data';
 
 interface EditOrderPopoverProps {
   order: Order;
@@ -43,12 +53,19 @@ export function EditOrderPopover({
   const [formData, setFormData] = useState<Order>(order);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isUpdating, setIsUpdating] = useState(false);
+  const [customer, setCustomer] = useState<Customer[]>([]);
+  const [inputValue, setInputValue] = useState('');
 
   // Reset form data when order changes or popover opens
   React.useEffect(() => {
     if (open) {
       setFormData(order);
       setErrors({});
+      setInputValue(
+        typeof order.customer === 'string'
+          ? order.customer
+          : order.customer?.name || ''
+      );
     }
   }, [order, open]);
 
@@ -120,7 +137,12 @@ export function EditOrderPopover({
 
         switch (res.status) {
           case 200:
-            onSave(result.data);
+            const savedOrder: Order = {
+              ...result.data,
+              customer:
+                customer.find((c) => c._id === result.data.customer) || null,
+            };
+            onSave(savedOrder);
             onClose();
             toast.success(result.message, { id: toastId });
             console.log(result.message);
@@ -147,14 +169,6 @@ export function EditOrderPopover({
     onClose();
   };
 
-  const handleCustomerChange = (value: string) => {
-    setFormData({ ...formData, customer: value });
-    if (errors.customer) {
-      const customerError = validateCustomer(value);
-      setErrors((prev) => ({ ...prev, customer: customerError }));
-    }
-  };
-
   const handleQuantityChange = (value: string) => {
     const numValue = parseInt(value) || 0;
     setFormData({ ...formData, quantity: numValue });
@@ -172,6 +186,18 @@ export function EditOrderPopover({
       setErrors((prev) => ({ ...prev, total: totalError }));
     }
   };
+
+  useEffect(() => {
+    const loadCustomer = async () => {
+      try {
+        const res = await fetchData('customer');
+        setCustomer(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadCustomer();
+  }, []);
 
   return (
     <ModalWrapper open={open} onClose={handleCancel}>
@@ -193,7 +219,7 @@ export function EditOrderPopover({
               </Label>
               <Input
                 id="id"
-                value={getId(formData)}
+                value={formData.orderId}
                 disabled
                 className="h-8 sm:h-9 text-xs bg-muted"
               />
@@ -208,9 +234,13 @@ export function EditOrderPopover({
               <Input
                 id="date"
                 type="date"
-                value={formData.date}
+                value={
+                  order.createdAt
+                    ? new Date(order.createdAt).toISOString().slice(0, 10)
+                    : ''
+                }
                 onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
+                  setFormData({ ...formData, createdAt: e.target.value })
                 }
                 className="h-8 sm:h-9 text-xs"
               />
@@ -223,18 +253,44 @@ export function EditOrderPopover({
               <Label htmlFor="customer" className="text-xs">
                 Customer Name
               </Label>
-              <Input
-                id="customer"
+
+              <Combobox
+                items={customer.map((c) => ({ label: c.name, value: c._id }))}
                 value={
                   typeof formData.customer === 'string'
-                    ? formData.customer
-                    : formData.customer?.name ?? ''
+                    ? ''
+                    : formData.customer?._id || ''
                 }
-                onChange={(e) => handleCustomerChange(e.target.value)}
-                className={`h-8 sm:h-9 text-xs ${
-                  errors.customer ? 'border-red-500' : ''
-                }`}
-              />
+                onValueChange={(value) => {
+                  const selected =
+                    customer.find((c) => c._id === value) || null;
+                  setFormData({ ...formData, customer: selected });
+                  setInputValue(selected?.name || '');
+                }}
+              >
+                <ComboboxInput
+                  placeholder="Select a customer"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onBlur={() => {
+                    const matched = customer.find((c) => c.name === inputValue);
+                    if (!matched) {
+                      setInputValue('');
+                      setFormData({ ...formData, customer: null });
+                    }
+                  }}
+                />
+                <ComboboxContent>
+                  <ComboboxEmpty>No customer found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item) => (
+                      <ComboboxItem key={item.value} value={item.value}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
               {errors.customer && (
                 <p className="text-xs text-red-500">{errors.customer}</p>
               )}

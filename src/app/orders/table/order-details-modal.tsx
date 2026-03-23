@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Order } from '../data';
 import { StatusBadge } from '@/components/shared/status-badge';
 import {
   ShoppingBag,
@@ -19,8 +18,7 @@ import {
   Calendar,
   User,
 } from 'lucide-react';
-import { getId } from '@/utils/helper';
-import { custom } from 'zod';
+import { Order } from '@/types/interface';
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -243,7 +241,11 @@ export function OrderDetailsModal({
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
                   Order Date
                 </p>
-                <p className="text-xs">{order.date}</p>
+                <p className="text-xs">
+                  {order.createdAt
+                    ? new Date(order.createdAt).toLocaleDateString()
+                    : 'N/A'}
+                </p>
               </div>
             </div>
           </div>
