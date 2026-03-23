@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Order, OrderStatus, PaymentStatus } from '../data';
+import { OrderStatus, PaymentStatus } from '../data';
 import {
   Combobox,
   ComboboxContent,
@@ -20,7 +20,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { fetchData } from '@/lib/api/fetch-data';
-import { Customer } from '@/types/interface';
+import { Customer, Order } from '@/types/interface';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;

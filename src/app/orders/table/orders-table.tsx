@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import {
-  orders as initialOrders,
-  OrderStatus,
-  PaymentStatus,
-  Order,
-} from '../data';
+import { orders as initialOrders, OrderStatus, PaymentStatus } from '../data';
+import { Order } from '@/types/interface';
 import { OrdersTableHeader } from './table-header';
 import { OrdersTableBody } from './table-body';
 import { OrdersPaginationBar } from './pagination-bar';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,7 +128,7 @@ export function OrdersTable() {
         return 0;
       }
 
-      if (sortBy === 'date') {
+      if (sortBy === 'createdAt') {
         const aDate = new Date(aVal as string);
         const bDate = new Date(bVal as string);
         if (aDate < bDate) return sortDir === 'asc' ? -1 : 1;
@@ -246,6 +243,21 @@ export function OrdersTable() {
     }
   }
 
+  const paginatedForHeader = useMemo(() => {
+    return paginated.map((order, index) => ({
+      id: getId(order) ?? index.toString(),
+    }));
+  }, [paginated]);
+
+  useEffect(() => {
+    const getOrder = async () => {
+      const res = await fetchData('order');
+      setData([...res.data, ...initialOrders]);
+    };
+
+    getOrder();
+  }, []);
+
   return (
     <>
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3">
@@ -348,7 +360,7 @@ export function OrdersTable() {
           <Table className="bg-transparent">
             <OrdersTableHeader
               selected={selected}
-              paginated={paginated}
+              paginated={paginatedForHeader}
               onSelectAll={handleSelectAll}
               sortBy={sortBy}
               sortDir={sortDir}

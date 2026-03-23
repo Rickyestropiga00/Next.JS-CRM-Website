@@ -2,7 +2,7 @@ import React from 'react';
 import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowUpDown } from 'lucide-react';
-import { Order } from '../data';
+import { Order } from '@/types/interface';
 import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {
@@ -21,7 +21,7 @@ const sortableCols: {
   sortable?: boolean;
 }[] = [
   { key: 'id', label: 'Order ID', className: 'pl-4 w-[120px]', sortable: true },
-  { key: 'date', label: 'Date', className: 'w-[120px]', sortable: true },
+  { key: 'createdAt', label: 'Date', className: 'w-[120px]', sortable: true },
   {
     key: 'customer',
     label: 'Customer',

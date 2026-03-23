@@ -1,29 +1,12 @@
-import { Customer } from '@/types/interface';
+import { Order } from '@/types/interface';
 
 export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
 export type PaymentStatus = 'Paid' | 'Unpaid';
 
-export interface Order {
-  _id?: string; // For MongoDB documents
-  id: string;
-  orderId?: string;
-  date: string; // ISO date string
-  customer?: string | Customer;
-  address: string;
-  product: string;
-  productType: string;
-  item: string;
-  quantity: number;
-  total: number;
-  payment: PaymentStatus;
-  status: OrderStatus;
-  createdAt?: string; // For MongoDB documents
-}
-
 export const orders: Order[] = [
   {
     id: 'ORD-001',
-    date: '2024-01-15',
+    createdAt: '2024-01-15',
     customer: 'John Smith',
     address: '123 Main St, New York, NY 10001',
     product: 'Professional Laptop',
@@ -36,7 +19,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-002',
-    date: '2024-01-18',
+    createdAt: '2024-01-18',
     customer: 'Sarah Johnson',
     address: '456 Oak Ave, Los Angeles, CA 90210',
     product: 'Wireless Headphones',
@@ -49,7 +32,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-003',
-    date: '2024-01-20',
+    createdAt: '2024-01-20',
     customer: 'Michael Brown',
     address: '789 Pine Rd, Chicago, IL 60601',
     product: 'Cloud Storage Pro',
@@ -62,7 +45,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-004',
-    date: '2024-01-22',
+    createdAt: '2024-01-22',
     customer: 'Emily Davis',
     address: '321 Elm St, Houston, TX 77001',
     product: 'Design Software License',
@@ -75,7 +58,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-005',
-    date: '2024-01-25',
+    createdAt: '2024-01-25',
     customer: 'David Wilson',
     address: '654 Maple Dr, Phoenix, AZ 85001',
     product: 'Ergonomic Office Chair',
@@ -88,7 +71,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-006',
-    date: '2024-01-28',
+    createdAt: '2024-01-28',
     customer: 'Lisa Anderson',
     address: '987 Cedar Ln, Philadelphia, PA 19101',
     product: 'Professional Laptop',
@@ -101,7 +84,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-007',
-    date: '2024-02-01',
+    createdAt: '2024-02-01',
     customer: 'Robert Taylor',
     address: '147 Birch Way, San Antonio, TX 78201',
     product: 'Wireless Headphones',
@@ -114,7 +97,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-008',
-    date: '2024-02-05',
+    createdAt: '2024-02-05',
     customer: 'Jennifer Martinez',
     address: '258 Spruce St, San Diego, CA 92101',
     product: 'Cloud Storage Pro',
@@ -127,7 +110,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-009',
-    date: '2024-02-08',
+    createdAt: '2024-02-08',
     customer: 'Christopher Garcia',
     address: '369 Willow Ave, Dallas, TX 75201',
     product: 'Design Software License',
@@ -140,7 +123,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-010',
-    date: '2024-02-12',
+    createdAt: '2024-02-12',
     customer: 'Amanda Rodriguez',
     address: '741 Poplar Rd, San Jose, CA 95101',
     product: 'Professional Laptop',
@@ -153,7 +136,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-011',
-    date: '2024-02-15',
+    createdAt: '2024-02-15',
     customer: 'James Lopez',
     address: '852 Ash Blvd, Austin, TX 73301',
     product: 'Wireless Headphones',
@@ -166,7 +149,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-012',
-    date: '2024-02-18',
+    createdAt: '2024-02-18',
     customer: 'Michelle White',
     address: '963 Hickory Dr, Jacksonville, FL 32201',
     product: 'Cloud Storage Pro',
@@ -179,7 +162,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-013',
-    date: '2024-02-22',
+    createdAt: '2024-02-22',
     customer: 'Daniel Lee',
     address: '159 Sycamore Ln, Fort Worth, TX 76101',
     product: 'Design Software License',
@@ -192,7 +175,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-014',
-    date: '2024-02-25',
+    createdAt: '2024-02-25',
     customer: 'Nicole Clark',
     address: '357 Magnolia Way, Charlotte, NC 28201',
     product: 'Professional Laptop',
@@ -205,7 +188,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-015',
-    date: '2024-02-28',
+    createdAt: '2024-02-28',
     customer: 'Kevin Hall',
     address: '468 Cypress St, Detroit, MI 48201',
     product: 'Wireless Headphones',
@@ -218,7 +201,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-016',
-    date: '2024-03-01',
+    createdAt: '2024-03-01',
     customer: 'Stephanie Young',
     address: '579 Walnut Ave, El Paso, TX 79901',
     product: 'Cloud Storage Pro',
@@ -231,7 +214,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-017',
-    date: '2024-03-05',
+    createdAt: '2024-03-05',
     customer: 'Ryan Allen',
     address: '681 Chestnut Rd, Seattle, WA 98101',
     product: 'Design Software License',
@@ -244,7 +227,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-018',
-    date: '2024-03-08',
+    createdAt: '2024-03-08',
     customer: 'Rachel King',
     address: '792 Beech Blvd, Denver, CO 80201',
     product: 'Professional Laptop',
@@ -257,7 +240,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-019',
-    date: '2024-03-12',
+    createdAt: '2024-03-12',
     customer: 'Thomas Wright',
     address: '813 Alder Way, Washington, DC 20001',
     product: 'Wireless Headphones',
@@ -270,7 +253,7 @@ export const orders: Order[] = [
   },
   {
     id: 'ORD-020',
-    date: '2024-03-15',
+    createdAt: '2024-03-15',
     customer: 'Jessica Green',
     address: '924 Oak Ridge Dr, Boston, MA 02101',
     product: 'Cloud Storage Pro',

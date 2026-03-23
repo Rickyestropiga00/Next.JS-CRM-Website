@@ -1,28 +1,33 @@
-import { useState, useMemo, memo } from "react";
-import dynamic from "next/dynamic";
+import { useState, useMemo, memo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import Image from "next/image";
-import { orders } from "@/app/orders/data";
-import { products } from "@/app/products/data";
-import { formatPrice } from "@/utils/formatters";
+} from '@/components/ui/card';
+import Image from 'next/image';
+import { orders } from '@/app/orders/data';
+import { products } from '@/app/products/data';
+import { formatPrice } from '@/utils/formatters';
+import { Order, Product } from '@/types/interface';
+import { fetchData } from '@/lib/api/fetch-data';
 
 // Dynamically import modal to reduce initial bundle size
 const TopSellingProductModal = dynamic(
-  () => import("./top-selling-products-modal").then((mod) => ({ default: mod.TopSellingProductModal })),
+  () =>
+    import('./top-selling-products-modal').then((mod) => ({
+      default: mod.TopSellingProductModal,
+    })),
   { ssr: false }
 );
 
 // Utility function to calculate top selling products
-const calculateTopSellingProducts = () => {
+const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
   // Group orders by product and sum quantities (excluding canceled orders)
   const productSales = orders
-    .filter((order) => order.status !== "Canceled")
+    .filter((order) => order.status !== 'Canceled')
     .reduce(
       (acc, order) => {
         const productCode = order.item;
@@ -45,13 +50,13 @@ const calculateTopSellingProducts = () => {
         acc[productCode].totalQuantity += order.quantity;
         acc[productCode].totalRevenue += order.total;
         switch (order.status) {
-          case "Completed":
+          case 'Completed':
             acc[productCode].completedOrders += order.quantity;
             break;
-          case "Pending":
+          case 'Pending':
             acc[productCode].pendingOrders += order.quantity;
             break;
-          case "In Transit":
+          case 'In Transit':
             acc[productCode].inTransitOrders += order.quantity;
             break;
         }
@@ -83,19 +88,46 @@ const calculateTopSellingProducts = () => {
     const product = products.find((p) => p.code === sale.code);
     return {
       ...sale,
-      image: product?.image || "/products/product-1.webp",
+      image: product?.image || '/products/product-1.webp',
       price: product?.price || 0,
-      status: product?.status || "Inactive",
+      status: product?.status || 'Inactive',
       stock: product?.stock || 0,
     };
   });
 };
 
 export const TopSellingProducts = memo(function TopSellingProducts() {
-  const topSellingProducts = useMemo(() => calculateTopSellingProducts(), []);
+  const [ordersData, setOrdersData] = useState<Order[]>([]);
+  const [productsData, setProductsData] = useState<Product[]>([]);
   const [selectedTopProductId, setSelectedTopProductId] = useState<
     string | null
   >(null);
+  const combineOrders = useMemo(() => {
+    return [...orders, ...ordersData];
+  }, [ordersData]);
+
+  const combineProducts = useMemo(() => {
+    return [...products, ...productsData];
+  }, [productsData]);
+
+  const topSellingProducts = useMemo(() => {
+    return calculateTopSellingProducts(combineOrders, combineProducts);
+  }, [combineOrders, combineProducts]);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const orderRes = await fetchData('order');
+        const productRes = await fetchData('product');
+
+        setOrdersData(orderRes.data);
+        setProductsData(productRes.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchAll();
+  }, []);
 
   return (
     <Card>
