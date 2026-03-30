@@ -1,8 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
-import { Customer } from '../data';
-
+import { Customer } from '@/types/interface';
 import { Button } from '@/components/ui/button';
 import { Order } from '@/types/interface';
 
@@ -116,7 +115,11 @@ const ViewOrderModal = ({ customer, open, onClose }: ViewOrderModalProps) => {
                         <p className="font-medium">Product</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{custOrder.product}</p>
+                        <p className="font-medium">
+                          {typeof custOrder.product === 'object'
+                            ? custOrder.product?.name
+                            : custOrder.product}
+                        </p>
                         <p className="text-muted-foreground text-xs">
                           {custOrder.productType}
                         </p>

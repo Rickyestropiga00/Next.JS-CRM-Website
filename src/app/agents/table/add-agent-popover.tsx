@@ -17,7 +17,7 @@ import {
   validateEmail,
   validatePhone,
 } from '@/lib/validations';
-import { Agent } from '../data';
+import { Agent } from '@/types/interface';
 
 interface AddAgentPopoverProps {
   onAddAgent: (agent: Agent) => void;

@@ -1,11 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import {
-  products as initialProducts,
-  ProductStatus,
-  ProductType,
-  Product,
-} from '../data';
+import { products as initialProducts, ProductStatus } from '../data';
 import { ProductsTableHeader } from './table-header';
 import { ProductsTableBody } from './table-body';
 import { ProductsPaginationBar } from './pagination-bar';
@@ -20,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Product, ProductTypes } from '@/types/interface';
 
 // Dynamically import modals to reduce initial bundle size
 const EditProductPopover = dynamic(
@@ -59,6 +55,7 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
+import { fetchData } from '@/lib/api/fetch-data';
 
 export function ProductsTable() {
   const [search, setSearch] = useState('');
@@ -80,7 +77,7 @@ export function ProductsTable() {
 
   const statusOptions: ProductStatus[] = ['Active', 'Disabled'];
 
-  const typeOptions: ProductType[] = [
+  const typeOptions: ProductTypes[] = [
     'Physical',
     'Digital',
     'Service',
@@ -94,7 +91,7 @@ export function ProductsTable() {
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.code.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = status === 'all' ? true : p.status === status;
-      const matchesType = type === 'all' ? true : p.type === type;
+      const matchesType = type === 'all' ? true : p.productType === type;
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [data, search, status, type]);
@@ -238,6 +235,15 @@ export function ProductsTable() {
       toast.error('Something went wrong');
     }
   }
+
+  useEffect(() => {
+    const getProducts = async () => {
+      const res = await fetchData('product');
+      setData([...res.data, ...initialProducts]);
+    };
+
+    getProducts();
+  }, []);
 
   return (
     <>

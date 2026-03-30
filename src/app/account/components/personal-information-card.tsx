@@ -151,7 +151,7 @@ const PersonalInformationCard = ({
             <Avatar className="h-20 w-20 ">
               <div className="relative group">
                 <AvatarImage
-                  className="bg-muted flex size-full items-center justify-center rounded-full text-lg object-contain group-hover:brightness-50"
+                  className="bg-muted flex h-20 w-20  items-center justify-center rounded-full text-lg object-cover group-hover:brightness-50"
                   src={
                     preview || `/api/user/avatar/${user._id}?v=${imageVersion}`
                   }

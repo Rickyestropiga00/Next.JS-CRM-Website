@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import React, { useEffect } from 'react';
+import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Pencil, Eye } from "lucide-react";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { Customer } from "../data";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Trash, Pencil, Eye } from 'lucide-react';
+import { StatusBadge } from '@/components/shared/status-badge';
+// import { Customer } from "../data";
+import { Customer } from '@/types/interface';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,11 +21,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { formatPhone } from "@/utils/formatters";
-import { toast } from "sonner";
-import { getId } from "@/utils/helper";
-import { fetchData } from "@/lib/api/fetch-data";
+} from '@/components/ui/alert-dialog';
+import { formatPhone } from '@/utils/formatters';
+import { toast } from 'sonner';
+import { getId } from '@/utils/helper';
+import { fetchData } from '@/lib/api/fetch-data';
 
 interface TableBodyProps {
   paginated: any[];
@@ -62,7 +63,7 @@ export function CustomersTableBody({
     if (customerId) {
       try {
         const res = await fetch(`/api/customer/${customer._id}`, {
-          method: "DELETE",
+          method: 'DELETE',
         });
         const data = await res.json();
 
@@ -75,7 +76,7 @@ export function CustomersTableBody({
         }
       } catch (err) {
         console.error(err);
-        toast.error("Something went wrong");
+        toast.error('Something went wrong');
       }
     } else {
       onDelete(customer.id);
@@ -97,7 +98,7 @@ export function CustomersTableBody({
               if (
                 target.closest('input[type="checkbox"]') ||
                 target.closest('[role="menuitem"]') ||
-                target.closest("button")
+                target.closest('button')
               ) {
                 return;
               }
@@ -119,19 +120,19 @@ export function CustomersTableBody({
             <TableCell className="w-[150px]">{c.name}</TableCell>
             <TableCell className="w-[200px]">{c.email}</TableCell>
             <TableCell className="w-[120px]">{formatPhone(c.phone)}</TableCell>
-            <TableCell className="w-[120px]">{c.company || "-"}</TableCell>
+            <TableCell className="w-[120px]">{c.company || '-'}</TableCell>
             <TableCell className="w-[100px]">
               <StatusBadge status={c.status} type="customer" />
             </TableCell>
             <TableCell className="w-[120px]">
-              {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : "-"}
+              {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-'}
             </TableCell>
             <TableCell className="w-[120px]">
-              {c.createdAt?.split("T")[0]}
+              {c.createdAt?.split('T')[0]}
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
-              <div className="truncate" title={c.notes || ""}>
-                {c.notes || "-"}
+              <div className="truncate" title={c.notes || ''}>
+                {c.notes || '-'}
               </div>
             </TableCell>
             <TableCell className="w-[180px] max-w-[180px]">
@@ -141,7 +142,7 @@ export function CustomersTableBody({
                     {commentCount}
                   </span>
                 ) : (
-                  "-"
+                  '-'
                 )}
               </div>
             </TableCell>

@@ -1,19 +1,20 @@
 export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
 
 export interface Customer {
-  _id: string;
-  customerId: string;
+  _id?: string;
+  id?: string;
+  customerId?: string;
   name: string;
   email: string;
   phone: string;
   company?: string;
   status: CustomerStatus;
   lastContacted?: string;
-  expiresAt: Date;
+  expiresAt?: Date;
   notes?: string;
   comment?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt?: Date;
 }
 
 export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
@@ -25,7 +26,7 @@ export interface Order {
   orderId?: string;
   customer: null | Customer | string;
   address: string;
-  product: string;
+  product: null | Product | string;
   productType: string;
   item: string;
   quantity: number;
@@ -38,7 +39,7 @@ export interface Order {
 }
 
 export type ProductStatus = 'Active' | 'Disabled';
-export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
+export type ProductTypes = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 
 export interface Product {
   _id?: string; // For MongoDB documents
@@ -46,12 +47,33 @@ export interface Product {
   productId?: string;
   name: string;
   code: string;
-  type: ProductType;
+  productType: ProductTypes;
   date: string; // ISO date string
   stock: number;
   price: number;
   status: ProductStatus;
   image: string;
+  imageType?: string;
   comment?: string;
   createdAt?: string; // For MongoDB documents
+  updatedAt?: string;
 }
+
+export type roleType = 'Admin' | 'Agent' | 'Manager';
+export type agentStatus = 'Active' | 'Inactive' | 'On Leave';
+
+export type Agent = {
+  _id?: string; // For MongoDB documents
+  id: string;
+  agentId?: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: roleType;
+  status: agentStatus;
+  assignedCustomers: string[];
+  createdAt: string;
+  lastLogin: string;
+  notes?: string;
+  comment?: string;
+};

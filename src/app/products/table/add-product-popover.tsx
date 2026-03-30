@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,8 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Product, ProductStatus, ProductType } from '../data';
+import { ProductStatus, ProductTypes } from '../data';
 import { toast } from 'sonner';
+import Image from 'next/image';
+import { Product } from '@/types/interface';
 
 interface AddProductPopoverProps {
   onAddProduct: (product: Product) => void;
@@ -35,15 +37,17 @@ export function AddProductPopover({
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    type: 'Physical' as ProductType,
+    productType: 'Physical' as ProductTypes,
     stock: '',
     price: '',
     status: 'Active' as ProductStatus,
-    image: '/products/product-1.webp', // Default image
+    image: '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -53,15 +57,22 @@ export function AddProductPopover({
       setFormData({
         name: '',
         code: '',
-        type: 'Physical',
+        productType: 'Physical',
         stock: '',
         price: '',
         status: 'Active',
-        image: '/products/product-1.webp',
+        image: '',
       });
       setErrors({});
     }
   }, [isModalOpen]);
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   // Validation functions
   const validateName = (name: string): string | undefined => {
@@ -127,20 +138,22 @@ export function AddProductPopover({
     }
 
     try {
+      const formDataToSend = new FormData();
+
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('code', formData.code.trim());
+      formDataToSend.append('productType', formData.productType);
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('status', formData.status);
+
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
+
       const response = await fetch('/api/product', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          code: formData.code.trim(),
-          type: formData.type,
-          stock: parseInt(formData.stock),
-          price: parseFloat(formData.price),
-          status: formData.status,
-          image: formData.image,
-        }),
+        body: formDataToSend,
       });
 
       let data;
@@ -153,8 +166,10 @@ export function AddProductPopover({
 
       switch (response.status) {
         case 201:
-          onAddProduct(data); // update UI
-          break; // Success
+          onAddProduct(data);
+          setImagePreview(null);
+          setImageFile(null);
+          break;
         case 400:
           throw new Error(data.error || 'Validation error');
         default:
@@ -176,9 +191,23 @@ export function AddProductPopover({
 
   const handleCancel = () => {
     if (onClose) {
+      setImagePreview(null);
       onClose();
     }
   };
+  const handleImageChange = (file: File | null) => {
+    if (!file) return;
+
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+  const getImageSrc = () => {
+    if (imagePreview) return imagePreview;
+    if (formData.image?.trim()) return formData.image;
+    return '/products/product-1.webp';
+  };
+  const imageSrc = getImageSrc();
 
   const handleNameChange = (value: string) => {
     setFormData({ ...formData, name: value });
@@ -232,6 +261,52 @@ export function AddProductPopover({
             className="space-y-4 sm:space-y-6"
             encType="multipart/form-data"
           >
+            <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 sm:gap-4">
+              <div className="space-y-2 flex flex-col items-center">
+                <Label htmlFor="productImage" className="text-xs">
+                  Product Image
+                </Label>
+
+                <Label
+                  htmlFor="productImage"
+                  className="relative cursor-pointer block w-24 h-24 border rounded-md overflow-hidden "
+                >
+                  {imageSrc ? (
+                    imageSrc.startsWith('blob:') ? (
+                      <Image
+                        src={imageSrc}
+                        alt="Preview"
+                        className="max-w-full max-h-full object-cover"
+                        fill
+                        unoptimized
+                      />
+                    ) : (
+                      <Image
+                        src={imageSrc}
+                        alt="Preview"
+                        className="object-cover w-full h-full"
+                        fill
+                        unoptimized
+                      />
+                    )
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full text-xs text-muted-foreground">
+                      Upload
+                    </div>
+                  )}
+
+                  <Input
+                    id="productImage"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleImageChange(e.target.files?.[0] || null)
+                    }
+                  />
+                </Label>
+              </div>
+            </div>
             {/* Row 1: Name and Code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
@@ -277,9 +352,9 @@ export function AddProductPopover({
                   Product Type
                 </Label>
                 <Select
-                  value={formData.type}
-                  onValueChange={(value: ProductType) =>
-                    setFormData({ ...formData, type: value })
+                  value={formData.productType}
+                  onValueChange={(value: ProductTypes) =>
+                    setFormData({ ...formData, productType: value })
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">

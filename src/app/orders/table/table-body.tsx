@@ -133,9 +133,9 @@ export function OrdersTableBody({
           </TableCell>
           <TableCell className="w-[180px]">
             <div className="flex flex-col">
-              <span>{order.product}</span>
+              <span>{order.product?.name ?? order.product}</span>
               <span className="text-xs text-muted-foreground">
-                {order.productType}
+                {order.product?.productType ?? order.productType}
               </span>
             </div>
           </TableCell>

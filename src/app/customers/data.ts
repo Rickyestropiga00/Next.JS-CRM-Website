@@ -1,19 +1,4 @@
-export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
-
-export interface Customer {
-  _id?: string; // For MongoDB documents
-  id: string;
-  customerId?: string;
-  name: string;
-  email: string;
-  phone: string;
-  company?: string;
-  status: CustomerStatus;
-  lastContacted: string; // ISO date string
-  createdAt: string; // ISO date string
-  notes?: string;
-  comment?: string;
-}
+import { Customer } from '@/types/interface';
 
 export const customers: Customer[] = [
   {

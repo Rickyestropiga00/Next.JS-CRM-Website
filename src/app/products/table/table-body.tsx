@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Product } from '../data';
+import { Product } from '@/types/interface';
 import { getId } from '@/utils/helper';
 
 interface TableBodyProps {
@@ -118,13 +118,19 @@ export function ProductsTableBody({
           </TableCell>
           <TableCell className="w-[200px]">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-sm overflow-hidden bg-muted">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-muted">
                 <Image
-                  src={p.image}
+                  src={
+                    p._id && p._id.length === 24
+                      ? `/api/product/image/${getId(p)}?t=${new Date(
+                          p.updatedAt || Date.now()
+                        ).getTime()}`
+                      : p.image || '/product/product-1.webp'
+                  }
                   alt={p.name}
-                  fill
                   className="object-cover"
-                  sizes="40px"
+                  fill
+                  sizes="160px"
                 />
               </div>
               <span className="font-medium">{p.name}</span>
@@ -133,12 +139,12 @@ export function ProductsTableBody({
           <TableCell className="w-[120px] font-mono text-sm">
             {p.code}
           </TableCell>
-          <TableCell className="w-[100px]">{p.type}</TableCell>
+          <TableCell className="w-[100px]">{p.productType}</TableCell>
           <TableCell className="w-[120px]">
             {new Date(p.createdAt ?? p.date).toLocaleDateString()}
           </TableCell>
           <TableCell className="w-[80px]">
-            {formatStock(p.stock, p.type)}
+            {formatStock(p.stock, p.productType)}
           </TableCell>
           <TableCell className="w-[100px] font-semibold">
             {formatPrice(p.price)}

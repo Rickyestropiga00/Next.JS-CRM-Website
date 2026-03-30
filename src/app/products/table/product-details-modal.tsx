@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Product } from '../data';
+import { Product } from '@/types/interface';
 import {
   Calendar,
   Tag,
@@ -20,6 +19,7 @@ import {
   FileText,
   Boxes,
 } from 'lucide-react';
+import { getId } from '@/utils/helper';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -85,13 +85,19 @@ export function ProductDetailsModal({
         <div className="space-y-4">
           {/* Product Header */}
           <div className="text-center space-y-2">
-            <div className="relative w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center overflow-hidden">
+            <div className="relative w-16 h-16 min-w-[64px] min-h-[64px]  bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center overflow-hidden">
               {product.image ? (
                 <Image
-                  src={product.image}
+                  src={
+                    product._id && product._id.length === 24
+                      ? `/api/product/image/${getId(product)}?t=${new Date(
+                          product.updatedAt || Date.now()
+                        ).getTime()}`
+                      : product.image
+                  }
                   alt={product.name}
+                  className="object-cover bg-muted"
                   fill
-                  className="rounded-full object-cover"
                   sizes="64px"
                 />
               ) : (
@@ -118,10 +124,10 @@ export function ProductDetailsModal({
                 </Badge>
                 <Badge
                   className={`${getTypeColor(
-                    product.type
+                    product.productType
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.type}
+                  {product.productType}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
                   ID: {product.id || product.productId}
@@ -170,10 +176,10 @@ export function ProductDetailsModal({
                 </p>
                 <Badge
                   className={`${getTypeColor(
-                    product.type
+                    product.productType
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.type}
+                  {product.productType}
                 </Badge>
               </div>
             </div>
@@ -209,7 +215,7 @@ export function ProductDetailsModal({
                   Stock Level
                 </p>
                 <p className="text-xs">
-                  {formatStock(product.stock, product.type)}
+                  {formatStock(product.stock, product.productType)}
                 </p>
               </div>
             </div>

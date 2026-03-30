@@ -17,7 +17,7 @@ import {
   validateEmail,
   validatePhone,
 } from '@/lib/validations';
-import { Customer, CustomerStatus } from '../data';
+import { Customer, CustomerStatus } from '@/types/interface';
 
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;

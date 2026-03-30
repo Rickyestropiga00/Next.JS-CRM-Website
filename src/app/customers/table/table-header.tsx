@@ -2,12 +2,12 @@ import React from 'react';
 import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowUpDown } from 'lucide-react';
-import { Customer } from '../data';
+import { Customer } from '@/types/interface';
 import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {
   selected: string[];
-  paginated: { id: string }[];
+  paginated: Customer[];
   onSelectAll: (checked: boolean) => void;
   sortBy: keyof Customer;
   sortDir: 'asc' | 'desc';

@@ -20,7 +20,7 @@ import {
 import { OrderStatus, PaymentStatus } from '../data';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
-import { Customer, Order } from '@/types/interface';
+import { Customer, Order, Product } from '@/types/interface';
 import {
   Combobox,
   ComboboxContent,
@@ -30,6 +30,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { fetchData } from '@/lib/api/fetch-data';
+import { formatPrice } from '@/utils/formatters';
 
 interface EditOrderPopoverProps {
   order: Order;
@@ -54,7 +55,9 @@ export function EditOrderPopover({
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [customer, setCustomer] = useState<Customer[]>([]);
+  const [product, setProduct] = useState<Product[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [productInputValue, setProductInputValue] = useState('');
 
   // Reset form data when order changes or popover opens
   React.useEffect(() => {
@@ -65,6 +68,11 @@ export function EditOrderPopover({
         typeof order.customer === 'string'
           ? order.customer
           : order.customer?.name || ''
+      );
+      setProductInputValue(
+        typeof order.product === 'string'
+          ? order.product
+          : order.product?.name || ''
       );
     }
   }, [order, open]);
@@ -115,9 +123,7 @@ export function EditOrderPopover({
 
     toast.loading('Saving changes...', { id: toastId });
 
-    const orderId = getId(order);
-
-    if (orderId) {
+    if (formData._id) {
       try {
         const res = await fetch(`/api/order/${formData._id}`, {
           method: 'PUT',
@@ -141,6 +147,8 @@ export function EditOrderPopover({
               ...result.data,
               customer:
                 customer.find((c) => c._id === result.data.customer) || null,
+              product:
+                product.find((p) => p._id === result.data.product) || null,
             };
             onSave(savedOrder);
             onClose();
@@ -158,7 +166,24 @@ export function EditOrderPopover({
       }
     } else {
       if (validateForm()) {
-        onSave(formData);
+        const selectedProduct =
+          typeof formData.product === 'string'
+            ? product.find((p) => p._id === formData.product)
+            : formData.product;
+
+        const selectedCustomer =
+          typeof formData.customer === 'string'
+            ? customer.find((c) => c._id === formData.customer)
+            : formData.customer;
+
+        const savedOrder: Order = {
+          ...formData,
+          customer: selectedCustomer || formData.customer,
+          product: selectedProduct || formData.product,
+        };
+        onSave(savedOrder);
+        toast.success('Order updated locally', { id: toastId });
+        onClose();
       }
     }
   };
@@ -169,35 +194,40 @@ export function EditOrderPopover({
     onClose();
   };
 
-  const handleQuantityChange = (value: string) => {
-    const numValue = parseInt(value) || 0;
-    setFormData({ ...formData, quantity: numValue });
-    if (errors.quantity) {
-      const quantityError = validateQuantity(numValue);
-      setErrors((prev) => ({ ...prev, quantity: quantityError }));
-    }
-  };
+  const handleQuantityChange = (value: number) => {
+    const qty = value || 0;
 
-  const handleTotalChange = (value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setFormData({ ...formData, total: numValue });
-    if (errors.total) {
-      const totalError = validateTotal(numValue);
-      setErrors((prev) => ({ ...prev, total: totalError }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      quantity: qty,
+      total:
+        prev.product && typeof prev.product !== 'string'
+          ? qty * (prev.product.price || 0)
+          : 0,
+    }));
+
+    const quantityError = validateQuantity(value);
+    setErrors((prev) => ({ ...prev, quantity: quantityError }));
   };
 
   useEffect(() => {
-    const loadCustomer = async () => {
+    const loadProductCustomer = async () => {
       try {
-        const res = await fetchData('customer');
-        setCustomer(res.data);
+        const customerRes = await fetchData('customer');
+        const productRes = await fetchData('product');
+        setCustomer(customerRes.data);
+        setProduct(productRes.data);
       } catch (error) {
         console.error(error);
       }
     };
-    loadCustomer();
+    loadProductCustomer();
   }, []);
+
+  const productPrice =
+    formData.product && typeof formData.product !== 'string'
+      ? formData.product.price
+      : 0;
 
   return (
     <ModalWrapper open={open} onClose={handleCancel}>
@@ -317,15 +347,50 @@ export function EditOrderPopover({
               <Label htmlFor="product" className="text-xs">
                 Product Name
               </Label>
-              <Input
-                id="product"
-                value={formData.product}
-                onChange={(e) =>
-                  setFormData({ ...formData, product: e.target.value })
+              <Combobox
+                items={product.map((p) => ({ label: p.name, value: p._id }))}
+                value={
+                  typeof formData.product === 'string'
+                    ? ''
+                    : formData.product?._id || ''
                 }
-                className="h-8 sm:h-9 text-xs"
-                placeholder="Enter product name"
-              />
+                onValueChange={(value) => {
+                  const selected = product.find((c) => c._id === value) || null;
+                  setFormData((prev) => ({
+                    ...prev,
+                    product: selected,
+                    item: selected?.code || '',
+                    productType: selected?.productType ?? 'Physical',
+                    total: selected ? prev.quantity * (selected.price || 0) : 0,
+                  }));
+                  setProductInputValue(selected?.name || '');
+                }}
+              >
+                <ComboboxInput
+                  placeholder="Select a product"
+                  value={productInputValue}
+                  onChange={(e) => setProductInputValue(e.target.value)}
+                  onBlur={() => {
+                    const matched = product.find(
+                      (p) => p.name === productInputValue
+                    );
+                    if (!matched) {
+                      setProductInputValue('');
+                      setFormData({ ...formData, product: null });
+                    }
+                  }}
+                />
+                <ComboboxContent>
+                  <ComboboxEmpty>No product found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item) => (
+                      <ComboboxItem key={item.value} value={item.value}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
             <div className="space-y-2">
               <Label htmlFor="productType" className="text-xs">
@@ -336,6 +401,7 @@ export function EditOrderPopover({
                 onValueChange={(value) =>
                   setFormData({ ...formData, productType: value })
                 }
+                disabled
               >
                 <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue />
@@ -364,18 +430,25 @@ export function EditOrderPopover({
                 }
                 className="h-8 sm:h-9 text-xs"
                 placeholder="e.g., LP-PRO-001"
+                disabled
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-xs">
+              <Label
+                htmlFor="quantity"
+                className="text-xs flex justify-between"
+              >
                 Quantity
+                <span className="text-muted-foreground">
+                  x {formatPrice(productPrice)}
+                </span>
               </Label>
               <Input
                 id="quantity"
                 type="number"
                 min="1"
                 value={formData.quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
+                onChange={(e) => handleQuantityChange(Number(e.target.value))}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.quantity ? 'border-red-500' : ''
                 }`}
@@ -395,15 +468,15 @@ export function EditOrderPopover({
               </Label>
               <Input
                 id="total"
-                type="number"
+                type="text"
                 step="0.01"
                 min="0"
-                value={formData.total}
-                onChange={(e) => handleTotalChange(e.target.value)}
+                value={formatPrice(formData.total)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.total ? 'border-red-500' : ''
                 }`}
                 placeholder="0.00"
+                disabled
               />
               {errors.total && (
                 <p className="text-xs text-red-500">{errors.total}</p>

@@ -14,7 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import { validateEmail, validatePhone } from '@/lib/validations';
-import { Customer, CustomerStatus } from '../data';
+import { Customer, CustomerStatus } from '@/types/interface';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 
@@ -74,9 +74,7 @@ export function EditCustomerPopover({
 
     toast.loading('Saving changes...', { id: toastId });
 
-    const customerId = getId(customer);
-
-    if (customerId) {
+    if (customer._id) {
       try {
         const res = await fetch(`/api/customer/${formData._id}`, {
           method: 'PUT',
@@ -124,6 +122,8 @@ export function EditCustomerPopover({
     } else {
       if (validateForm()) {
         onSave(formData);
+        toast.success('Customer updated locally', { id: toastId });
+        onClose();
       }
     }
   };
