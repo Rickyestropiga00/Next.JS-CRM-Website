@@ -20,7 +20,8 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { fetchData } from '@/lib/api/fetch-data';
-import { Customer, Order } from '@/types/interface';
+import { Customer, Order, Product } from '@/types/interface';
+import { formatPrice } from '@/utils/formatters';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -44,6 +45,7 @@ export function AddOrderPopover({
 }: AddOrderPopoverProps) {
   const [internalIsOpen] = useState(false);
   const [customer, setCustomer] = useState<Customer[]>([]);
+  const [product, setProduct] = useState<Product[]>([]);
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
@@ -51,20 +53,21 @@ export function AddOrderPopover({
   const [formData, setFormData] = useState({
     customer: null as Customer | null,
     address: '',
-    product: '',
+    product: null as Product | null,
     productType: 'Physical' as
       | 'Physical'
       | 'Digital'
       | 'Service'
       | 'Subscription',
     item: '',
-    quantity: '',
-    total: '',
+    quantity: 0,
+    total: 0,
     payment: 'Unpaid' as PaymentStatus,
     status: 'Pending' as OrderStatus,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [inputValue, setInputValue] = useState('');
+  const [productInputValue, setProductInputValue] = useState('');
 
   // Reset form data when popover opens
   React.useEffect(() => {
@@ -72,11 +75,11 @@ export function AddOrderPopover({
       setFormData({
         customer: null as Customer | null,
         address: '',
-        product: '',
+        product: null as Product | null,
         productType: 'Physical',
         item: '',
-        quantity: '',
-        total: '',
+        quantity: 0,
+        total: 0,
         payment: 'Unpaid',
         status: 'Pending',
       });
@@ -95,8 +98,8 @@ export function AddOrderPopover({
     return undefined;
   };
 
-  const validateProduct = (product: string): string | undefined => {
-    if (!product.trim()) return 'Product name is required';
+  const validateProduct = (product: Product | null): string | undefined => {
+    if (!product) return 'Product name is required';
     return undefined;
   };
 
@@ -105,17 +108,17 @@ export function AddOrderPopover({
     return undefined;
   };
 
-  const validateQuantity = (quantity: string): string | undefined => {
-    if (!quantity.trim()) return 'Quantity is required';
-    const numQuantity = parseInt(quantity);
+  const validateQuantity = (quantity: number): string | undefined => {
+    if (!quantity) return 'Quantity is required';
+    const numQuantity = quantity;
     if (isNaN(numQuantity) || numQuantity <= 0)
       return 'Quantity must be a positive number';
     return undefined;
   };
 
-  const validateTotal = (total: string): string | undefined => {
-    if (!total.trim()) return 'Total is required';
-    const numTotal = parseFloat(total);
+  const validateTotal = (total: number): string | undefined => {
+    if (!total) return 'Total is required';
+    const numTotal = total;
     if (isNaN(numTotal) || numTotal <= 0)
       return 'Total must be a positive number';
     return undefined;
@@ -174,11 +177,11 @@ export function AddOrderPopover({
         body: JSON.stringify({
           customer: formData.customer?._id,
           address: formData.address.trim(),
-          product: formData.product.trim(),
+          product: formData.product?._id,
           productType: formData.productType,
           item: formData.item.trim(),
-          quantity: parseInt(formData.quantity),
-          total: parseFloat(formData.total),
+          quantity: formData.quantity,
+          total: formData.total,
           payment: formData.payment,
           status: formData.status,
         }),
@@ -194,13 +197,15 @@ export function AddOrderPopover({
 
       switch (response.status) {
         case 201:
-          const orderWithCustomerObject: Order = {
+          const orderWithRelations: Order = {
             ...data,
             customer: formData.customer,
+            product: formData.product,
           };
 
-          onAddOrder(orderWithCustomerObject); // update UI
+          onAddOrder(orderWithRelations); // update UI
           setInputValue('');
+          setProductInputValue('');
           break;
         case 400:
           throw new Error(data.error || 'Validation error');
@@ -223,6 +228,7 @@ export function AddOrderPopover({
     if (onClose) {
       onClose();
       setInputValue('');
+      setProductInputValue('');
     }
   };
 
@@ -233,13 +239,6 @@ export function AddOrderPopover({
     setErrors((prev) => ({ ...prev, address: addressError }));
   };
 
-  const handleProductChange = (value: string) => {
-    setFormData({ ...formData, product: value });
-    // Always validate and update errors when product changes
-    const productError = validateProduct(value);
-    setErrors((prev) => ({ ...prev, product: productError }));
-  };
-
   const handleItemChange = (value: string) => {
     setFormData({ ...formData, item: value });
     // Always validate and update errors when item changes
@@ -247,30 +246,38 @@ export function AddOrderPopover({
     setErrors((prev) => ({ ...prev, item: itemError }));
   };
 
-  const handleQuantityChange = (value: string) => {
-    setFormData({ ...formData, quantity: value });
-    // Always validate and update errors when quantity changes
+  const handleQuantityChange = (value: number) => {
+    const qty = value || 0;
+
+    setFormData((prev) => ({
+      ...prev,
+      quantity: qty,
+      total: prev.product ? qty * (prev.product.price || 0) : 0,
+    }));
+
     const quantityError = validateQuantity(value);
     setErrors((prev) => ({ ...prev, quantity: quantityError }));
   };
 
-  const handleTotalChange = (value: string) => {
-    setFormData({ ...formData, total: value });
-    // Always validate and update errors when total changes
-    const totalError = validateTotal(value);
-    setErrors((prev) => ({ ...prev, total: totalError }));
-  };
+  // const handleTotalChange = (value: number) => {
+  //   setFormData({ ...formData, total: value });
+  //   // Always validate and update errors when total changes
+  //   const totalError = validateTotal(value);
+  //   setErrors((prev) => ({ ...prev, total: totalError }));
+  // };
 
   useEffect(() => {
-    const loadCustomer = async () => {
+    const loadProductCustomer = async () => {
       try {
-        const res = await fetchData('customer');
-        setCustomer(res.data);
+        const resCustomer = await fetchData('customer');
+        const resProduct = await fetchData('product');
+        setCustomer(resCustomer.data);
+        setProduct(resProduct.data);
       } catch (error) {
         console.error(error);
       }
     };
-    loadCustomer();
+    loadProductCustomer();
   }, []);
 
   if (!isModalOpen) return null;
@@ -334,22 +341,55 @@ export function AddOrderPopover({
                   </ComboboxContent>
                 </Combobox>
               </div>
-              <div className="space-y-2">
+
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="product" className="text-xs">
                   Product Name
                 </Label>
-                <Input
-                  id="product"
-                  value={formData.product}
-                  onChange={(e) => handleProductChange(e.target.value)}
-                  className={`h-8 sm:h-9 text-xs ${
-                    errors.product ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter product name"
-                />
-                {errors.product && (
-                  <p className="text-xs text-red-500">{errors.product}</p>
-                )}
+
+                <Combobox
+                  items={product.map((p) => ({ label: p.name, value: p._id }))}
+                  value={formData.product?._id || ''}
+                  onValueChange={(value) => {
+                    const selected =
+                      product.find((p) => p._id === value) || null;
+                    setFormData((prev) => ({
+                      ...prev,
+                      product: selected,
+                      item: selected?.code || '',
+                      productType: selected?.productType ?? 'Physical',
+                      total: selected
+                        ? prev.quantity * (selected.price || 0)
+                        : 0,
+                    }));
+                    setProductInputValue(selected?.name || '');
+                  }}
+                >
+                  <ComboboxInput
+                    placeholder="Select a Product"
+                    value={productInputValue}
+                    onChange={(e) => setProductInputValue(e.target.value)}
+                    onBlur={() => {
+                      const matched = product.find(
+                        (c) => c.name === productInputValue
+                      );
+                      if (!matched) {
+                        setProductInputValue('');
+                        setFormData({ ...formData, product: null });
+                      }
+                    }}
+                  />
+                  <ComboboxContent>
+                    <ComboboxEmpty>No product found.</ComboboxEmpty>
+                    <ComboboxList>
+                      {(item) => (
+                        <ComboboxItem key={item.value} value={item.value}>
+                          {item.label}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
             </div>
 
@@ -384,6 +424,7 @@ export function AddOrderPopover({
                     errors.item ? 'border-red-500' : ''
                   }`}
                   placeholder="Enter item code"
+                  disabled
                 />
                 {errors.item && (
                   <p className="text-xs text-red-500">{errors.item}</p>
@@ -398,10 +439,11 @@ export function AddOrderPopover({
                   Product Type
                 </Label>
                 <Select
-                  value={formData.productType}
+                  value={formData.productType ?? 'Physical'}
                   onValueChange={(
                     value: 'Physical' | 'Digital' | 'Service' | 'Subscription'
                   ) => setFormData({ ...formData, productType: value })}
+                  disabled
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue />
@@ -440,15 +482,22 @@ export function AddOrderPopover({
             {/* Row 4: Quantity and Total */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="quantity" className="text-xs">
+                <Label
+                  htmlFor="quantity"
+                  className="text-xs flex justify-between"
+                >
                   Quantity
+                  <span className="text-muted-foreground">
+                    x {formatPrice(formData.product?.price || 0)}
+                  </span>
                 </Label>
+
                 <Input
                   id="quantity"
                   type="number"
                   min="1"
                   value={formData.quantity}
-                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  onChange={(e) => handleQuantityChange(Number(e.target.value))}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.quantity ? 'border-red-500' : ''
                   }`}
@@ -464,15 +513,15 @@ export function AddOrderPopover({
                 </Label>
                 <Input
                   id="total"
-                  type="number"
+                  type="text"
                   step="0.01"
                   min="0"
-                  value={formData.total}
-                  onChange={(e) => handleTotalChange(e.target.value)}
+                  value={formatPrice(formData.total)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.total ? 'border-red-500' : ''
                   }`}
                   placeholder="0.00"
+                  disabled
                 />
                 {errors.total && (
                   <p className="text-xs text-red-500">{errors.total}</p>

@@ -1,28 +1,13 @@
+import { Product } from '@/types/interface';
 export type ProductStatus = 'Active' | 'Disabled';
-export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
-
-export interface Product {
-  _id?: string; // For MongoDB documents
-  id: string;
-  productId?: string;
-  name: string;
-  code: string;
-  type: ProductType;
-  date: string; // ISO date string
-  stock: number;
-  price: number;
-  status: ProductStatus;
-  image: string;
-  comment?: string;
-  createdAt?: string; // For MongoDB documents
-}
+export type ProductTypes = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 
 export const products: Product[] = [
   {
     id: '1',
     name: 'Professional Laptop',
     code: 'LP-PRO-001',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2024-01-15',
     stock: 25,
     price: 1299.99,
@@ -33,7 +18,7 @@ export const products: Product[] = [
     id: '2',
     name: 'Cloud Storage Pro',
     code: 'CS-PRO-002',
-    type: 'Subscription',
+    productType: 'Subscription',
     date: '2024-02-10',
     stock: 0, // Not applicable for subscriptions
     price: 29.99,
@@ -44,7 +29,7 @@ export const products: Product[] = [
     id: '3',
     name: 'Wireless Headphones',
     code: 'WH-BLU-003',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2024-03-05',
     stock: 5,
     price: 199.99,
@@ -55,7 +40,7 @@ export const products: Product[] = [
     id: '4',
     name: 'Design Software License',
     code: 'DS-LIC-004',
-    type: 'Digital',
+    productType: 'Digital',
     date: '2024-01-20',
     stock: 0, // Not applicable for digital products
     price: 599.99,
@@ -66,7 +51,7 @@ export const products: Product[] = [
     id: '5',
     name: 'Ergonomic Office Chair',
     code: 'EOC-GRY-005',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2024-04-12',
     stock: 0,
     price: 449.99,
@@ -77,7 +62,7 @@ export const products: Product[] = [
     id: '6',
     name: 'Wireless Mouse',
     code: 'WM-BLK-006',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 50,
     price: 19.99,
@@ -88,7 +73,7 @@ export const products: Product[] = [
     id: '7',
     name: 'Mechanical Keyboard',
     code: 'MK-RGB-007',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 30,
     price: 79.99,
@@ -99,7 +84,7 @@ export const products: Product[] = [
     id: '8',
     name: '24inch LED Monitor',
     code: 'MON-24LED-008',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 20,
     price: 149.99,
@@ -110,7 +95,7 @@ export const products: Product[] = [
     id: '9',
     name: 'Wi-Fi Router',
     code: 'WFR-AX3000-009',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 35,
     price: 89.99,
@@ -121,7 +106,7 @@ export const products: Product[] = [
     id: '10',
     name: 'Webcam HD 1080p',
     code: 'WBC-HD1080-010',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 50,
     price: 59.99,
@@ -132,7 +117,7 @@ export const products: Product[] = [
     id: '11',
     name: 'All-in-One Printer/Scanner',
     code: 'AIO-PS500-011',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 15,
     price: 179.99,
@@ -143,7 +128,7 @@ export const products: Product[] = [
     id: '12',
     name: 'Laptop Backpack',
     code: 'LB-BP1500-012',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 40,
     price: 34.99,
@@ -154,7 +139,7 @@ export const products: Product[] = [
     id: '13',
     name: 'USB Flash Drive (64GB)',
     code: 'UFD-064-013',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 50,
     price: 19.99,
@@ -165,7 +150,7 @@ export const products: Product[] = [
     id: '14',
     name: 'Portable Bluetooth Speaker',
     code: 'PBS-250-014',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 20,
     price: 49.99,
@@ -176,7 +161,7 @@ export const products: Product[] = [
     id: '15',
     name: 'Ergonomic Mouse Pad',
     code: 'EMP-120-015',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 20,
     price: 14.99,
@@ -187,7 +172,7 @@ export const products: Product[] = [
     id: '16',
     name: 'Laptop Cooling Pad',
     code: 'LCP-400-016',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 22,
     price: 34.99,
@@ -198,7 +183,7 @@ export const products: Product[] = [
     id: '17',
     name: 'Antivirus Software License',
     code: 'ASL-245-017',
-    type: 'Digital',
+    productType: 'Digital',
     date: '2025-12-29',
     stock: 0,
     price: 29.99,
@@ -209,7 +194,7 @@ export const products: Product[] = [
     id: '18',
     name: 'Remote IT Support Service',
     code: 'RIT-102-018',
-    type: 'Service',
+    productType: 'Service',
     date: '2025-12-29',
     stock: 0,
     price: 39.99,
@@ -220,7 +205,7 @@ export const products: Product[] = [
     id: '19',
     name: 'Ergonomic Laptop Stand',
     code: 'ELS-556-019',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 75,
     price: 34.99,
@@ -231,7 +216,7 @@ export const products: Product[] = [
     id: '20',
     name: 'Bluetooth Earbuds',
     code: 'BTE-223-020',
-    type: 'Physical',
+    productType: 'Physical',
     date: '2025-12-29',
     stock: 120,
     price: 20.99,
@@ -241,7 +226,7 @@ export const products: Product[] = [
 ];
 
 export const productStatuses: ProductStatus[] = ['Active', 'Disabled'];
-export const productTypes: ProductType[] = [
+export const productTypes: ProductTypes[] = [
   'Physical',
   'Digital',
   'Service',

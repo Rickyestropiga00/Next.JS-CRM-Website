@@ -138,7 +138,11 @@ export function OrderDetailsModal({
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     Name
                   </p>
-                  <p className="text-xs">{order.product}</p>
+                  <p className="text-xs">
+                    {typeof order.product !== 'string'
+                      ? order.product?.name
+                      : order.product}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">

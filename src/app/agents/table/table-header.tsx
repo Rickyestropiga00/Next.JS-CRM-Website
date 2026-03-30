@@ -2,7 +2,7 @@ import React from 'react';
 import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowUpDown } from 'lucide-react';
-import { Agent } from '../data';
+import { Agent } from '@/types/interface';
 import { getId } from '@/utils/helper';
 
 interface TableHeaderProps {

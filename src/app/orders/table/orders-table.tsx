@@ -91,10 +91,14 @@ export function OrdersTable() {
         typeof order.customer === 'string'
           ? order.customer
           : order.customer?.name ?? 'Unknown';
+      const productName =
+        typeof order.product === 'string'
+          ? order.product
+          : order.product?.name ?? 'Unknown';
       const matchesSearch =
         (order.id ?? '').toLowerCase().includes(search.toLowerCase()) ||
         (customerName ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (order.product ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (productName ?? '').toLowerCase().includes(search.toLowerCase()) ||
         String(order.quantity ?? '').includes(search.toLowerCase());
       const matchesStatus = status === 'all' ? true : order.status === status;
       const matchesPayment =

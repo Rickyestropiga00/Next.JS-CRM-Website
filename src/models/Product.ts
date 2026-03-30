@@ -1,17 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type ProductType = 'Physical' | 'Digital' | 'Service' | 'Subscription';
+export type ProductTypes = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 export type ProductStatus = 'Active' | 'Disabled';
 
 export interface IProduct extends Document {
   productId: string;
   name: string;
   code: string;
-  type: ProductType;
+  productType: ProductTypes;
   stock: number;
   price: number;
   status: ProductStatus;
-  image?: string;
+  image?: Buffer;
+  imageType?: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -33,7 +34,7 @@ const productSchema = new Schema<IProduct>(
       required: [true, 'Product code is required'],
       unique: [true, 'Product code must be unique'],
     },
-    type: {
+    productType: {
       type: String,
       required: [true, 'Product type is required'],
       enum: ['Physical', 'Digital', 'Service', 'Subscription'],
@@ -56,6 +57,9 @@ const productSchema = new Schema<IProduct>(
       default: 'Active',
     },
     image: {
+      type: Buffer,
+    },
+    imageType: {
       type: String,
     },
     expiresAt: {

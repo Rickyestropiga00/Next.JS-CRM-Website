@@ -29,8 +29,47 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
     }
 
-    const body = await req.json();
     const Model = await modelMap[type];
+
+    let body: any = {};
+
+    if (type === 'product') {
+      const formData = await req.formData();
+      body = Object.fromEntries(formData.entries());
+
+      // convert numbers
+      body.price = parseFloat(body.price);
+      body.stock = parseInt(body.stock);
+
+      const file = formData.get('image') as File;
+
+      if (file && file.size > 0) {
+        const arrayBuffer = await file.arrayBuffer();
+        body.image = Buffer.from(arrayBuffer);
+        body.imageType = file.type;
+      } else {
+        // ✅ fallback image from public folder
+        const baseUrl = new URL(req.url).origin;
+        const response = await fetch(`${baseUrl}/products/product-1.webp`);
+        const arrayBuffer = await response.arrayBuffer();
+
+        body.image = Buffer.from(arrayBuffer);
+        body.imageType = 'image/webp';
+      }
+
+      // generate productId
+      const productId = await generateCustomId(
+        'productId',
+        (seq) => `PRD-${String(seq).padStart(3, '0')}`
+      );
+      body.productId = productId;
+
+      // default status if missing
+      if (!body.status) body.status = 'Active';
+    } else {
+      // For other types, keep using JSON
+      body = await req.json();
+    }
 
     if (type === 'order') {
       const orderId = await generateCustomId(
@@ -38,14 +77,6 @@ export async function POST(
         (seq) => `ORD-${String(seq).padStart(3, '0')}`
       );
       body.orderId = orderId;
-    }
-
-    if (type === 'product') {
-      const productId = await generateCustomId(
-        'productId',
-        (seq) => `PRD-${String(seq).padStart(3, '0')}`
-      );
-      body.productId = productId;
     }
 
     if (type === 'customer') {
@@ -150,6 +181,10 @@ export async function GET(
         .populate({
           path: 'customer',
           select: 'name',
+        })
+        .populate({
+          path: 'product',
+          select: 'name productType code price image',
         })
         .lean();
     } else {

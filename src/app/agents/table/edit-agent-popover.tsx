@@ -14,7 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import { validateEmail, validatePhone } from '@/lib/validations';
-import { Agent } from '../data';
+import { Agent } from '@/types/interface';
 import { toast } from 'sonner';
 
 interface EditAgentPopoverProps {
@@ -73,9 +73,8 @@ export function EditAgentPopover({
     const toastId = 'agent-update';
 
     toast.loading('Saving changes...', { id: toastId });
-    const agentId = agent._id ?? null;
 
-    if (agentId) {
+    if (formData._id) {
       try {
         const res = await fetch(`/api/agent/${formData._id}`, {
           method: 'PUT',
@@ -95,8 +94,12 @@ export function EditAgentPopover({
 
         switch (res.status) {
           case 200:
+            const updatedAgent = {
+              ...result.data,
+              id: result.data.agentId || result.data._id || formData.id,
+            };
             toast.success(result.message, { id: toastId });
-            onSave(result.data);
+            onSave(updatedAgent);
             onClose();
             console.log(result.message);
             return;
@@ -125,6 +128,8 @@ export function EditAgentPopover({
     } else {
       if (validateForm()) {
         onSave(formData);
+        toast.success('Agent updated locally', { id: toastId });
+        onClose();
       }
     }
   };

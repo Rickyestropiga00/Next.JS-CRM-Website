@@ -1,18 +1,4 @@
-export type Agent = {
-  _id?: string; // For MongoDB documents
-  id: string;
-  agentId?: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'Admin' | 'Agent' | 'Manager';
-  status: 'Active' | 'Inactive' | 'On Leave';
-  assignedCustomers: string[];
-  createdAt: string;
-  lastLogin: string;
-  notes?: string;
-  comment?: string;
-};
+import { Agent } from '@/types/interface';
 
 export const agents: Agent[] = [
   {

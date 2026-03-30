@@ -35,24 +35,29 @@ export async function PUT(
     const Model = modelMap[type];
 
     if (type === 'agent') {
-      const { assign = [], unassign = [] } = body;
+      const { assign = [], unassign = [], ...rest } = body;
+
+      const update: any = { ...rest };
 
       if (assign.length) {
-        await Agents.findByIdAndUpdate(id, {
-          $addToSet: { assignedCustomers: { $each: assign } },
-        });
+        update.$addToSet = {
+          assignedCustomers: { $each: assign },
+        };
       }
 
       if (unassign.length) {
-        await Agents.findByIdAndUpdate(id, {
-          $pull: { assignedCustomers: { $in: unassign } },
-        });
+        update.$pull = {
+          assignedCustomers: { $in: unassign },
+        };
       }
 
-      const updatedAgent = await Agents.findById(id);
+      const updatedAgent = await Agents.findByIdAndUpdate(id, update, {
+        new: true,
+      });
 
       return NextResponse.json({
         success: true,
+        message: `${capitalize(type)} updated successfully`,
         data: updatedAgent,
       });
     }

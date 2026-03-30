@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Product, ProductStatus, ProductType } from '../data';
+import { ProductStatus, ProductTypes } from '../data';
 import { toast } from 'sonner';
-import { getId } from '@/utils/helper';
+import Image from 'next/image';
+import { Product } from '@/types/interface';
 
 interface EditProductPopoverProps {
   product: Product;
@@ -38,6 +39,9 @@ export function EditProductPopover({
   const [formData, setFormData] = useState<Product>(product);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Reset form data when product changes or popover opens
   React.useEffect(() => {
@@ -70,7 +74,7 @@ export function EditProductPopover({
 
   const validateStock = (
     stock: number,
-    type: ProductType
+    type: ProductTypes
   ): string | undefined => {
     if (type === 'Physical' && stock < 0) return 'Stock cannot be negative';
     if (type === 'Physical' && stock > 999999)
@@ -90,7 +94,7 @@ export function EditProductPopover({
     const priceError = validatePrice(formData.price);
     if (priceError) newErrors.price = priceError;
 
-    const stockError = validateStock(formData.stock, formData.type);
+    const stockError = validateStock(formData.stock, formData.productType);
     if (stockError) newErrors.stock = stockError;
 
     setErrors(newErrors);
@@ -103,7 +107,7 @@ export function EditProductPopover({
       !validateName(formData.name) &&
       !validateCode(formData.code) &&
       !validatePrice(formData.price) &&
-      !validateStock(formData.stock, formData.type)
+      !validateStock(formData.stock, formData.productType)
     );
   };
 
@@ -113,8 +117,7 @@ export function EditProductPopover({
     setIsUpdating(true);
     const toastId = 'product-update';
     toast.loading('Saving changes...', { id: toastId });
-    const productId = getId(product);
-    if (productId) {
+    if (product._id) {
       try {
         const res = await fetch(`/api/product/${formData._id}`, {
           method: 'PUT',
@@ -134,6 +137,15 @@ export function EditProductPopover({
 
         switch (res.status) {
           case 200:
+            if (imageFile) {
+              const formDataImg = new FormData();
+              formDataImg.append('image', imageFile);
+
+              await fetch(`/api/product/image/${formData._id}`, {
+                method: 'PUT',
+                body: formDataImg,
+              });
+            }
             onClose();
             toast.success(result.message, { id: toastId });
             onSave(result.data);
@@ -164,7 +176,18 @@ export function EditProductPopover({
       }
     } else {
       if (validateForm()) {
-        onSave(formData);
+        let updatedImage = formData.image;
+        if (imageFile) {
+          updatedImage = URL.createObjectURL(imageFile);
+        }
+
+        onSave({
+          ...formData,
+          image: updatedImage,
+        });
+
+        toast.success('Product updated locally', { id: toastId });
+        onClose();
       }
     }
   };
@@ -204,13 +227,13 @@ export function EditProductPopover({
     const numValue = parseInt(value) || 0;
     setFormData({ ...formData, stock: numValue });
     if (errors.stock) {
-      const stockError = validateStock(numValue, formData.type);
+      const stockError = validateStock(numValue, formData.productType);
       setErrors((prev) => ({ ...prev, stock: stockError }));
     }
   };
 
-  const handleTypeChange = (value: ProductType) => {
-    setFormData({ ...formData, type: value });
+  const handleTypeChange = (value: ProductTypes) => {
+    setFormData({ ...formData, productType: value });
     // Reset stock to 0 for non-physical products
     if (value !== 'Physical') {
       setFormData((prev) => ({ ...prev, stock: 0 }));
@@ -222,6 +245,28 @@ export function EditProductPopover({
   };
 
   if (!open) return null;
+
+  const handleImageChange = (file: File | null) => {
+    if (!file) return;
+
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+  const getImageSrc = () => {
+    if (imagePreview) return imagePreview;
+
+    if (typeof formData.image === 'string' && formData.image.trim()) {
+      return formData.image;
+    }
+
+    if (formData._id) {
+      return `/api/product/image/${formData._id}`;
+    }
+
+    return '/products/product-1.webp';
+  };
+  const imageSrc = getImageSrc();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -239,6 +284,54 @@ export function EditProductPopover({
           </div>
 
           <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 sm:gap-4">
+              <div className="space-y-2 flex flex-col items-center">
+                <Label htmlFor="productImage" className="text-xs">
+                  Product Image
+                </Label>
+
+                <Label
+                  htmlFor="productImage"
+                  className="relative cursor-pointer block w-24 h-24 border rounded-md overflow-hidden "
+                >
+                  {imageSrc ? (
+                    imageSrc.startsWith('blob:') ? (
+                      <Image
+                        src={imageSrc}
+                        alt="Preview"
+                        className="max-w-full max-h-full object-contain"
+                        fill
+                        unoptimized
+                        sizes="160px"
+                      />
+                    ) : (
+                      <Image
+                        src={imageSrc}
+                        alt="Preview"
+                        className="object-contain w-full h-full"
+                        fill
+                        unoptimized
+                        sizes="160px"
+                      />
+                    )
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full text-xs text-muted-foreground">
+                      Upload
+                    </div>
+                  )}
+
+                  <Input
+                    id="productImage"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleImageChange(e.target.files?.[0] || null)
+                    }
+                  />
+                </Label>
+              </div>
+            </div>
             {/* Row 1: Name and Code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
@@ -282,7 +375,10 @@ export function EditProductPopover({
                 <Label htmlFor="type" className="text-xs">
                   Product Type
                 </Label>
-                <Select value={formData.type} onValueChange={handleTypeChange}>
+                <Select
+                  value={formData.productType}
+                  onValueChange={handleTypeChange}
+                >
                   <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -351,14 +447,15 @@ export function EditProductPopover({
                     errors.stock ? 'border-red-500' : ''
                   }`}
                   placeholder="0"
-                  disabled={formData.type !== 'Physical'}
+                  disabled={formData.productType !== 'Physical'}
                 />
                 {errors.stock && (
                   <p className="text-xs text-red-500">{errors.stock}</p>
                 )}
-                {formData.type !== 'Physical' && (
+                {formData.productType !== 'Physical' && (
                   <p className="text-xs text-muted-foreground">
-                    Not applicable for {formData.type.toLowerCase()} products
+                    Not applicable for {formData.productType.toLowerCase()}{' '}
+                    products
                   </p>
                 )}
               </div>

@@ -22,6 +22,16 @@ const TopSellingProductModal = dynamic(
     })),
   { ssr: false }
 );
+const getProductImageUrl = (product: Product) => {
+  if (product.image && product.imageType) {
+    const base64 = Buffer.from(product.image).toString('base64');
+    return `data:${product.imageType};base64,${base64}`;
+  }
+  if (typeof product.image === 'string') {
+    return product.image;
+  }
+  return '/products/product-1.webp';
+};
 
 // Utility function to calculate top selling products
 const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
@@ -37,7 +47,10 @@ const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
         if (!acc[productCode]) {
           acc[productCode] = {
             code: productCode,
-            name: productName,
+            name:
+              typeof productName === 'string'
+                ? productName
+                : productName?.name || 'Unknown',
             totalQuantity: 0,
             totalRevenue: 0,
             productType: productType,
@@ -86,9 +99,10 @@ const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
   // Get product details including images
   return sortedProducts.map((sale) => {
     const product = products.find((p) => p.code === sale.code);
+
     return {
       ...sale,
-      image: product?.image || '/products/product-1.webp',
+      image: product ? getProductImageUrl(product) : '/products/product-1.webp',
       price: product?.price || 0,
       status: product?.status || 'Inactive',
       stock: product?.stock || 0,
@@ -146,13 +160,15 @@ export const TopSellingProducts = memo(function TopSellingProducts() {
             className="flex items-center space-x-4 lg:space-x-3 p-3 lg:p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
             onClick={() => setSelectedTopProductId(product.code)}
           >
-            <div className="relative w-12 h-12 lg:w-10 lg:h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+            <div className="relative w-[50px] h-[50px] lg:w-10 lg:h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0 ">
               <Image
                 src={product.image}
                 alt={product.name}
-                fill
-                className="object-cover"
+                width={50}
+                height={50}
+                className="w-full h-full object-cover object-center"
                 sizes="(max-width: 1024px) 40px, 48px"
+                unoptimized
               />
             </div>
             <div className="flex-1 min-w-0">
