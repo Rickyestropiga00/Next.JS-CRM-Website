@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { orders as initialOrders, OrderStatus, PaymentStatus } from '../data';
+import { OrderStatus, PaymentStatus } from '../data';
 import { Order } from '@/types/interface';
 import { OrdersTableHeader } from './table-header';
 import { OrdersTableBody } from './table-body';
@@ -56,7 +56,7 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
-import { fetchData } from '@/lib/api/fetch-data';
+import { useFetch } from '@/hooks/use-fetch';
 
 export function OrdersTable() {
   const [search, setSearch] = useState('');
@@ -65,7 +65,7 @@ export function OrdersTable() {
   const [productType, setProductType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<keyof Order>('id');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [data, setData] = useState(initialOrders);
+  const { data: ordersData, setData: setOrdersData } = useFetch<Order>('order');
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editOrderId, setEditOrderId] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export function OrdersTable() {
 
   // Filtering
   const filtered = useMemo(() => {
-    return data.filter((order) => {
+    return ordersData.filter((order) => {
       const customerName =
         typeof order.customer === 'string'
           ? order.customer
@@ -109,7 +109,7 @@ export function OrdersTable() {
         matchesSearch && matchesStatus && matchesPayment && matchesProductType
       );
     });
-  }, [data, search, status, payment, productType]);
+  }, [ordersData, search, status, payment, productType]);
 
   // Sorting
   const sorted = useMemo(() => {
@@ -159,22 +159,22 @@ export function OrdersTable() {
   // Reset to page 1 if rowsPerPage changes and currentPage is out of range
   React.useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages]);
+  }, [rowsPerPage, totalPages, currentPage]);
 
   function handleDelete(id: string) {
-    setData((prev) =>
+    setOrdersData((prev) =>
       prev.filter((order) => order.id !== id && order._id !== id)
     );
   }
 
   function handleAddOrder(newOrder: Order) {
-    setData((prev) => [newOrder, ...prev]);
+    setOrdersData((prev) => [newOrder, ...prev]);
     // Reset to first page when adding new order
     setCurrentPage(1);
   }
 
   function handleEdit(updatedOrder: Order) {
-    setData((prev) =>
+    setOrdersData((prev) =>
       prev.map((order) =>
         getId(order) === getId(updatedOrder) ? updatedOrder : order
       )
@@ -227,7 +227,7 @@ export function OrdersTable() {
 
       const data = await res.json();
       if (res.ok) {
-        setData((prev) =>
+        setOrdersData((prev) =>
           prev.filter(
             (p) =>
               !(p._id && selected.includes(p._id)) &&
@@ -252,15 +252,6 @@ export function OrdersTable() {
       id: getId(order) ?? index.toString(),
     }));
   }, [paginated]);
-
-  useEffect(() => {
-    const getOrder = async () => {
-      const res = await fetchData('order');
-      setData([...res.data, ...initialOrders]);
-    };
-
-    getOrder();
-  }, []);
 
   return (
     <>
@@ -397,7 +388,7 @@ export function OrdersTable() {
       {/* Edit Order Modal - Rendered outside table structure */}
       {editOrderId && (
         <EditOrderPopover
-          order={data.find((o) => getId(o) === editOrderId)!}
+          order={ordersData.find((o) => getId(o) === editOrderId)!}
           onSave={(updatedOrder) => {
             handleEdit(updatedOrder);
             setEditOrderId(null);
@@ -420,7 +411,7 @@ export function OrdersTable() {
       <OrderDetailsModal
         order={
           selectedOrderId
-            ? data.find((o) => getId(o) === selectedOrderId) || null
+            ? ordersData.find((o) => getId(o) === selectedOrderId) || null
             : null
         }
         isOpen={!!selectedOrderId}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,6 @@ import {
 } from '@/lib/validations';
 import { OrderStatus, PaymentStatus } from '../data';
 import { toast } from 'sonner';
-import { getId } from '@/utils/helper';
 import { Customer, Order, Product } from '@/types/interface';
 import {
   Combobox,
@@ -29,8 +28,8 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { fetchData } from '@/lib/api/fetch-data';
 import { formatPrice } from '@/utils/formatters';
+import { useFetch } from '@/hooks/use-fetch';
 
 interface EditOrderPopoverProps {
   order: Order;
@@ -54,8 +53,8 @@ export function EditOrderPopover({
   const [formData, setFormData] = useState<Order>(order);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isUpdating, setIsUpdating] = useState(false);
-  const [customer, setCustomer] = useState<Customer[]>([]);
-  const [product, setProduct] = useState<Product[]>([]);
+  const { data: customersData } = useFetch<Customer>('customer', false, false); // false, false to get database data only
+  const { data: productsData } = useFetch<Product>('product', false, false);
   const [inputValue, setInputValue] = useState('');
   const [productInputValue, setProductInputValue] = useState('');
 
@@ -146,9 +145,10 @@ export function EditOrderPopover({
             const savedOrder: Order = {
               ...result.data,
               customer:
-                customer.find((c) => c._id === result.data.customer) || null,
+                customersData.find((c) => c._id === result.data.customer) ||
+                null,
               product:
-                product.find((p) => p._id === result.data.product) || null,
+                productsData.find((p) => p._id === result.data.product) || null,
             };
             onSave(savedOrder);
             onClose();
@@ -168,12 +168,12 @@ export function EditOrderPopover({
       if (validateForm()) {
         const selectedProduct =
           typeof formData.product === 'string'
-            ? product.find((p) => p._id === formData.product)
+            ? productsData.find((p) => p._id === formData.product)
             : formData.product;
 
         const selectedCustomer =
           typeof formData.customer === 'string'
-            ? customer.find((c) => c._id === formData.customer)
+            ? customersData.find((c) => c._id === formData.customer)
             : formData.customer;
 
         const savedOrder: Order = {
@@ -209,20 +209,6 @@ export function EditOrderPopover({
     const quantityError = validateQuantity(value);
     setErrors((prev) => ({ ...prev, quantity: quantityError }));
   };
-
-  useEffect(() => {
-    const loadProductCustomer = async () => {
-      try {
-        const customerRes = await fetchData('customer');
-        const productRes = await fetchData('product');
-        setCustomer(customerRes.data);
-        setProduct(productRes.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    loadProductCustomer();
-  }, []);
 
   const productPrice =
     formData.product && typeof formData.product !== 'string'
@@ -285,7 +271,10 @@ export function EditOrderPopover({
               </Label>
 
               <Combobox
-                items={customer.map((c) => ({ label: c.name, value: c._id }))}
+                items={customersData.map((c) => ({
+                  label: c.name,
+                  value: c._id,
+                }))}
                 value={
                   typeof formData.customer === 'string'
                     ? ''
@@ -293,7 +282,7 @@ export function EditOrderPopover({
                 }
                 onValueChange={(value) => {
                   const selected =
-                    customer.find((c) => c._id === value) || null;
+                    customersData.find((c) => c._id === value) || null;
                   setFormData({ ...formData, customer: selected });
                   setInputValue(selected?.name || '');
                 }}
@@ -303,7 +292,9 @@ export function EditOrderPopover({
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onBlur={() => {
-                    const matched = customer.find((c) => c.name === inputValue);
+                    const matched = customersData.find(
+                      (c) => c.name === inputValue
+                    );
                     if (!matched) {
                       setInputValue('');
                       setFormData({ ...formData, customer: null });
@@ -348,14 +339,18 @@ export function EditOrderPopover({
                 Product Name
               </Label>
               <Combobox
-                items={product.map((p) => ({ label: p.name, value: p._id }))}
+                items={productsData.map((p) => ({
+                  label: p.name,
+                  value: p._id,
+                }))}
                 value={
                   typeof formData.product === 'string'
                     ? ''
                     : formData.product?._id || ''
                 }
                 onValueChange={(value) => {
-                  const selected = product.find((c) => c._id === value) || null;
+                  const selected =
+                    productsData.find((c) => c._id === value) || null;
                   setFormData((prev) => ({
                     ...prev,
                     product: selected,
@@ -371,7 +366,7 @@ export function EditOrderPopover({
                   value={productInputValue}
                   onChange={(e) => setProductInputValue(e.target.value)}
                   onBlur={() => {
-                    const matched = product.find(
+                    const matched = productsData.find(
                       (p) => p.name === productInputValue
                     );
                     if (!matched) {

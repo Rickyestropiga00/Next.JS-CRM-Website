@@ -3,11 +3,19 @@ import dynamic from 'next/dynamic';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Filters } from './filters';
 import { ColumnsBoard } from './columns-board';
-import { Task, ColumnKey } from '../data';
+import { Task, ColumnKey } from '@/types/interface';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useTasks } from '@/hooks/use-tasks';
 import { getId } from '@/utils/helper';
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 
 // Dynamically import task modals to reduce initial bundle size
 const EditTaskPopover = dynamic(
@@ -40,7 +48,7 @@ export function TasksContent({}: TasksContentProps) {
   const { state } = useSidebar();
   const isSidebarCollapsed = state === 'collapsed';
   const {
-    tasks: taskList,
+    tasksData: taskList,
     addTask,
     updateTask,
     deleteTask,
@@ -93,6 +101,8 @@ export function TasksContent({}: TasksContentProps) {
   }
 
   function handleMoveTask(id: string, newColumn: Task['column']) {
+    const task = taskList.find((t) => getId(t) === id);
+    if (!task || task.column === newColumn) return;
     moveTask(id, newColumn);
   }
 
@@ -108,6 +118,29 @@ export function TasksContent({}: TasksContentProps) {
   function handleAddTask(newTask: Task) {
     addTask(newTask);
   }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over) return;
+    const taskId = active.id as string;
+    const newColumn = over.data.current?.column;
+    if (!newColumn) return;
+
+    const activeTask = taskList.find((t) => getId(t) === taskId);
+    if (!activeTask) return;
+
+    if (activeTask.column !== newColumn) {
+      handleMoveTask(taskId, newColumn);
+    }
+  };
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   return (
     <>
@@ -132,20 +165,26 @@ export function TasksContent({}: TasksContentProps) {
           Add New Task
         </Button>
       </div>
-      <ColumnsBoard
-        columns={columns}
-        filteredTasks={filteredTasks}
-        onMoveTask={handleMoveTask}
-        onDeleteTask={handleDeleteTask}
-        onEditTask={setEditTaskId}
-        onAddTask={(column) => {
-          setAddTaskColumn(column);
-          setShowAddTask(true);
-        }}
-        deleteDialogId={deleteDialogId}
-        setDeleteDialogId={setDeleteDialogId}
-        isSidebarCollapsed={isSidebarCollapsed}
-      />
+      <DndContext
+        collisionDetection={closestCenter}
+        sensors={sensors}
+        onDragEnd={handleDragEnd}
+      >
+        <ColumnsBoard
+          columns={columns}
+          filteredTasks={filteredTasks}
+          onMoveTask={handleMoveTask}
+          onDeleteTask={handleDeleteTask}
+          onEditTask={setEditTaskId}
+          onAddTask={(column) => {
+            setAddTaskColumn(column);
+            setShowAddTask(true);
+          }}
+          deleteDialogId={deleteDialogId}
+          setDeleteDialogId={setDeleteDialogId}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
+      </DndContext>
 
       {/* Edit Task Modal - Rendered outside board structure */}
       {editTaskId && (

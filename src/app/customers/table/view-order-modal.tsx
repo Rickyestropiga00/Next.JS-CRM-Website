@@ -26,7 +26,11 @@ interface ViewOrderModalProps {
   onClose?: () => void;
 }
 
-const ViewOrderModal = ({ customer, open, onClose }: ViewOrderModalProps) => {
+export const ViewOrderModal = ({
+  customer,
+  open,
+  onClose,
+}: ViewOrderModalProps) => {
   const [customerOrder, setCustomerOrder] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -174,5 +178,3 @@ const ViewOrderModal = ({ customer, open, onClose }: ViewOrderModalProps) => {
     </ModalWrapper>
   );
 };
-
-export default ViewOrderModal;

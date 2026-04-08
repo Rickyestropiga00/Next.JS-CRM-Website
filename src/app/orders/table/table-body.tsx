@@ -23,7 +23,6 @@ import {
 import { toast } from 'sonner';
 import { Order } from '@/types/interface';
 import { getId } from '@/utils/helper';
-import { fetchData } from '@/lib/api/fetch-data';
 
 interface TableBodyProps {
   paginated: any[];
@@ -61,9 +60,8 @@ export function OrdersTableBody({
     return address;
   };
 
-  const handleDelete = async (order: any) => {
-    const orderId = getId(order);
-    if (orderId) {
+  const handleDelete = async (order: Order) => {
+    if (order._id) {
       try {
         const res = await fetch(`/api/order/${order._id}`, {
           method: 'DELETE',
@@ -86,6 +84,7 @@ export function OrdersTableBody({
       }
     } else {
       onDelete(order.id);
+      toast.success('Order deleted successfully');
       setDeleteDialogId(null);
     }
   };

@@ -12,9 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Task } from '../data';
-import { toast } from 'sonner';
-import { getId } from '@/utils/helper';
+import { Task } from '@/types/interface';
 
 interface EditTaskPopoverProps {
   task: Task;
@@ -82,8 +80,7 @@ export function EditTaskPopover({
 
     if (!validateForm()) return;
 
-    const taskId = getId(task);
-    if (taskId) {
+    if (task._id) {
       try {
         const res = await fetch(`/api/task/${formData._id}`, {
           method: 'PUT',

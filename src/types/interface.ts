@@ -2,7 +2,7 @@ export type CustomerStatus = 'Lead' | 'Active' | 'Inactive' | 'Prospect';
 
 export interface Customer {
   _id?: string;
-  id?: string;
+  id: string;
   customerId?: string;
   name: string;
   email: string;
@@ -22,7 +22,7 @@ export type PaymentStatus = 'Paid' | 'Unpaid';
 
 export interface Order {
   _id?: string;
-  id?: string;
+  id: string;
   orderId?: string;
   customer: null | Customer | string;
   address: string;
@@ -59,8 +59,8 @@ export interface Product {
   updatedAt?: string;
 }
 
-export type roleType = 'Admin' | 'Agent' | 'Manager';
-export type agentStatus = 'Active' | 'Inactive' | 'On Leave';
+export type RoleType = 'Admin' | 'Agent' | 'Manager';
+export type AgentStatus = 'Active' | 'Inactive' | 'On Leave';
 
 export type Agent = {
   _id?: string; // For MongoDB documents
@@ -69,11 +69,32 @@ export type Agent = {
   name: string;
   email: string;
   phone: string;
-  role: roleType;
-  status: agentStatus;
+  role: RoleType;
+  status: AgentStatus;
   assignedCustomers: string[];
   createdAt: string;
   lastLogin: string;
   notes?: string;
   comment?: string;
+};
+
+export type ColumnKey = 'todo' | 'inprogress' | 'inreview' | 'done';
+export type PriorityKey = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export type Task = {
+  _id?: string;
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  statusColor: string;
+  priority: PriorityKey;
+  column: ColumnKey;
+  lastAdded: string;
+  createdAt?: string;
+  avatars: Array<{
+    src: string;
+    alt: string;
+    fallback: string;
+  }>;
 };

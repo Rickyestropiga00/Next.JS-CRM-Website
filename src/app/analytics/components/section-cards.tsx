@@ -4,7 +4,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   HandCoins,
   TrendingUpIcon,
@@ -12,10 +12,28 @@ import {
   TrendingDownIcon,
   CircleUser,
   ChartNoAxesCombined,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Order } from '@/types/interface';
+import { useMemo } from 'react';
+import { formatPrice } from '@/utils/formatters';
+import { useFetch } from '@/hooks/use-fetch';
 
 export function SectionCards() {
+  const { data: orders, loading: ordersLoading } = useFetch<Order>(
+    'order',
+    false,
+    false
+  );
+
+  const calculateTotalRevenue = useMemo(() => {
+    return orders
+      .filter((order) => order.status !== 'Canceled')
+      .reduce((acc, order) => acc + (order.total || 0), 0);
+  }, [orders]);
+
+  const total = 1250 + calculateTotalRevenue;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <Card className="@container/card">
@@ -23,7 +41,13 @@ export function SectionCards() {
           <div>
             <CardDescription>Total Revenue</CardDescription>
             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-              $1,250.00
+              {!ordersLoading ? (
+                formatPrice(total)
+              ) : (
+                <div className="text-center @[100px]/card:text-xl text-muted-foreground">
+                  Loading revenue...
+                </div>
+              )}
             </CardTitle>
           </div>
           <div className="flex items-center justify-center rounded-full border border-secondary bg-background w-12 h-12">
@@ -32,7 +56,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month{" "}
+            Trending up this month{' '}
             <TrendingUpIcon className="size-4 text-green-600" />
           </div>
           <div className="flex flex-wrap w-full justify-between gap-3">
@@ -64,7 +88,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Down this period{" "}
+            Down this period{' '}
             <TrendingDownIcon className="size-4 text-red-600" />
           </div>
           <div className="flex flex-wrap w-full justify-between gap-3">
@@ -92,7 +116,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention{" "}
+            Strong user retention{' '}
             <TrendingUpIcon className="size-4 text-green-600" />
           </div>
           <div className="flex flex-wrap w-full justify-between gap-3">
@@ -124,7 +148,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance{" "}
+            Steady performance{' '}
             <TrendingUpIcon className="size-4 text-green-600" />
           </div>
           <div className="flex flex-wrap w-full justify-between gap-3">

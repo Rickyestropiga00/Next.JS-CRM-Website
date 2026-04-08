@@ -60,9 +60,8 @@ export function ProductsTableBody({
     return stock.toString();
   };
 
-  const handleDelete = async (product: any) => {
-    const productId = getId(product);
-    if (productId) {
+  const handleDelete = async (product: Product) => {
+    if (product._id) {
       try {
         const res = await fetch(`/api/product/${product._id}`, {
           method: 'DELETE',
@@ -82,6 +81,7 @@ export function ProductsTableBody({
       }
     } else {
       onDelete(product.id);
+      toast.success('Product deleted successfully');
       setDeleteDialogId(null);
     }
   };
@@ -118,7 +118,7 @@ export function ProductsTableBody({
           </TableCell>
           <TableCell className="w-[200px]">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-muted">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-muted shrink-0">
                 <Image
                   src={
                     p._id && p._id.length === 24
@@ -128,12 +128,11 @@ export function ProductsTableBody({
                       : p.image || '/product/product-1.webp'
                   }
                   alt={p.name}
-                  className="object-cover"
+                  className="object-cover "
                   fill
-                  sizes="160px"
                 />
               </div>
-              <span className="font-medium">{p.name}</span>
+              <span className="font-medium truncate">{p.name}</span>
             </div>
           </TableCell>
           <TableCell className="w-[120px] font-mono text-sm">

@@ -24,7 +24,7 @@ const AddNewTaskPopover = dynamic(
 );
 
 export function TasksSection() {
-  const { tasks: taskList, addTask, isLoading } = useTasks();
+  const { tasksData: taskList, addTask, tasksLoading } = useTasks();
   const [selectedTaskCategory, setSelectedTaskCategory] =
     useState<string>('todo');
   const [showAddNewTask, setShowAddNewTask] = useState<boolean>(false);
@@ -56,7 +56,7 @@ export function TasksSection() {
     setShowAddNewTask(false);
   };
 
-  if (isLoading) {
+  if (tasksLoading) {
     return (
       <Card>
         <CardContent className="px-4 py-8">
