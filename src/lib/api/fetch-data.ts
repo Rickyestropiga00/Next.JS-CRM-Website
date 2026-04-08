@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 export async function fetchData(type: string) {
   const res = await fetch(`/api/${type}`, {
     method: 'GET',
@@ -5,7 +6,10 @@ export async function fetchData(type: string) {
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch ${type}`);
+    return NextResponse.json(
+      { message: `Failed to fetch ${type}` },
+      { status: 500 }
+    );
   }
 
   const data = await res.json();

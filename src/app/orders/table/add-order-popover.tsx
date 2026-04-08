@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,9 +19,9 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { fetchData } from '@/lib/api/fetch-data';
 import { Customer, Order, Product } from '@/types/interface';
 import { formatPrice } from '@/utils/formatters';
+import { useFetch } from '@/hooks/use-fetch';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -44,8 +44,9 @@ export function AddOrderPopover({
   onClose,
 }: AddOrderPopoverProps) {
   const [internalIsOpen] = useState(false);
-  const [customer, setCustomer] = useState<Customer[]>([]);
-  const [product, setProduct] = useState<Product[]>([]);
+
+  const { data: customersData } = useFetch<Customer>('customer', false, false);
+  const { data: productsData } = useFetch<Product>('product', false, false);
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
@@ -259,27 +260,6 @@ export function AddOrderPopover({
     setErrors((prev) => ({ ...prev, quantity: quantityError }));
   };
 
-  // const handleTotalChange = (value: number) => {
-  //   setFormData({ ...formData, total: value });
-  //   // Always validate and update errors when total changes
-  //   const totalError = validateTotal(value);
-  //   setErrors((prev) => ({ ...prev, total: totalError }));
-  // };
-
-  useEffect(() => {
-    const loadProductCustomer = async () => {
-      try {
-        const resCustomer = await fetchData('customer');
-        const resProduct = await fetchData('product');
-        setCustomer(resCustomer.data);
-        setProduct(resProduct.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    loadProductCustomer();
-  }, []);
-
   if (!isModalOpen) return null;
 
   return (
@@ -306,11 +286,14 @@ export function AddOrderPopover({
                 </Label>
 
                 <Combobox
-                  items={customer.map((c) => ({ label: c.name, value: c._id }))}
+                  items={customersData.map((c) => ({
+                    label: c.name,
+                    value: c._id,
+                  }))}
                   value={formData.customer?._id || ''}
                   onValueChange={(value) => {
                     const selected =
-                      customer.find((c) => c._id === value) || null;
+                      customersData.find((c) => c._id === value) || null;
                     setFormData({ ...formData, customer: selected });
                     setInputValue(selected?.name || '');
                   }}
@@ -320,7 +303,7 @@ export function AddOrderPopover({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onBlur={() => {
-                      const matched = customer.find(
+                      const matched = customersData.find(
                         (c) => c.name === inputValue
                       );
                       if (!matched) {
@@ -348,11 +331,14 @@ export function AddOrderPopover({
                 </Label>
 
                 <Combobox
-                  items={product.map((p) => ({ label: p.name, value: p._id }))}
+                  items={productsData.map((p) => ({
+                    label: p.name,
+                    value: p._id,
+                  }))}
                   value={formData.product?._id || ''}
                   onValueChange={(value) => {
                     const selected =
-                      product.find((p) => p._id === value) || null;
+                      productsData.find((p) => p._id === value) || null;
                     setFormData((prev) => ({
                       ...prev,
                       product: selected,
@@ -370,7 +356,7 @@ export function AddOrderPopover({
                     value={productInputValue}
                     onChange={(e) => setProductInputValue(e.target.value)}
                     onBlur={() => {
-                      const matched = product.find(
+                      const matched = productsData.find(
                         (c) => c.name === productInputValue
                       );
                       if (!matched) {

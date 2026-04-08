@@ -58,9 +58,8 @@ export function CustomersTableBody({
     return matches ? matches.length : 0;
   };
 
-  const handleDelete = async (customer: any) => {
-    const customerId = getId(customer);
-    if (customerId) {
+  const handleDelete = async (customer: Customer) => {
+    if (customer._id) {
       try {
         const res = await fetch(`/api/customer/${customer._id}`, {
           method: 'DELETE',
@@ -80,6 +79,7 @@ export function CustomersTableBody({
       }
     } else {
       onDelete(customer.id);
+      toast.success('Customer deleted successfully');
       setDeleteDialogId(null);
     }
   };

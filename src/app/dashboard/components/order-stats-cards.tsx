@@ -1,8 +1,8 @@
-import { useMemo, memo, useEffect, useState } from 'react';
+import { useMemo, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { orders } from '@/app/orders/data';
 import { Order } from '@/types/interface';
-import { fetchData } from '@/lib/api/fetch-data';
+import { useFetch } from '@/hooks/use-fetch';
 
 // Utility function to calculate order statistics
 const calculateOrderStats = (orders: Order[]) => {
@@ -30,20 +30,10 @@ const calculateOrderStats = (orders: Order[]) => {
 };
 
 export const OrderStatsCards = memo(function OrderStatsCards() {
-  const [dbOrders, setDbOrders] = useState<Order[]>([]);
-
-  useEffect(() => {
-    const getOrder = async () => {
-      const res = await fetchData('order');
-
-      setDbOrders(res.data);
-    };
-
-    getOrder();
-  }, []);
+  const { data: ordersData } = useFetch<Order>('order', false, false); // false, false to get database data only
 
   const orderStats = useMemo(() => calculateOrderStats(orders), []);
-  const dbStats = useMemo(() => calculateOrderStats(dbOrders), [dbOrders]);
+  const dbStats = useMemo(() => calculateOrderStats(ordersData), [ordersData]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

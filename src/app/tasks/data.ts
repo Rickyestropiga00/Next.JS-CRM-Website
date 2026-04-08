@@ -1,24 +1,4 @@
-// Types for tasks feature
-
-export type ColumnKey = 'todo' | 'inprogress' | 'inreview' | 'done';
-
-export type Task = {
-  _id?: string;
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  statusColor: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  column: ColumnKey;
-  lastAdded: string;
-  createdAt?: string;
-  avatars: Array<{
-    src: string;
-    alt: string;
-    fallback: string;
-  }>;
-};
+import { Task } from '@/types/interface';
 
 export const tasks: Task[] = [
   {

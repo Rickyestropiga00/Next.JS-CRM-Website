@@ -1,1 +1,1 @@
-export const getId = (item: any) => item?.id ?? item?._id;
+export const getId = (item: any) => item?._id ?? item?.id;

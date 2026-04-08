@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { customers as initialCustomers } from '../data';
 import { CustomersTableHeader } from './table-header';
 import { CustomersTableBody } from './table-body';
 import { CustomersPaginationBar } from './pagination-bar';
@@ -41,6 +40,13 @@ const CustomerDetailsModal = dynamic(
     })),
   { ssr: false }
 );
+const ViewOrderModal = dynamic(
+  () =>
+    import('./view-order-modal').then((mod) => ({
+      default: mod.ViewOrderModal,
+    })),
+  { ssr: false }
+);
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -55,15 +61,13 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
-import { fetchData } from '@/lib/api/fetch-data';
-import ViewOrderModal from './view-order-modal';
+import { useFetch } from '@/hooks/use-fetch';
 
 export function CustomersTable() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<keyof Customer>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [data, setData] = useState(initialCustomers);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editCustomerId, setEditCustomerId] = useState<string | null>(null);
@@ -77,6 +81,8 @@ export function CustomersTable() {
   const [viewOrderCustomerId, setViewOrderCustomerId] = useState<string | null>(
     null
   );
+  const { data: customersData, setData: setCustomersData } =
+    useFetch<Customer>('customer');
   const statusOptions: CustomerStatus[] = [
     'Lead',
     'Active',
@@ -85,14 +91,14 @@ export function CustomersTable() {
   ];
   // Filtering
   const filtered = useMemo(() => {
-    return data.filter((c) => {
+    return customersData.filter((c) => {
       const matchesSearch =
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.email.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = status === 'all' ? true : c.status === status;
       return matchesSearch && matchesStatus;
     });
-  }, [data, search, status]);
+  }, [customersData, search, status]);
 
   // Sorting
   const sorted = useMemo(() => {
@@ -125,10 +131,10 @@ export function CustomersTable() {
   // Reset to page 1 if rowsPerPage changes and currentPage is out of range
   React.useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages]);
+  }, [rowsPerPage, totalPages, currentPage]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((c) => c.id !== id && c._id !== id));
+    setCustomersData((prev) => prev.filter((c) => c.id !== id && c._id !== id));
   }
 
   function handleAddCustomer(newCustomer: Customer) {
@@ -136,12 +142,12 @@ export function CustomersTable() {
       ...newCustomer,
       id: newCustomer.customerId || newCustomer._id || '',
     };
-    setData((prev) => [normalized, ...prev]);
+    setCustomersData((prev) => [normalized, ...prev]);
     setCurrentPage(1);
   }
 
   function handleEdit(updatedCustomer: Customer) {
-    setData((prev) =>
+    setCustomersData((prev) =>
       prev.map((customer) =>
         getId(customer) === getId(updatedCustomer) ? updatedCustomer : customer
       )
@@ -149,7 +155,6 @@ export function CustomersTable() {
   }
 
   function handleAddComment(customerId: string, comment: string) {
-    const timestamp = new Date().toISOString();
     const formattedDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -161,7 +166,7 @@ export function CustomersTable() {
     });
     const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
 
-    setData((prev) =>
+    setCustomersData((prev) =>
       prev.map((customer) =>
         customer.id === customerId
           ? {
@@ -198,16 +203,14 @@ export function CustomersTable() {
   }
 
   function handleSelectRow(customer: Customer, checked: boolean) {
-    const customerId = getId(customer);
+    const cId = getId(customer);
 
-    if (!customerId) return;
+    if (!cId) return;
 
     if (checked) {
-      setSelected((prev) =>
-        prev.includes(customerId) ? prev : [...prev, customerId]
-      );
+      setSelected((prev) => (prev.includes(cId) ? prev : [...prev, cId]));
     } else {
-      setSelected((prev) => prev.filter((s) => s !== customerId));
+      setSelected((prev) => prev.filter((s) => s !== cId));
     }
   }
 
@@ -222,7 +225,7 @@ export function CustomersTable() {
       const data = await res.json();
 
       if (res.ok) {
-        setData((prev) =>
+        setCustomersData((prev) =>
           prev.filter(
             (c) =>
               !(c._id && selected.includes(c._id)) &&
@@ -239,14 +242,6 @@ export function CustomersTable() {
       toast.error('Something went wrong');
     }
   }
-  useEffect(() => {
-    const getCustomer = async () => {
-      const res = await fetchData('customer');
-      setData([...res.data, ...initialCustomers]);
-    };
-
-    getCustomer();
-  }, []);
 
   return (
     <>
@@ -354,7 +349,7 @@ export function CustomersTable() {
       {/* Edit Customer Modal - Rendered outside table structure */}
       {editCustomerId && (
         <EditCustomerPopover
-          customer={data.find((c) => getId(c) === editCustomerId)!}
+          customer={customersData.find((c) => getId(c) === editCustomerId)!}
           onSave={(updatedCustomer) => {
             handleEdit(updatedCustomer);
             setEditCustomerId(null);
@@ -378,7 +373,7 @@ export function CustomersTable() {
       <CustomerDetailsModal
         customer={
           selectedCustomerId
-            ? data.find((c) => getId(c) === selectedCustomerId) || null
+            ? customersData.find((c) => getId(c) === selectedCustomerId) || null
             : null
         }
         isOpen={!!selectedCustomerId}
@@ -387,7 +382,9 @@ export function CustomersTable() {
       />
       {viewOrderCustomerId && (
         <ViewOrderModal
-          customer={data.find((c) => getId(c) === viewOrderCustomerId)!}
+          customer={
+            customersData.find((c) => getId(c) === viewOrderCustomerId)!
+          }
           onClose={() => setViewOrderCustomerId(null)}
           open={true}
         />

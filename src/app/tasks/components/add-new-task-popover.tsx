@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Task, ColumnKey } from '../data';
+import { Task, ColumnKey } from '@/types/interface';
 
 interface AddNewTaskPopoverProps {
   onAddNewTask: (tasks: Task) => void;

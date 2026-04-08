@@ -7,7 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Trash, Pencil, ClipboardCheck } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Trash,
+  Pencil,
+  ClipboardCheck,
+  Loader,
+} from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,9 +61,8 @@ export function AgentsTableBody({
     const matches = comment.match(/---\n📝 Comment by/g);
     return matches ? matches.length : 0;
   };
-  const handleDelete = async (agent: any) => {
-    const agentId = getId(agent);
-    if (agentId) {
+  const handleDelete = async (agent: Agent) => {
+    if (agent._id) {
       try {
         const res = await fetch(`/api/agent/${agent._id}`, {
           method: 'DELETE',
@@ -77,6 +82,7 @@ export function AgentsTableBody({
       }
     } else {
       onDelete(agent.id);
+      toast.success('Agent deleted successfully');
       setDeleteDialogId(null);
     }
   };
@@ -200,6 +206,7 @@ export function AgentsTableBody({
                         <AlertDialogAction
                           onClick={() => {
                             handleDelete(a);
+                            setDeleteDialogId(null);
                           }}
                           className="cursor-pointer"
                         >

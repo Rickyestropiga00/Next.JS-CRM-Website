@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useEffect } from 'react';
+import { useState, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Card,
@@ -8,11 +8,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Image from 'next/image';
-import { orders } from '@/app/orders/data';
-import { products } from '@/app/products/data';
 import { formatPrice } from '@/utils/formatters';
 import { Order, Product } from '@/types/interface';
-import { fetchData } from '@/lib/api/fetch-data';
+import { useFetch } from '@/hooks/use-fetch';
 
 // Dynamically import modal to reduce initial bundle size
 const TopSellingProductModal = dynamic(
@@ -111,37 +109,15 @@ const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
 };
 
 export const TopSellingProducts = memo(function TopSellingProducts() {
-  const [ordersData, setOrdersData] = useState<Order[]>([]);
-  const [productsData, setProductsData] = useState<Product[]>([]);
+  const { data: productsData } = useFetch<Product>('product');
+  const { data: ordersData } = useFetch<Order>('order');
   const [selectedTopProductId, setSelectedTopProductId] = useState<
     string | null
   >(null);
-  const combineOrders = useMemo(() => {
-    return [...orders, ...ordersData];
-  }, [ordersData]);
-
-  const combineProducts = useMemo(() => {
-    return [...products, ...productsData];
-  }, [productsData]);
 
   const topSellingProducts = useMemo(() => {
-    return calculateTopSellingProducts(combineOrders, combineProducts);
-  }, [combineOrders, combineProducts]);
-
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const orderRes = await fetchData('order');
-        const productRes = await fetchData('product');
-
-        setOrdersData(orderRes.data);
-        setProductsData(productRes.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchAll();
-  }, []);
+    return calculateTopSellingProducts(ordersData, productsData);
+  }, [ordersData, productsData]);
 
   return (
     <Card>

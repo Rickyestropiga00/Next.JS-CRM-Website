@@ -1,7 +1,8 @@
 import React from 'react';
-import { Task, ColumnKey } from '../data';
+import { Task, ColumnKey } from '@/types/interface';
 import { TaskCard } from './task-card';
 import { getId } from '@/utils/helper';
+import { DroppableColumn } from './droppable-column';
 
 interface ColumnsBoardProps {
   columns: { key: ColumnKey; label: string }[];
@@ -36,13 +37,17 @@ export function ColumnsBoard({
         const columnTasks = filteredTasks.filter(
           (task) => task.column === col.key
         );
+
         return (
-          <div
-            key={col.key}
-            className="bg-muted/50 rounded-xl p-4 flex flex-col"
-          >
+          <DroppableColumn col={col} key={col.key}>
             <div className="flex items-center justify-between">
-              <div className="font-semibold text-lg">{col.label}</div>
+              <div className="font-semibold text-lg flex justify-center items-center gap-2">
+                <span className="inline-flex items-center justify-center rounded-full text-xs font-semibold min-w-[20px] h-5 px-1.5 bg-primary">
+                  {columnTasks.length}
+                </span>
+                {col.label}{' '}
+              </div>
+
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -54,6 +59,7 @@ export function ColumnsBoard({
                 </button>
               </div>
             </div>
+
             {columnTasks.map((task) => (
               <TaskCard
                 key={getId(task)}
@@ -66,7 +72,7 @@ export function ColumnsBoard({
                 setDeleteDialogId={setDeleteDialogId}
               />
             ))}
-          </div>
+          </DroppableColumn>
         );
       })}
     </div>

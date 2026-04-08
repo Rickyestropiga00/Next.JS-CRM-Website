@@ -6,7 +6,6 @@ import {
   SquareDashedTopSolid,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -217,42 +216,27 @@ export function TopSellingProductModal({
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   Completed Orders
                 </div>
-
-                <Badge
-                  className={` ${getOrderStatusColor(
-                    'Completed'
-                  )} px-2 py-0.5 text-xs`}
-                >
+                <span className="px-2 py-0.5 text-xs">
                   {topProduct.completedOrders} Units
-                </Badge>
+                </span>
               </div>
               <div>
                 <div className="text-xs font-medium mb-0.5 flex items-center gap-2 text-yellow-500">
                   <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                   Pending Orders
                 </div>
-
-                <Badge
-                  className={` ${getOrderStatusColor(
-                    'Pending'
-                  )} px-2 py-0.5 text-xs`}
-                >
+                <span className="px-2 py-0.5 text-xs">
                   {topProduct.pendingOrders} Units
-                </Badge>
+                </span>
               </div>
               <div>
                 <div className="text-xs font-medium mb-0.5 flex items-center gap-2 text-blue-500">
                   <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                   In Transit Orders
                 </div>
-
-                <Badge
-                  className={` ${getOrderStatusColor(
-                    'In Transit'
-                  )} px-2 py-0.5 text-xs`}
-                >
+                <span className="px-2 py-0.5 text-xs">
                   {topProduct.inTransitOrders} Units
-                </Badge>
+                </span>
               </div>
             </div>
 

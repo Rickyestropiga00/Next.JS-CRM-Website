@@ -16,7 +16,6 @@ import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import { validateEmail, validatePhone } from '@/lib/validations';
 import { Customer, CustomerStatus } from '@/types/interface';
 import { toast } from 'sonner';
-import { getId } from '@/utils/helper';
 
 interface EditCustomerPopoverProps {
   customer: Customer;

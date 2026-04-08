@@ -14,6 +14,7 @@ import { getId } from '@/utils/helper';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SquareCheck, SquareX } from 'lucide-react';
+import { customers as mockCustomer } from '@/app/customers/data';
 interface Customer {
   _id?: string;
   id?: string;
@@ -27,7 +28,7 @@ interface AssignCustomerPopoverProps {
   open: boolean;
   onClose?: () => void;
 }
-const AssignCustomerPopover = ({
+export const AssignCustomerPopover = ({
   agent,
   onSave,
   open,
@@ -42,13 +43,17 @@ const AssignCustomerPopover = ({
 
   useEffect(() => {
     const fetchCustomers = async () => {
-      try {
-        const res = await fetch(`/api/customer?agentId=${agent._id}`);
-        const data = await res.json();
-        setAssignedCustomers(data.assigned || []);
-        setUnassignedCustomers(data.unAssigned || []);
-      } catch (error) {
-        console.error(error);
+      if (agent._id) {
+        try {
+          const res = await fetch(`/api/customer?agentId=${agent._id}`);
+          const data = await res.json();
+          setAssignedCustomers(data.assigned || []);
+          setUnassignedCustomers(data.unAssigned || []);
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        setUnassignedCustomers(mockCustomer || []);
       }
     };
 
@@ -74,24 +79,51 @@ const AssignCustomerPopover = ({
   };
 
   const handleSave = async () => {
-    try {
-      const res = await fetch(`/api/agent/${agent._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          assign: selectedToAssign,
-          unassign: selectedToUnassign,
-        }),
-      });
+    if (agent._id) {
+      try {
+        const res = await fetch(`/api/agent/${agent._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            assign: selectedToAssign,
+            unassign: selectedToUnassign,
+          }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error);
+        if (!res.ok) {
+          throw new Error(data.error);
+        }
+
+        const assignCustomers = unassignedCustomers.filter((c) =>
+          selectedToAssign.includes(getId(c))
+        );
+
+        const unassignCustomers = assignedCustomers.filter((c) =>
+          selectedToUnassign.includes(getId(c))
+        );
+
+        setAssignedCustomers((prev) => [
+          ...prev.filter((c) => !selectedToUnassign.includes(getId(c))),
+          ...assignCustomers,
+        ]);
+
+        setUnassignedCustomers((prev) => [
+          ...prev.filter((c) => !selectedToAssign.includes(getId(c))),
+          ...unassignCustomers,
+        ]);
+
+        setSelectedToAssign([]);
+        setSelectedToUnassign([]);
+
+        onSave(data.data);
+      } catch (error) {
+        console.error(error);
       }
-
+    } else {
       const assignCustomers = unassignedCustomers.filter((c) =>
         selectedToAssign.includes(getId(c))
       );
@@ -109,13 +141,23 @@ const AssignCustomerPopover = ({
         ...prev.filter((c) => !selectedToAssign.includes(getId(c))),
         ...unassignCustomers,
       ]);
-
       setSelectedToAssign([]);
       setSelectedToUnassign([]);
 
-      onSave(data.data);
-    } catch (error) {
-      console.error(error);
+      const newAssignedIds = [
+        ...assignedCustomers
+          .filter((c) => !selectedToUnassign.includes(getId(c)))
+          .map((c) => getId(c)),
+
+        ...unassignedCustomers
+          .filter((c) => selectedToAssign.includes(getId(c)))
+          .map((c) => getId(c)),
+      ];
+
+      onSave({
+        ...agent,
+        assignedCustomers: newAssignedIds,
+      });
     }
   };
 
@@ -306,5 +348,3 @@ const AssignCustomerPopover = ({
     </ModalWrapper>
   );
 };
-
-export default AssignCustomerPopover;

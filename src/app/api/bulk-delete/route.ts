@@ -33,9 +33,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'No IDs provided' }, { status: 400 });
     }
 
-    const objectIds = ids.filter((id: string) =>
-      mongoose.Types.ObjectId.isValid(id)
-    );
+    const objectIds = await ids
+      .filter((id: string) => mongoose.Types.ObjectId.isValid(id))
+      .map((id: string) => new mongoose.Types.ObjectId(id));
 
     const Model = modelMap[type];
 
@@ -44,6 +44,8 @@ export async function DELETE(req: Request) {
     }
 
     const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+    console.log('Incoming IDs:', ids);
+    console.log('Valid ObjectIds:', objectIds);
 
     return NextResponse.json(
       { message: `${capitalizedType} deleted successfully` },

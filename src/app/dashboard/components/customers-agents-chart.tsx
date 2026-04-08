@@ -1,5 +1,5 @@
-import { useMemo, memo } from "react";
-import dynamic from "next/dynamic";
+import { useMemo, memo, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Card,
   CardContent,
@@ -7,53 +7,64 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+} from '@/components/ui/card';
+import { TrendingUp } from 'lucide-react';
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { customers } from "@/app/customers/data";
-import { agents } from "@/app/agents/data";
+} from '@/components/ui/chart';
+import { Customer } from '@/types/interface';
+import { Agent } from '@/types/interface';
+import { useFetch } from '@/hooks/use-fetch';
 
 // Dynamically import Recharts components
-const Pie = dynamic(
-  () => import("recharts").then((mod) => mod.Pie),
-  { ssr: false }
-);
+const Pie = dynamic(() => import('recharts').then((mod) => mod.Pie), {
+  ssr: false,
+});
 
-const PieChart = dynamic(
-  () => import("recharts").then((mod) => mod.PieChart),
-  { ssr: false }
-);
+const PieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), {
+  ssr: false,
+});
 
 const chartConfig = {
   customers: {
-    label: "Customers",
-    color: "var(--chart-1)",
+    label: 'Customers',
+    color: 'var(--chart-1)',
   },
   agents: {
-    label: "Agents",
-    color: "var(--chart-5)",
+    label: 'Agents',
+    color: 'var(--chart-5)',
   },
 } satisfies ChartConfig;
 
 export const CustomersAgentsChart = memo(function CustomersAgentsChart() {
+  const { data: customers } = useFetch<Customer>('customer');
+  const { data: agents } = useFetch<Agent>('agent');
+
   // Memoize chart data calculation
-  const chartData = useMemo(() => [
-    {
-      category: "customers",
-      count: customers.length,
-      fill: "var(--chart-1)",
-    },
-    {
-      category: "agents",
-      count: agents.length,
-      fill: "var(--chart-5)",
-    },
-  ], []);
+  const chartData = useMemo(
+    () => [
+      {
+        category: 'customers',
+        count: customers.length,
+        fill: 'var(--chart-1)',
+      },
+      {
+        category: 'agents',
+        count: agents.length,
+        fill: 'var(--chart-5)',
+      },
+    ],
+
+    [customers.length, agents.length]
+  );
+  const totalAgntCust = useMemo(
+    () => customers.length + agents.length,
+    [customers.length, agents.length]
+  );
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -74,15 +85,14 @@ export const CustomersAgentsChart = memo(function CustomersAgentsChart() {
               data={chartData}
               dataKey="count"
               nameKey="category"
-              innerRadius={60}
+              innerRadius={totalAgntCust}
             />
           </PieChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center justify-center gap-2 leading-none font-medium text-center">
-          Total: {customers.length + agents.length} records{" "}
-          <TrendingUp className="h-4 w-4" />
+          Total: {totalAgntCust} records <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground leading-none text-center">
           {customers.length} customers and {agents.length} agents

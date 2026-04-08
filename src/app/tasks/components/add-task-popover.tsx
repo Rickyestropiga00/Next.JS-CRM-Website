@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Task, ColumnKey } from '../data';
+import { Task, ColumnKey } from '@/types/interface';
 
 interface AddTaskPopoverProps {
   onAddTask: (task: Task) => void;
@@ -74,7 +74,7 @@ export function AddTaskPopover({
       });
       setErrors({});
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, defaultColumn]);
 
   // Validation functions
   const validateTitle = (title: string): string | undefined => {

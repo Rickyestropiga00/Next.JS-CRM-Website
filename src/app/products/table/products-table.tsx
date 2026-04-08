@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { products as initialProducts, ProductStatus } from '../data';
+import { ProductStatus } from '../data';
 import { ProductsTableHeader } from './table-header';
 import { ProductsTableBody } from './table-body';
 import { ProductsPaginationBar } from './pagination-bar';
@@ -55,7 +55,7 @@ import { Table } from '@/components/ui/table';
 import { Trash, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
-import { fetchData } from '@/lib/api/fetch-data';
+import { useFetch } from '@/hooks/use-fetch';
 
 export function ProductsTable() {
   const [search, setSearch] = useState('');
@@ -63,7 +63,8 @@ export function ProductsTable() {
   const [type, setType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<keyof Product>('id');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [data, setData] = useState(initialProducts);
+  const { data: productsData, setData: setProductsData } =
+    useFetch<Product>('product');
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
@@ -86,7 +87,7 @@ export function ProductsTable() {
 
   // Filtering
   const filtered = useMemo(() => {
-    return data.filter((p) => {
+    return productsData.filter((p) => {
       const matchesSearch =
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.code.toLowerCase().includes(search.toLowerCase());
@@ -94,7 +95,7 @@ export function ProductsTable() {
       const matchesType = type === 'all' ? true : p.productType === type;
       return matchesSearch && matchesStatus && matchesType;
     });
-  }, [data, search, status, type]);
+  }, [productsData, search, status, type]);
 
   // Sorting
   const sorted = useMemo(() => {
@@ -146,20 +147,20 @@ export function ProductsTable() {
   // Reset to page 1 if rowsPerPage changes and currentPage is out of range
   React.useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages]);
+  }, [rowsPerPage, totalPages, currentPage]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((p) => getId(p) !== id));
+    setProductsData((prev) => prev.filter((p) => getId(p) !== id));
   }
 
   function handleAddProduct(newProduct: Product) {
-    setData((prev) => [newProduct, ...prev]);
+    setProductsData((prev) => [newProduct, ...prev]);
     // Reset to first page when adding new product
     setCurrentPage(1);
   }
 
   function handleEdit(updatedProduct: Product) {
-    setData((prev) =>
+    setProductsData((prev) =>
       prev.map((product) =>
         getId(product) === getId(updatedProduct) ? updatedProduct : product
       )
@@ -215,7 +216,7 @@ export function ProductsTable() {
       const data = await res.json();
 
       if (res.ok) {
-        setData((prev) =>
+        setProductsData((prev) =>
           prev.filter(
             (p) =>
               !(p._id && selected.includes(p._id)) &&
@@ -235,15 +236,6 @@ export function ProductsTable() {
       toast.error('Something went wrong');
     }
   }
-
-  useEffect(() => {
-    const getProducts = async () => {
-      const res = await fetchData('product');
-      setData([...res.data, ...initialProducts]);
-    };
-
-    getProducts();
-  }, []);
 
   return (
     <>
@@ -365,7 +357,7 @@ export function ProductsTable() {
       {/* Edit Product Modal - Rendered outside table structure */}
       {editProductId && (
         <EditProductPopover
-          product={data.find((p) => getId(p) === editProductId)!}
+          product={productsData.find((p) => getId(p) === editProductId)!}
           onSave={(updatedProduct) => {
             handleEdit(updatedProduct);
             setEditProductId(null);
@@ -387,7 +379,7 @@ export function ProductsTable() {
       <ProductDetailsModal
         product={
           selectedProductId
-            ? data.find((p) => getId(p) === selectedProductId) || null
+            ? productsData.find((p) => getId(p) === selectedProductId) || null
             : null
         }
         isOpen={!!selectedProductId}

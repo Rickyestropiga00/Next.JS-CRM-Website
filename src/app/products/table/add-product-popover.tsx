@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProductStatus, ProductTypes } from '../data';
-import { toast } from 'sonner';
 import Image from 'next/image';
 import { Product } from '@/types/interface';
 

@@ -1,7 +1,6 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { agents as initialAgents, agents } from '../data';
 import { Agent } from '@/types/interface';
 import { AgentsTableHeader } from './table-header';
 import { AgentsTableBody } from './table-body';
@@ -44,7 +43,14 @@ const AgentDetailsModal = dynamic(
     })),
   { ssr: false }
 );
-import { Trash, Plus } from 'lucide-react';
+const AssignCustomerPopover = dynamic(
+  () =>
+    import('./assign-customer-popover').then((mod) => ({
+      default: mod.AssignCustomerPopover,
+    })),
+  { ssr: false }
+);
+import { Trash, Plus, Loader } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -56,8 +62,7 @@ import {
 import { Table } from '@/components/ui/table';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
-import AssignCustomerPopover from './assign-customer-popover';
-import { fetchData } from '@/lib/api/fetch-data';
+import { useFetch } from '@/hooks/use-fetch';
 
 export function AgentsTable() {
   const [search, setSearch] = useState('');
@@ -65,7 +70,6 @@ export function AgentsTable() {
   const [status, setStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<keyof Agent>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [data, setData] = useState(initialAgents);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editAgentId, setEditAgentId] = useState<string | null>(null);
@@ -74,17 +78,17 @@ export function AgentsTable() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [showAssignCustomer, setShowAssignCustomer] = useState(false);
   const [assignCustomerAgentId, setAssignCustomerAgentId] = useState<
     string | null
   >(null);
 
   const roleOptions = ['Admin', 'Agent', 'Manager'];
   const statusOptions = ['Active', 'Inactive', 'On Leave'];
+  const { data: agentData, setData: setAgentData } = useFetch<Agent>('agent');
 
   // Filtering (search by name/email, role, status)
   const filtered = useMemo(() => {
-    return data.filter((a) => {
+    return agentData.filter((a) => {
       const matchesSearch =
         a.name.toLowerCase().includes(search.toLowerCase()) ||
         a.email.toLowerCase().includes(search.toLowerCase());
@@ -92,7 +96,7 @@ export function AgentsTable() {
       const matchesStatus = status === 'all' ? true : a.status === status;
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [data, search, role, status]);
+  }, [agentData, search, role, status]);
 
   // Sorting
   const sorted = useMemo(() => {
@@ -126,31 +130,14 @@ export function AgentsTable() {
 
   React.useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages]);
-
-  useEffect(() => {
-    const getAgents = async () => {
-      try {
-        const res = await fetchData('agent');
-        const dbAgents = res.data.map((a: Agent) => ({
-          ...a,
-          id: a.agentId || a._id || '',
-        }));
-        setData([...dbAgents, ...initialAgents]);
-      } catch (err) {
-        console.error('Failed to fetch agents:', err);
-      }
-    };
-
-    getAgents();
-  }, []);
+  }, [rowsPerPage, totalPages, currentPage]);
 
   function handleDelete(id: string) {
-    setData((prev) => prev.filter((a) => getId(a) !== id));
+    setAgentData((prev) => prev.filter((a) => a.id !== id && a._id !== id));
   }
 
   function handleEdit(updatedAgent: Agent) {
-    setData((prev) =>
+    setAgentData((prev) =>
       prev.map((agent) =>
         getId(agent) === getId(updatedAgent) ? updatedAgent : agent
       )
@@ -162,12 +149,11 @@ export function AgentsTable() {
       ...newAgent,
       id: newAgent.agentId || newAgent._id || '',
     };
-    setData((prev) => [normalized, ...prev]);
+    setAgentData((prev) => [normalized, ...prev]);
     setCurrentPage(1);
   }
 
   function handleAddComment(agentId: string, comment: string) {
-    const timestamp = new Date().toISOString();
     const formattedDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -179,7 +165,7 @@ export function AgentsTable() {
     });
     const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
 
-    setData((prev) =>
+    setAgentData((prev) =>
       prev.map((agent) =>
         agent.id === agentId
           ? {
@@ -240,7 +226,7 @@ export function AgentsTable() {
       const data = await res.json();
 
       if (res.ok) {
-        setData((prev) =>
+        setAgentData((prev) =>
           prev.filter(
             (a) =>
               !(a._id && selected.includes(a._id)) &&
@@ -382,7 +368,7 @@ export function AgentsTable() {
       {/* Edit Agent Modal - Rendered outside table structure */}
       {editAgentId && (
         <EditAgentPopover
-          agent={data.find((a) => getId(a) === editAgentId)!}
+          agent={agentData.find((a) => getId(a) === editAgentId)!}
           onSave={(updatedAgent) => {
             handleEdit({
               ...updatedAgent,
@@ -409,7 +395,7 @@ export function AgentsTable() {
       <AgentDetailsModal
         agent={
           selectedAgentId
-            ? data.find((a) => getId(a) === selectedAgentId) || null
+            ? agentData.find((a) => getId(a) === selectedAgentId) || null
             : null
         }
         isOpen={!!selectedAgentId}
@@ -420,7 +406,7 @@ export function AgentsTable() {
       {/* Assign Customer Modal - Rendered outside table structure */}
       {assignCustomerAgentId && (
         <AssignCustomerPopover
-          agent={data.find((a) => getId(a) === assignCustomerAgentId)!}
+          agent={agentData.find((a) => getId(a) === assignCustomerAgentId)!}
           onSave={(updatedAgent) => {
             handleEdit(updatedAgent);
           }}
