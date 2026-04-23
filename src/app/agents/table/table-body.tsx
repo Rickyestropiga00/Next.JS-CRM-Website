@@ -30,6 +30,7 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { formatPhone } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -41,6 +42,7 @@ interface TableBodyProps {
   setEditAgentId: (id: string | null) => void;
   onAgentClick: (id: string) => void;
   setAssignCustomerAgentId: (id: string | null) => void;
+  agentsLoading?: boolean;
 }
 
 export function AgentsTableBody({
@@ -53,6 +55,7 @@ export function AgentsTableBody({
   setEditAgentId,
   onAgentClick,
   setAssignCustomerAgentId,
+  agentsLoading,
 }: TableBodyProps) {
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
@@ -86,6 +89,9 @@ export function AgentsTableBody({
       setDeleteDialogId(null);
     }
   };
+  if (agentsLoading) {
+    return <TableSkeleton rows={10} columns={13} />;
+  }
 
   return (
     <TableBody>

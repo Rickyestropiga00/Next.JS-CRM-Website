@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Task, ColumnKey } from '@/types/interface';
+import { validateRequired } from '@/lib/validations';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface AddTaskPopoverProps {
   onAddTask: (task: Task) => void;
@@ -25,6 +28,19 @@ interface ValidationErrors {
   description?: string;
 }
 
+type TaskForm = {
+  title: string;
+  description: string;
+  status: Task['status'];
+  priority: Task['priority'];
+  column: Task['column'];
+  avatars: {
+    src: string;
+    alt: string;
+    fallback: string;
+  }[];
+};
+
 export function AddTaskPopover({
   onAddTask,
   isOpen = false,
@@ -36,12 +52,6 @@ export function AddTaskPopover({
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
-  // Generate a unique temporary ID (31, 32, 33, etc.)
-  const generateTempId = (): string => {
-    const random = Math.floor(Math.random() * 70) + 31; // Generate 31 to 99
-    return random.toString();
-  };
-
   // Get column label for display
   const getColumnLabel = (column: ColumnKey): string => {
     const columnLabels: Record<ColumnKey, string> = {
@@ -52,151 +62,78 @@ export function AddTaskPopover({
     };
     return columnLabels[column] || column;
   };
+  const initialData = useMemo(
+    () => ({
+      title: '',
+      description: '',
+      status: 'DESIGN' as Task['status'],
+      priority: 'MEDIUM' as Task['priority'],
+      column: defaultColumn,
+      avatars: [],
+    }),
+    [defaultColumn]
+  );
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    status: 'DESIGN' as string,
-    priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
-    column: defaultColumn,
-  });
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
-  // Reset form data when popover opens
-  React.useEffect(() => {
-    if (isModalOpen) {
-      setFormData({
-        title: '',
-        description: '',
-        status: 'DESIGN',
-        priority: 'MEDIUM',
-        column: defaultColumn,
-      });
-      setErrors({});
-    }
-  }, [isModalOpen, defaultColumn]);
-
-  // Validation functions
-  const validateTitle = (title: string): string | undefined => {
-    if (!title.trim()) return 'Title is required';
-    return undefined;
+  const validationRules = {
+    title: (v: string) => validateRequired(v, 'Title'),
+    description: (v: string) => validateRequired(v, 'Description'),
   };
 
-  const validateDescription = (description: string): string | undefined => {
-    if (!description.trim()) return 'Description is required';
-    return undefined;
+  const {
+    formData,
+    errors,
+    setErrors,
+    handleCancel,
+    handleChange,
+    isFormValid,
+    validateForm,
+  } = useFormHandler<TaskForm>(
+    initialData,
+    isModalOpen,
+    validationRules,
+    onClose
+  );
+  const { handleSubmit, loading } = useFormSubmit<TaskForm>();
+
+  const statusColors: Record<string, string> = {
+    DESIGN: 'var(--badge-design)',
+    DEVELOPMENT: 'var(--badge-development)',
+    TESTING: 'var(--badge-testing)',
+    CONTENT: 'var(--badge-content)',
+    MARKETING: 'var(--badge-marketing)',
+    MEETING: 'var(--badge-meeting)',
+    'FOLLOW-UP': 'var(--badge-followup)',
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const titleError = validateTitle(formData.title);
-    if (titleError) newErrors.title = titleError;
-
-    const descriptionError = validateDescription(formData.description);
-    if (descriptionError) newErrors.description = descriptionError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // Generate default avatar for new task
+  const defaultAvatar = {
+    src: 'https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png',
+    alt: '@user',
+    fallback: 'U',
   };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateTitle(formData.title) &&
-      !validateDescription(formData.description)
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    // Generate status color based on the selected status
-    const statusColors: Record<string, string> = {
-      DESIGN: 'var(--badge-design)',
-      DEVELOPMENT: 'var(--badge-development)',
-      TESTING: 'var(--badge-testing)',
-      CONTENT: 'var(--badge-content)',
-      MARKETING: 'var(--badge-marketing)',
-      MEETING: 'var(--badge-meeting)',
-      'FOLLOW-UP': 'var(--badge-followup)',
-    };
-
-    // Generate default avatar for new task
-    const defaultAvatar = {
-      src: 'https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png',
-      alt: '@user',
-      fallback: 'U',
-    };
-
-    try {
-      const response = await fetch('/api/task', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          status: formData.status,
-          priority: formData.priority,
-          column: formData.column,
-          avatars: [defaultAvatar],
-        }),
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Invalid response from server');
-      }
-
-      switch (response.status) {
-        case 201:
-          onAddTask(data); // update UI
-          break; // Success
-        case 400:
-          throw new Error(data.error || 'Validation error');
-        default:
-          throw new Error('Failed to save task');
-      }
-
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error saving task:', error);
-      setErrors((prev) => ({
-        ...prev,
-        description:
-          error instanceof Error ? error.message : 'Failed to save task.',
-      }));
-    }
-  };
-
-  const handleCancel = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handleTitleChange = (value: string) => {
-    setFormData({ ...formData, title: value });
-    // Always validate and update errors when title changes
-    const titleError = validateTitle(value);
-    setErrors((prev) => ({ ...prev, title: titleError }));
-  };
-
-  const handleDescriptionChange = (value: string) => {
-    setFormData({ ...formData, description: value });
-    // Always validate and update errors when description changes
-    const descriptionError = validateDescription(value);
-    setErrors((prev) => ({ ...prev, description: descriptionError }));
-  };
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, formData, validateForm, {
+      url: '/api/task',
+      buildBody: (data) => ({
+        title: data.title.trim(),
+        description: data.description.trim(),
+        status: data.status,
+        priority: data.priority,
+        column: data.column,
+        avatars: [defaultAvatar],
+      }),
+      onSuccess: (result: Task) => {
+        onAddTask(result);
+      },
+      onClose,
+      setErrors,
+      onError: (err) => {
+        setErrors((prev) => ({
+          ...prev,
+          general: err instanceof Error ? err.message : 'Failed to save task',
+        }));
+      },
+    });
 
   if (!isModalOpen) return null;
 
@@ -217,7 +154,7 @@ export function AddTaskPopover({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
             {/* Row 1: Title */}
             <div className="space-y-2">
               <Label htmlFor="title" className="text-xs">
@@ -226,7 +163,7 @@ export function AddTaskPopover({
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
+                onChange={(e) => handleChange('title', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.title ? 'border-red-500' : ''
                 }`}
@@ -246,7 +183,7 @@ export function AddTaskPopover({
                 id="description"
                 value={formData.description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleDescriptionChange(e.target.value)
+                  handleChange('description', e.target.value)
                 }
                 placeholder="Enter task description..."
                 className={`h-16 sm:h-20 text-xs resize-none ${
@@ -267,7 +204,7 @@ export function AddTaskPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: string) =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -291,7 +228,7 @@ export function AddTaskPopover({
                 <Select
                   value={formData.priority}
                   onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') =>
-                    setFormData({ ...formData, priority: value })
+                    handleChange('priority', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -317,11 +254,11 @@ export function AddTaskPopover({
               </Button>
               <Button
                 size="sm"
-                onClick={handleSubmit}
+                type="submit"
                 className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
               >
-                Add Task
+                {loading ? 'Adding Task...' : 'Add Task'}
               </Button>
             </div>
           </form>

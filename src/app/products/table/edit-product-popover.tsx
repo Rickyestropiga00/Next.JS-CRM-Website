@@ -11,10 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProductStatus, ProductTypes } from '../data';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import { Product } from '@/types/interface';
+import { Product, ProductStatus, ProductTypes } from '@/types/interface';
+import {
+  validateNumber,
+  validateRequired,
+  validatePrice,
+} from '@/lib/validations';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface EditProductPopoverProps {
   product: Product;
@@ -36,144 +42,68 @@ export function EditProductPopover({
   onClose,
   open,
 }: EditProductPopoverProps) {
-  const [formData, setFormData] = useState<Product>(product);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isUpdating, setIsUpdating] = useState(false);
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name'),
+    code: (v: string) => validateRequired(v, 'Code'),
+    price: (v: number) => validatePrice(Number(v)),
+    stock: (v: number) => {
+      if (formData.productType !== 'Physical') return undefined;
+      return validateNumber(Number(v), 'Stock');
+    },
+  };
+  const {
+    formData,
+    errors,
+    handleChange,
+    validateForm,
+    isFormValid,
+    setFormData,
+    setErrors,
+    handleCancel,
+    hasChanges,
+  } = useFormHandler<Product>(product, open, validationRules, () => onClose());
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-
-  // Reset form data when product changes or popover opens
-  React.useEffect(() => {
-    if (open) {
-      setFormData(product);
-      setErrors({});
-    }
-  }, [product, open]);
-
-  // Validation functions
-  const validateName = (name: string): string | undefined => {
-    if (!name.trim()) return 'Product name is required';
-    if (name.trim().length < 2)
-      return 'Product name must be at least 2 characters';
-    return undefined;
-  };
-
-  const validateCode = (code: string): string | undefined => {
-    if (!code.trim()) return 'Product code is required';
-    if (code.trim().length < 3)
-      return 'Product code must be at least 3 characters';
-    return undefined;
-  };
-
-  const validatePrice = (price: number): string | undefined => {
-    if (price <= 0) return 'Price must be greater than 0';
-    if (price > 999999.99) return 'Price cannot exceed $999,999.99';
-    return undefined;
-  };
-
-  const validateStock = (
-    stock: number,
-    type: ProductTypes
-  ): string | undefined => {
-    if (type === 'Physical' && stock < 0) return 'Stock cannot be negative';
-    if (type === 'Physical' && stock > 999999)
-      return 'Stock cannot exceed 999,999';
-    return undefined;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const nameError = validateName(formData.name);
-    if (nameError) newErrors.name = nameError;
-
-    const codeError = validateCode(formData.code);
-    if (codeError) newErrors.code = codeError;
-
-    const priceError = validatePrice(formData.price);
-    if (priceError) newErrors.price = priceError;
-
-    const stockError = validateStock(formData.stock, formData.productType);
-    if (stockError) newErrors.stock = stockError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateName(formData.name) &&
-      !validateCode(formData.code) &&
-      !validatePrice(formData.price) &&
-      !validateStock(formData.stock, formData.productType)
-    );
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm() || isUpdating) return;
-    setIsUpdating(true);
-    const toastId = 'product-update';
+  const { handleSubmit, loading } = useFormSubmit<Product>();
+  const toastId = 'product-image';
+  const onSubmit = (e: React.FormEvent) => {
     toast.loading('Saving changes...', { id: toastId });
     if (product._id) {
-      try {
-        const res = await fetch(`/api/product/${formData._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+      handleSubmit(e, formData, validateForm, {
+        url: `/api/product/${formData._id}`,
+        method: 'PUT',
+        buildBody: (data) => ({
+          name: data.name.trim(),
+          code: data.code.trim(),
+          price: Number(data.price),
+          stock: data.productType === 'Physical' ? Number(data.stock) : 0,
+          productType: data.productType,
+          status: data.status,
+          date: data.date,
+        }),
+        onSuccess: async (result) => {
+          if (imageFile) {
+            const formDataImg = new FormData();
+            formDataImg.append('image', imageFile);
 
-        let result: any = {};
-
-        try {
-          result = await res.json();
-        } catch {
-          result = { error: 'Server did not return valid JSON' };
-        }
-
-        switch (res.status) {
-          case 200:
-            if (imageFile) {
-              const formDataImg = new FormData();
-              formDataImg.append('image', imageFile);
-
-              await fetch(`/api/product/image/${formData._id}`, {
-                method: 'PUT',
-                body: formDataImg,
-              });
-            }
-            onClose();
-            toast.success(result.message, { id: toastId });
-            onSave(result.data);
-            console.log(result.message);
-            return;
-          case 400:
-            const newErrors: ValidationErrors = {};
-
-            const fields: (keyof ValidationErrors)[] = ['code'];
-
-            fields.forEach((field) => {
-              if (result.error?.toLowerCase().includes(field)) {
-                newErrors[field] = result.error;
-              }
+            await fetch(`/api/product/image/${formData._id}`, {
+              method: 'PUT',
+              body: formDataImg,
             });
+          }
 
-            setErrors(newErrors);
-            toast.dismiss(toastId);
-            break;
-          case 500:
-            throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.dismiss(toastId);
-      } finally {
-        setIsUpdating(false);
-      }
+          onSave(result.data);
+          toast.success(result.message, { id: toastId });
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error('Failed to update product', { id: toastId });
+        },
+
+        setErrors,
+        onClose,
+      });
     } else {
       if (validateForm()) {
         let updatedImage = formData.image;
@@ -192,53 +122,21 @@ export function EditProductPopover({
     }
   };
 
-  const handleCancel = () => {
-    setFormData(product); // Reset form data
-    setErrors({});
-    onClose();
-  };
-
-  const handleNameChange = (value: string) => {
-    setFormData({ ...formData, name: value });
-    if (errors.name) {
-      const nameError = validateName(value);
-      setErrors((prev) => ({ ...prev, name: nameError }));
-    }
-  };
-
-  const handleCodeChange = (value: string) => {
-    setFormData({ ...formData, code: value });
-    if (errors.code) {
-      const codeError = validateCode(value);
-      setErrors((prev) => ({ ...prev, code: codeError }));
-    }
-  };
-
-  const handlePriceChange = (value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setFormData({ ...formData, price: numValue });
-    if (errors.price) {
-      const priceError = validatePrice(numValue);
-      setErrors((prev) => ({ ...prev, price: priceError }));
-    }
-  };
-
-  const handleStockChange = (value: string) => {
-    const numValue = parseInt(value) || 0;
-    setFormData({ ...formData, stock: numValue });
-    if (errors.stock) {
-      const stockError = validateStock(numValue, formData.productType);
-      setErrors((prev) => ({ ...prev, stock: stockError }));
-    }
-  };
-
   const handleTypeChange = (value: ProductTypes) => {
-    setFormData({ ...formData, productType: value });
-    // Reset stock to 0 for non-physical products
-    if (value !== 'Physical') {
-      setFormData((prev) => ({ ...prev, stock: 0 }));
-    }
-    // Clear stock error if type changes
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        productType: value,
+      };
+
+      // only reset stock if not physical
+      if (value !== 'Physical') {
+        updated.stock = 0;
+      }
+
+      return updated;
+    });
+
     if (errors.stock) {
       setErrors((prev) => ({ ...prev, stock: undefined }));
     }
@@ -252,6 +150,10 @@ export function EditProductPopover({
     setImageFile(file);
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
+    setFormData((prev) => ({
+      ...prev,
+      image: previewUrl,
+    }));
   };
   const getImageSrc = () => {
     if (imagePreview) return imagePreview;
@@ -341,7 +243,7 @@ export function EditProductPopover({
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
+                  onChange={(e) => handleChange('name', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.name ? 'border-red-500' : ''
                   }`}
@@ -357,7 +259,7 @@ export function EditProductPopover({
                 <Input
                   id="code"
                   value={formData.code}
-                  onChange={(e) => handleCodeChange(e.target.value)}
+                  onChange={(e) => handleChange('code', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.code ? 'border-red-500' : ''
                   }`}
@@ -397,7 +299,7 @@ export function EditProductPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: ProductStatus) =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -423,7 +325,7 @@ export function EditProductPopover({
                   step="0.01"
                   min="0"
                   value={formData.price}
-                  onChange={(e) => handlePriceChange(e.target.value)}
+                  onChange={(e) => handleChange('price', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.price ? 'border-red-500' : ''
                   }`}
@@ -442,7 +344,7 @@ export function EditProductPopover({
                   type="number"
                   min="0"
                   value={formData.stock}
-                  onChange={(e) => handleStockChange(e.target.value)}
+                  onChange={(e) => handleChange('stock', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.stock ? 'border-red-500' : ''
                   }`}
@@ -470,9 +372,7 @@ export function EditProductPopover({
                 id="date"
                 type="date"
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
+                onChange={(e) => handleChange('date', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
               />
             </div>
@@ -489,11 +389,11 @@ export function EditProductPopover({
             </Button>
             <Button
               size="sm"
-              onClick={handleSave}
+              onClick={onSubmit}
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || !hasChanges || loading}
             >
-              Save Changes
+              {loading ? 'Saving Changes...' : 'Save Changes'}
             </Button>
           </div>
         </div>

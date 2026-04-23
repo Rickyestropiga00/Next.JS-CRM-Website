@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,8 @@ import {
   validatePhone,
 } from '@/lib/validations';
 import { Customer, CustomerStatus } from '@/types/interface';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
@@ -31,6 +33,15 @@ interface ValidationErrors {
   phone?: string;
 }
 
+type CustomerForm = {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  status: Customer['status'];
+  notes: string;
+};
+
 export function AddCustomerPopover({
   onAddCustomer,
   isOpen = false,
@@ -40,148 +51,63 @@ export function AddCustomerPopover({
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    status: 'Lead' as CustomerStatus,
-    notes: '',
-  });
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
-  // Reset form data when popover opens
-  React.useEffect(() => {
-    if (isModalOpen) {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        status: 'Lead',
-        notes: '',
-      });
-      setErrors({});
-    }
-  }, [isModalOpen]);
-
-  // Validation functions using shared utilities
-  const validateName = (name: string): string | undefined => {
-    return validateRequired(name, 'Name', 1);
+  const initialData = useMemo(
+    () => ({
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      status: 'Lead' as CustomerStatus,
+      notes: '',
+    }),
+    []
+  );
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name'),
+    email: (v: string) => validateEmail(v),
+    phone: (v: string) => validatePhone(v),
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+  const {
+    formData,
+    errors,
+    setErrors,
+    handleChange,
+    handleCancel,
+    isFormValid,
+    validateForm,
+  } = useFormHandler<CustomerForm>(
+    initialData,
+    isModalOpen,
+    validationRules,
+    onClose
+  );
 
-    const nameError = validateName(formData.name);
-    if (nameError) newErrors.name = nameError;
-
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
-
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) newErrors.phone = phoneError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateName(formData.name) &&
-      !validateEmail(formData.email) &&
-      !validatePhone(formData.phone)
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/customer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          company: formData.company.trim(),
-          status: formData.status.trim(),
-          notes: formData.notes.trim(),
-        }),
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Invalid response from server');
-      }
-      switch (response.status) {
-        case 201:
-          onAddCustomer(data); // update UI
-          break; // Success
-        case 400:
-          const newErrors: ValidationErrors = {};
-
-          const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
-
-          fields.forEach((field) => {
-            if (data.error?.toLowerCase().includes(field)) {
-              newErrors[field] = data.error;
-            }
-          });
-
-          setErrors(newErrors);
-          break;
-        default:
-          throw new Error('Failed to save customer');
-      }
-    } catch (error) {
-      console.error('Error saving customer:', error);
-      setErrors((prev) => ({
-        ...prev,
-        description:
-          error instanceof Error ? error.message : 'Failed to save task.',
-      }));
-    }
-  };
-
-  const handleCancel = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handleNameChange = (value: string) => {
-    setFormData({ ...formData, name: value });
-    // Always validate and update errors when name changes
-    const nameError = validateName(value);
-    setErrors((prev) => ({ ...prev, name: nameError }));
-  };
-
-  const handleEmailChange = (value: string) => {
-    setFormData({ ...formData, email: value });
-    // Always validate and update errors when email changes
-    const emailError = validateEmail(value);
-    setErrors((prev) => ({ ...prev, email: emailError }));
-  };
-
-  const handlePhoneChange = (value: string) => {
-    setFormData({ ...formData, phone: value });
-    // Always validate and update errors when phone changes
-    const phoneError = validatePhone(value);
-    setErrors((prev) => ({ ...prev, phone: phoneError }));
-  };
+  const { handleSubmit, loading } = useFormSubmit<CustomerForm>();
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, formData, validateForm, {
+      url: '/api/customer',
+      buildBody: (data) => ({
+        name: data.name.trim(),
+        email: data.email.trim(),
+        phone: data.phone.trim(),
+        company: data.company.trim(),
+        status: data.status,
+        notes: data.notes.trim(),
+      }),
+      onSuccess: (result: Customer) => {
+        onAddCustomer(result);
+      },
+      onClose,
+      setErrors,
+      onError: (err) => {
+        setErrors((prev) => ({
+          ...prev,
+          general:
+            err instanceof Error ? err.message : 'Failed to save customer',
+        }));
+      },
+    });
 
   return (
     <ModalWrapper open={isModalOpen} onClose={handleCancel}>
@@ -194,7 +120,7 @@ export function AddCustomerPopover({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
           {/* Row 1: Name and Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
@@ -204,7 +130,7 @@ export function AddCustomerPopover({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleNameChange(e.target.value)}
+                onChange={(e) => handleChange('name', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.name ? 'border-red-500' : ''
                 }`}
@@ -222,7 +148,7 @@ export function AddCustomerPopover({
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.phone ? 'border-red-500' : ''
                 }`}
@@ -244,7 +170,7 @@ export function AddCustomerPopover({
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
+                onChange={(e) => handleChange('email', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
@@ -261,9 +187,7 @@ export function AddCustomerPopover({
               <Input
                 id="company"
                 value={formData.company}
-                onChange={(e) =>
-                  setFormData({ ...formData, company: e.target.value })
-                }
+                onChange={(e) => handleChange('company', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
                 placeholder="Enter company name (optional)"
               />
@@ -278,7 +202,7 @@ export function AddCustomerPopover({
             <Select
               value={formData.status}
               onValueChange={(value: CustomerStatus) =>
-                setFormData({ ...formData, status: value })
+                handleChange('status', value)
               }
             >
               <SelectTrigger className="h-8 text-xs w-full">
@@ -302,12 +226,18 @@ export function AddCustomerPopover({
               id="notes"
               value={formData.notes}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setFormData({ ...formData, notes: e.target.value })
+                handleChange('notes', e.target.value)
               }
               placeholder="Add notes..."
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
+
+          {errors.general && (
+            <p className="text-xs text-red-500 font-bold text-center">
+              {errors.general}
+            </p>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
             <Button
@@ -320,11 +250,11 @@ export function AddCustomerPopover({
             </Button>
             <Button
               size="sm"
-              onClick={handleSubmit}
+              type="submit"
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || loading}
             >
-              Add Customer
+              {loading ? 'Adding Customer...' : 'Add Customer'}
             </Button>
           </div>
         </form>

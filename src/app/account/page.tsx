@@ -17,11 +17,14 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { navGroups, getAllNavItems } from '@/components/app-navigation';
-import { Loader } from 'lucide-react';
 import PersonalInformationCard from './components/personal-information-card';
 import AccountSecurityCard from './components/account-security-card';
 import AccountSummaryCard from './components/account-summary-card';
 import QuickActionsCard from './components/quick-actions-card';
+import {
+  AccountSummarySkeleton,
+  PersonalInformationSkeleton,
+} from './components/account-skeleton';
 
 export type UserType = {
   _id: string;
@@ -98,9 +101,10 @@ export default function AccountPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Information */}
             <div className="lg:col-span-2 space-y-6">
-              {!user && <Loader className="animate-spin mx-auto" />}
               {/* Personal Information */}
-              {user && initialUser && (
+              {!user ? (
+                <PersonalInformationSkeleton />
+              ) : (
                 <PersonalInformationCard
                   user={user}
                   setUser={setUser}
@@ -115,10 +119,12 @@ export default function AccountPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {!user && <Loader className="animate-spin mx-auto " />}
               {/* Account Summary */}
-              {user && <AccountSummaryCard user={user} />}
-
+              {!user ? (
+                <AccountSummarySkeleton />
+              ) : (
+                <AccountSummaryCard user={user} />
+              )}
               {/* Quick Actions */}
               <QuickActionsCard />
             </div>

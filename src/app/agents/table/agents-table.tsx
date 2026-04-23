@@ -1,7 +1,7 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Agent } from '@/types/interface';
+import { Agent, DeleteResponse } from '@/types/interface';
 import { AgentsTableHeader } from './table-header';
 import { AgentsTableBody } from './table-body';
 import { AgentsPaginationBar } from './pagination-bar';
@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useTableActions } from '@/hooks/use-table-actions';
 
 // Dynamically import modals to reduce initial bundle size
 const EditAgentPopover = dynamic(
@@ -50,7 +51,7 @@ const AssignCustomerPopover = dynamic(
     })),
   { ssr: false }
 );
-import { Trash, Plus, Loader } from 'lucide-react';
+import { Trash, Plus } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -63,95 +64,62 @@ import { Table } from '@/components/ui/table';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
 import { useFetch } from '@/hooks/use-fetch';
+import { useBulkDelete } from '@/hooks/use-bulk-delete';
 
 export function AgentsTable() {
-  const [search, setSearch] = useState('');
-  const [role, setRole] = useState<string>('all');
-  const [status, setStatus] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<keyof Agent>('createdAt');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [selected, setSelected] = useState<string[]>([]);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editAgentId, setEditAgentId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [assignCustomerAgentId, setAssignCustomerAgentId] = useState<
     string | null
   >(null);
+  const {
+    data: agentData,
+    setData: setAgentData,
+    loading: agentsLoading,
+  } = useFetch<Agent>('agent');
+  console.log('[AgentsTable] RENDER');
+  console.log('[AgentsTable] agentData:', agentData);
+  console.log('[FILTERED INPUT]', agentData);
+
+  const {
+    filters,
+    setFilters,
+    filtered,
+    paginated,
+    totalPages,
+    selected,
+    setSelected,
+    sortBy,
+    sortDir,
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    handleDelete,
+    handleAdd,
+    handleEdit,
+    handleSort,
+    handleSelectAll,
+    handleSelectRow,
+  } = useTableActions<Agent>({
+    data: agentData,
+    setData: setAgentData,
+    getId: (a) => a.id || a._id || '',
+
+    filtersConfig: {
+      searchKeys: ['name', 'email'],
+      filterKeys: [
+        { key: 'role', defaultValue: 'all' },
+        { key: 'status', defaultValue: 'all' },
+      ],
+    },
+  });
 
   const roleOptions = ['Admin', 'Agent', 'Manager'];
   const statusOptions = ['Active', 'Inactive', 'On Leave'];
-  const { data: agentData, setData: setAgentData } = useFetch<Agent>('agent');
-
-  // Filtering (search by name/email, role, status)
-  const filtered = useMemo(() => {
-    return agentData.filter((a) => {
-      const matchesSearch =
-        a.name.toLowerCase().includes(search.toLowerCase()) ||
-        a.email.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = role === 'all' ? true : a.role === role;
-      const matchesStatus = status === 'all' ? true : a.status === status;
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [agentData, search, role, status]);
-
-  // Sorting
-  const sorted = useMemo(() => {
-    if (!sortBy) return filtered;
-    return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? '';
-      const bVal = b[sortBy] ?? '';
-      if (sortBy === 'id') {
-        return (
-          (aVal as string).localeCompare(bVal as string, undefined, {
-            numeric: true,
-          }) * (sortDir === 'asc' ? 1 : -1)
-        );
-      }
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return (
-          (aVal as string).localeCompare(bVal as string) *
-          (sortDir === 'asc' ? 1 : -1)
-        );
-      }
-      return 0;
-    });
-  }, [filtered, sortBy, sortDir]);
-
-  const totalRows = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
-  const paginated = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage;
-    return sorted.slice(start, start + rowsPerPage);
-  }, [sorted, currentPage, rowsPerPage]);
-
-  React.useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages, currentPage]);
-
-  function handleDelete(id: string) {
-    setAgentData((prev) => prev.filter((a) => a.id !== id && a._id !== id));
-  }
-
-  function handleEdit(updatedAgent: Agent) {
-    setAgentData((prev) =>
-      prev.map((agent) =>
-        getId(agent) === getId(updatedAgent) ? updatedAgent : agent
-      )
-    );
-  }
-
-  function handleAddAgent(newAgent: Agent) {
-    const normalized = {
-      ...newAgent,
-      id: newAgent.agentId || newAgent._id || '',
-    };
-    setAgentData((prev) => [normalized, ...prev]);
-    setCurrentPage(1);
-  }
 
   function handleAddComment(agentId: string, comment: string) {
     const formattedDate = new Date().toLocaleDateString('en-US', {
@@ -179,73 +147,27 @@ export function AgentsTable() {
     );
   }
 
-  function handleSort(col: keyof Agent) {
-    if (sortBy === col) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortBy(col);
-      setSortDir('asc');
-    }
-  }
+  const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
+    endpoint: '/api/bulk-delete',
+    type: 'customer',
 
-  function handleSelectAll(checked: boolean) {
-    if (checked) {
-      setSelected((prev) => [
-        ...prev.filter((id) => !paginated.some((a) => getId(a) === id)),
-        ...paginated.map((a) => getId(a)),
-      ]);
-    } else {
-      setSelected((prev) =>
-        prev.filter((id) => !paginated.some((a) => getId(a) === id))
+    onSuccess: (ids, data) => {
+      setAgentData((prev) =>
+        prev.filter(
+          (a) =>
+            !(a._id && ids.includes(a._id)) && !(a.id && ids.includes(a.id))
+        )
       );
-    }
-  }
 
-  function handleSelectRow(agent: Agent, checked: boolean) {
-    const agentId = getId(agent);
+      setSelected([]);
+      setShowConfirm(false);
+      toast.success(data.message);
+    },
 
-    if (!agentId) return;
-
-    if (checked) {
-      setSelected((prev) =>
-        prev.includes(agentId) ? prev : [...prev, agentId]
-      );
-    } else {
-      setSelected((prev) => prev.filter((s) => s !== agentId));
-    }
-  }
-
-  async function handleDeleteSelected() {
-    try {
-      const res = await fetch('/api/bulk-delete?type=agent', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selected }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setAgentData((prev) =>
-          prev.filter(
-            (a) =>
-              !(a._id && selected.includes(a._id)) &&
-              !(a.id && selected.includes(a.id))
-          )
-        );
-
-        setSelected([]);
-        setShowConfirm(false);
-
-        toast.success(data.message);
-      } else {
-        toast.error(data.error);
-      }
-    } catch (error) {
-      console.error(error);
+    onError: () => {
       toast.error('Something went wrong');
-    }
-  }
+    },
+  });
 
   return (
     <>
@@ -253,11 +175,25 @@ export function AgentsTable() {
         <div className="flex gap-2 flex-wrap items-center">
           <Input
             placeholder="Search name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={filters.search}
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }))
+            }
             className="w-full md:w-64"
           />
-          <Select value={role} onValueChange={setRole}>
+
+          <Select
+            value={filters.role || 'all'}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                role: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Roles" />
             </SelectTrigger>
@@ -272,7 +208,16 @@ export function AgentsTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Select value={status} onValueChange={setStatus}>
+
+          <Select
+            value={filters.status || 'all'}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                status: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
@@ -311,7 +256,7 @@ export function AgentsTable() {
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={handleDeleteSelected}
+                  onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
                   Delete
@@ -336,7 +281,7 @@ export function AgentsTable() {
               selected={selected}
               paginated={paginated}
               onSelectAll={handleSelectAll}
-              sortBy={sortBy}
+              sortBy={sortBy ?? 'createdAt'}
               sortDir={sortDir}
               onSort={handleSort}
             />
@@ -350,19 +295,20 @@ export function AgentsTable() {
               setEditAgentId={setEditAgentId}
               onAgentClick={setSelectedAgentId}
               setAssignCustomerAgentId={setAssignCustomerAgentId}
+              agentsLoading={agentsLoading}
             />
           </Table>
         </div>
       </div>
+
       <AgentsPaginationBar
         selectedCount={selected.length}
-        totalRows={totalRows}
+        totalRows={filtered.length}
         currentPage={currentPage}
         totalPages={totalPages}
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
         setCurrentPage={setCurrentPage}
-        // Remove onDeleteSelected and disableDelete props
       />
 
       {/* Edit Agent Modal - Rendered outside table structure */}
@@ -370,10 +316,7 @@ export function AgentsTable() {
         <EditAgentPopover
           agent={agentData.find((a) => getId(a) === editAgentId)!}
           onSave={(updatedAgent) => {
-            handleEdit({
-              ...updatedAgent,
-              id: updatedAgent.id || updatedAgent._id || '',
-            });
+            handleEdit(updatedAgent);
             setEditAgentId(null);
           }}
           onClose={() => setEditAgentId(null)}
@@ -385,7 +328,7 @@ export function AgentsTable() {
       <AddAgentPopover
         isOpen={showAddAgent}
         onAddAgent={(newAgent) => {
-          handleAddAgent(newAgent);
+          handleAdd(newAgent);
           setShowAddAgent(false);
         }}
         onClose={() => setShowAddAgent(false)}

@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { Order } from '@/types/interface';
 import { getId } from '@/utils/helper';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
 
 interface TableBodyProps {
   paginated: any[];
@@ -33,6 +34,7 @@ interface TableBodyProps {
   setDeleteDialogId: (id: string | null) => void;
   setEditOrderId: (id: string | null) => void;
   onOrderClick: (id: string) => void;
+  ordersLoading?: boolean;
 }
 
 export function OrdersTableBody({
@@ -44,6 +46,7 @@ export function OrdersTableBody({
   setDeleteDialogId,
   setEditOrderId,
   onOrderClick,
+  ordersLoading,
 }: TableBodyProps) {
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString('en-US', {
@@ -88,6 +91,9 @@ export function OrdersTableBody({
       setDeleteDialogId(null);
     }
   };
+  if (ordersLoading) {
+    return <TableSkeleton rows={10} columns={11} />;
+  }
 
   return (
     <TableBody className="pl-5">

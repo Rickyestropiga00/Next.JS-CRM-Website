@@ -1,6 +1,4 @@
 import { Product } from '@/types/interface';
-export type ProductStatus = 'Active' | 'Disabled';
-export type ProductTypes = 'Physical' | 'Digital' | 'Service' | 'Subscription';
 
 export const products: Product[] = [
   {
@@ -223,12 +221,4 @@ export const products: Product[] = [
     status: 'Active',
     image: '/products/bluetooth-earbuds.png',
   },
-];
-
-export const productStatuses: ProductStatus[] = ['Active', 'Disabled'];
-export const productTypes: ProductTypes[] = [
-  'Physical',
-  'Digital',
-  'Service',
-  'Subscription',
 ];

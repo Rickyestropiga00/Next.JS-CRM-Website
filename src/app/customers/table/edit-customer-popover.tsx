@@ -13,9 +13,15 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
-import { validateEmail, validatePhone } from '@/lib/validations';
+import {
+  validateEmail,
+  validatePhone,
+  validateRequired,
+} from '@/lib/validations';
 import { Customer, CustomerStatus } from '@/types/interface';
 import { toast } from 'sonner';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface EditCustomerPopoverProps {
   customer: Customer;
@@ -35,89 +41,54 @@ export function EditCustomerPopover({
   onClose,
   open,
 }: EditCustomerPopoverProps) {
-  const [formData, setFormData] = useState<Customer>(customer);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  // Reset form data when customer changes or popover opens
-  React.useEffect(() => {
-    if (open) {
-      setFormData(customer);
-      setErrors({});
-    }
-  }, [customer, open]);
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
-
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) newErrors.phone = phoneError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name'),
+    email: (v: string) => validateEmail(v),
+    phone: (v: string) => validatePhone(v),
   };
 
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return !validateEmail(formData.email) && !validatePhone(formData.phone);
-  };
+  const {
+    formData,
+    errors,
+    handleChange,
+    validateForm,
+    isFormValid,
+    setErrors,
+    handleCancel,
+    hasChanges,
+  } = useFormHandler<Customer>(customer, open, validationRules, () =>
+    onClose()
+  );
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm() || isUpdating) return;
-    setIsUpdating(true);
-    const toastId = 'customer-update';
+  const { handleSubmit, loading } = useFormSubmit<Customer>();
+  const toastId = 'customer-update';
 
-    toast.loading('Saving changes...', { id: toastId });
-
+  const onSubmit = (e: React.FormEvent) => {
+    toast.loading('Saving Changes...', { id: toastId });
     if (customer._id) {
-      try {
-        const res = await fetch(`/api/customer/${formData._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-        let result: any = {};
+      handleSubmit(e, formData, validateForm, {
+        url: `/api/customer/${customer._id}`,
+        method: 'PUT',
+        buildBody: (data) => ({
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          company: data.company?.trim() ? data.company.trim() : undefined,
+          status: data.status,
+          notes: data.notes?.trim() ? data.notes.trim() : undefined,
+        }),
+        onSuccess: (result) => {
+          onSave(result.data);
+          toast.success(result.message, { id: toastId });
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error('Failed to update customer', { id: toastId });
+        },
 
-        try {
-          result = await res.json();
-        } catch {
-          result = { error: 'Server did not return valid JSON' };
-        }
-
-        switch (res.status) {
-          case 200:
-            toast.success(result.message, { id: toastId });
-            onSave(result.data);
-            onClose();
-            return;
-          case 400:
-            const newErrors: ValidationErrors = {};
-
-            const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
-
-            fields.forEach((field) => {
-              if (result.error?.toLowerCase().includes(field)) {
-                newErrors[field] = result.error;
-              }
-            });
-
-            setErrors(newErrors);
-            toast.dismiss(toastId);
-            break;
-          case 500:
-            throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsUpdating(false);
-      }
+        setErrors,
+        onClose,
+      });
     } else {
       if (validateForm()) {
         onSave(formData);
@@ -125,26 +96,6 @@ export function EditCustomerPopover({
         onClose();
       }
     }
-  };
-
-  const handleCancel = () => {
-    setFormData(customer); // Reset form data
-    setErrors({});
-    onClose();
-  };
-
-  const handleEmailChange = (value: string) => {
-    setFormData({ ...formData, email: value });
-    // Always validate and update errors when email changes
-    const emailError = validateEmail(value);
-    setErrors((prev) => ({ ...prev, email: emailError }));
-  };
-
-  const handlePhoneChange = (value: string) => {
-    setFormData({ ...formData, phone: value });
-    // Always validate and update errors when phone changes
-    const phoneError = validatePhone(value);
-    setErrors((prev) => ({ ...prev, phone: phoneError }));
   };
 
   return (
@@ -168,9 +119,7 @@ export function EditCustomerPopover({
               <Input
                 id="name"
                 value={formData?.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => handleChange('name', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
               />
             </div>
@@ -181,9 +130,7 @@ export function EditCustomerPopover({
               <Input
                 id="company"
                 value={formData?.company || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, company: e.target.value })
-                }
+                onChange={(e) => handleChange('company', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
                 placeholder="Company name (optional)"
               />
@@ -200,7 +147,7 @@ export function EditCustomerPopover({
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
+                onChange={(e) => handleChange('email', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
@@ -217,7 +164,7 @@ export function EditCustomerPopover({
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.phone ? 'border-red-500' : ''
                 }`}
@@ -237,7 +184,7 @@ export function EditCustomerPopover({
             <Select
               value={formData.status}
               onValueChange={(value: CustomerStatus) =>
-                setFormData({ ...formData, status: value })
+                handleChange('status', value)
               }
             >
               <SelectTrigger className="h-8 text-xs w-full">
@@ -261,7 +208,7 @@ export function EditCustomerPopover({
               id="notes"
               value={formData.notes || ''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setFormData({ ...formData, notes: e.target.value })
+                handleChange('notes', e.target.value)
               }
               placeholder="Add notes..."
               className="h-16 sm:h-20 text-xs resize-none"
@@ -280,11 +227,11 @@ export function EditCustomerPopover({
           </Button>
           <Button
             size="sm"
-            onClick={handleSave}
+            onClick={onSubmit}
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || !hasChanges || loading}
           >
-            Save Changes
+            {loading ? 'Saving Changes...' : 'Save Changes'}
           </Button>
         </div>
       </div>

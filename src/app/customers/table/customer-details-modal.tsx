@@ -13,14 +13,11 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Customer } from '@/types/interface';
 import {
-  X,
   Mail,
-  Phone,
   Building,
   Calendar,
   FileText,
   MessageSquare,
-  Send,
 } from 'lucide-react';
 
 interface CustomerDetailsModalProps {

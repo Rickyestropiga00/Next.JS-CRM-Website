@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,9 @@ import {
 import { Customer, Order, Product } from '@/types/interface';
 import { formatPrice } from '@/utils/formatters';
 import { useFetch } from '@/hooks/use-fetch';
+import { validateNumber, validateRequired } from '@/lib/validations';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -37,6 +40,17 @@ interface ValidationErrors {
   quantity?: string;
   total?: string;
 }
+type OrderForm = {
+  customer: Customer | null;
+  address: string;
+  product: Product | null;
+  productType: string;
+  item: string;
+  quantity: number;
+  total: number;
+  payment: Order['payment'];
+  status: Order['status'];
+};
 
 export function AddOrderPopover({
   onAddOrder,
@@ -50,203 +64,89 @@ export function AddOrderPopover({
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
+  const initialData = useMemo(
+    () => ({
+      customer: null as Customer | null,
+      address: '',
+      product: null as Product | null,
+      productType: 'Physical' as
+        | 'Physical'
+        | 'Digital'
+        | 'Service'
+        | 'Subscription',
+      item: '',
+      quantity: 0,
+      total: 0,
+      payment: 'Unpaid' as PaymentStatus,
+      status: 'Pending' as OrderStatus,
+    }),
+    []
+  );
 
-  const [formData, setFormData] = useState({
-    customer: null as Customer | null,
-    address: '',
-    product: null as Product | null,
-    productType: 'Physical' as
-      | 'Physical'
-      | 'Digital'
-      | 'Service'
-      | 'Subscription',
-    item: '',
-    quantity: 0,
-    total: 0,
-    payment: 'Unpaid' as PaymentStatus,
-    status: 'Pending' as OrderStatus,
-  });
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [inputValue, setInputValue] = useState('');
-  const [productInputValue, setProductInputValue] = useState('');
-
-  // Reset form data when popover opens
-  React.useEffect(() => {
-    if (isModalOpen) {
-      setFormData({
-        customer: null as Customer | null,
-        address: '',
-        product: null as Product | null,
-        productType: 'Physical',
-        item: '',
-        quantity: 0,
-        total: 0,
-        payment: 'Unpaid',
-        status: 'Pending',
-      });
-      setErrors({});
-    }
-  }, [isModalOpen]);
-
-  // Validation functions
-  const validateCustomer = (customer: Customer | null): string | undefined => {
-    if (!customer) return 'Customer is required';
-    return undefined;
+  const validationRules = {
+    address: (v: string) => validateRequired(v, 'Address'),
+    quantity: (v: number) => validateNumber(v, 'Quantity'),
   };
 
-  const validateAddress = (address: string): string | undefined => {
-    if (!address.trim()) return 'Address is required';
-    return undefined;
-  };
+  const {
+    formData,
+    setFormData,
+    errors,
+    setErrors,
+    handleChange,
+    handleCancel,
+    validateForm,
+    isFormValid,
+    customerInputValue,
+    setCustomerInputValue,
+    productInputValue,
+    setProductInputValue,
+  } = useFormHandler<OrderForm>(
+    initialData,
+    isModalOpen,
+    validationRules,
+    onClose
+  );
 
-  const validateProduct = (product: Product | null): string | undefined => {
-    if (!product) return 'Product name is required';
-    return undefined;
-  };
+  const { handleSubmit, loading } = useFormSubmit<OrderForm>();
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, formData, validateForm, {
+      url: '/api/order',
+      buildBody: (data) => ({
+        customer: data.customer?._id,
+        address: data.address.trim(),
+        product: data.product?._id,
+        productType: data.productType,
+        item: data.item.trim(),
+        quantity: data.quantity,
+        total: data.total,
+        payment: data.payment,
+        status: data.status,
+      }),
+      onSuccess: (result: Order) => {
+        const orderWithRelations: Order = {
+          ...result,
+          customer: formData.customer,
+          product: formData.product,
+        };
 
-  const validateItem = (item: string): string | undefined => {
-    if (!item.trim()) return 'Item code is required';
-    return undefined;
-  };
+        onAddOrder(orderWithRelations);
+        setCustomerInputValue('');
+        setProductInputValue('');
+      },
+      onClose,
+      setErrors,
+      onError: (err) => {
+        setErrors((prev) => ({
+          ...prev,
+          general: err instanceof Error ? err.message : 'Failed to save order',
+        }));
+      },
+    });
 
   const validateQuantity = (quantity: number): string | undefined => {
-    if (!quantity) return 'Quantity is required';
-    const numQuantity = quantity;
-    if (isNaN(numQuantity) || numQuantity <= 0)
-      return 'Quantity must be a positive number';
-    return undefined;
+    return validateNumber(quantity, 'Quantity', 0, 999);
   };
-
-  const validateTotal = (total: number): string | undefined => {
-    if (!total) return 'Total is required';
-    const numTotal = total;
-    if (isNaN(numTotal) || numTotal <= 0)
-      return 'Total must be a positive number';
-    return undefined;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const customerError = validateCustomer(formData.customer);
-    if (customerError) newErrors.customer = customerError;
-
-    const addressError = validateAddress(formData.address);
-    if (addressError) newErrors.address = addressError;
-
-    const productError = validateProduct(formData.product);
-    if (productError) newErrors.product = productError;
-
-    const itemError = validateItem(formData.item);
-    if (itemError) newErrors.item = itemError;
-
-    const quantityError = validateQuantity(formData.quantity);
-    if (quantityError) newErrors.quantity = quantityError;
-
-    const totalError = validateTotal(formData.total);
-    if (totalError) newErrors.total = totalError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateCustomer(formData.customer) &&
-      !validateAddress(formData.address) &&
-      !validateProduct(formData.product) &&
-      !validateItem(formData.item) &&
-      !validateQuantity(formData.quantity) &&
-      !validateTotal(formData.total)
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer: formData.customer?._id,
-          address: formData.address.trim(),
-          product: formData.product?._id,
-          productType: formData.productType,
-          item: formData.item.trim(),
-          quantity: formData.quantity,
-          total: formData.total,
-          payment: formData.payment,
-          status: formData.status,
-        }),
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Invalid response from server');
-      }
-
-      switch (response.status) {
-        case 201:
-          const orderWithRelations: Order = {
-            ...data,
-            customer: formData.customer,
-            product: formData.product,
-          };
-
-          onAddOrder(orderWithRelations); // update UI
-          setInputValue('');
-          setProductInputValue('');
-          break;
-        case 400:
-          throw new Error(data.error || 'Validation error');
-        default:
-          throw new Error('Failed to save product');
-      }
-
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error saving product:', error);
-      setErrors((prev) => ({
-        ...prev,
-        code:
-          error instanceof Error ? error.message : 'Failed to save product.',
-      }));
-    }
-  };
-
-  const handleCancel = () => {
-    if (onClose) {
-      onClose();
-      setInputValue('');
-      setProductInputValue('');
-    }
-  };
-
-  const handleAddressChange = (value: string) => {
-    setFormData({ ...formData, address: value });
-    // Always validate and update errors when address changes
-    const addressError = validateAddress(value);
-    setErrors((prev) => ({ ...prev, address: addressError }));
-  };
-
-  const handleItemChange = (value: string) => {
-    setFormData({ ...formData, item: value });
-    // Always validate and update errors when item changes
-    const itemError = validateItem(value);
-    setErrors((prev) => ({ ...prev, item: itemError }));
-  };
-
   const handleQuantityChange = (value: number) => {
     const qty = value || 0;
 
@@ -277,7 +177,7 @@ export function AddOrderPopover({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
             {/* Row 1: Customer and Product */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="flex-1 space-y-2">
@@ -294,21 +194,21 @@ export function AddOrderPopover({
                   onValueChange={(value) => {
                     const selected =
                       customersData.find((c) => c._id === value) || null;
-                    setFormData({ ...formData, customer: selected });
-                    setInputValue(selected?.name || '');
+                    handleChange('customer', selected);
+                    setCustomerInputValue(selected?.name || '');
                   }}
                 >
                   <ComboboxInput
                     placeholder="Select a customer"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    value={customerInputValue}
+                    onChange={(e) => setCustomerInputValue(e.target.value)}
                     onBlur={() => {
                       const matched = customersData.find(
-                        (c) => c.name === inputValue
+                        (c) => c.name === customerInputValue
                       );
                       if (!matched) {
-                        setInputValue('');
-                        setFormData({ ...formData, customer: null });
+                        setCustomerInputValue('');
+                        handleChange('customer', null);
                       }
                     }}
                   />
@@ -388,7 +288,7 @@ export function AddOrderPopover({
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) => handleAddressChange(e.target.value)}
+                  onChange={(e) => handleChange('address', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.address ? 'border-red-500' : ''
                   }`}
@@ -405,7 +305,7 @@ export function AddOrderPopover({
                 <Input
                   id="item"
                   value={formData.item}
-                  onChange={(e) => handleItemChange(e.target.value)}
+                  onChange={(e) => handleChange('item', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.item ? 'border-red-500' : ''
                   }`}
@@ -428,7 +328,7 @@ export function AddOrderPopover({
                   value={formData.productType ?? 'Physical'}
                   onValueChange={(
                     value: 'Physical' | 'Digital' | 'Service' | 'Subscription'
-                  ) => setFormData({ ...formData, productType: value })}
+                  ) => handleChange('productType', value)}
                   disabled
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -449,7 +349,7 @@ export function AddOrderPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: OrderStatus) =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -523,7 +423,7 @@ export function AddOrderPopover({
               <Select
                 value={formData.payment}
                 onValueChange={(value: PaymentStatus) =>
-                  setFormData({ ...formData, payment: value })
+                  handleChange('payment', value)
                 }
               >
                 <SelectTrigger className="h-8 text-xs w-full">
@@ -547,11 +447,11 @@ export function AddOrderPopover({
               </Button>
               <Button
                 size="sm"
-                onClick={handleSubmit}
+                type="submit"
                 className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
               >
-                Add Order
+                {loading ? 'Adding Order...' : 'Add Order'}
               </Button>
             </div>
           </form>

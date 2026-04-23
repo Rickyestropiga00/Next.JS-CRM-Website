@@ -3,6 +3,7 @@ import { Task, ColumnKey } from '@/types/interface';
 import { TaskCard } from './task-card';
 import { getId } from '@/utils/helper';
 import { DroppableColumn } from './droppable-column';
+import { TaskSkeleton } from './tasks-skeleton';
 
 interface ColumnsBoardProps {
   columns: { key: ColumnKey; label: string }[];
@@ -14,6 +15,7 @@ interface ColumnsBoardProps {
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
   isSidebarCollapsed: boolean;
+  tasksLoading?: boolean;
 }
 
 export function ColumnsBoard({
@@ -26,6 +28,7 @@ export function ColumnsBoard({
   deleteDialogId,
   setDeleteDialogId,
   isSidebarCollapsed,
+  tasksLoading,
 }: ColumnsBoardProps) {
   return (
     <div
@@ -42,7 +45,7 @@ export function ColumnsBoard({
           <DroppableColumn col={col} key={col.key}>
             <div className="flex items-center justify-between">
               <div className="font-semibold text-lg flex justify-center items-center gap-2">
-                <span className="inline-flex items-center justify-center rounded-full text-xs font-semibold min-w-[20px] h-5 px-1.5 bg-primary">
+                <span className="inline-flex items-center justify-center rounded-full text-xs font-semibold min-w-[20px] h-5 px-1.5 bg-primary text-white">
                   {columnTasks.length}
                 </span>
                 {col.label}{' '}
@@ -60,18 +63,22 @@ export function ColumnsBoard({
               </div>
             </div>
 
-            {columnTasks.map((task) => (
-              <TaskCard
-                key={getId(task)}
-                task={task}
-                columns={columns}
-                onMove={onMoveTask}
-                onDelete={onDeleteTask}
-                onEdit={onEditTask}
-                deleteDialogId={deleteDialogId}
-                setDeleteDialogId={setDeleteDialogId}
-              />
-            ))}
+            {tasksLoading
+              ? Array.from({ length: 2 }).map((_, i) => (
+                  <TaskSkeleton key={i} />
+                ))
+              : columnTasks.map((task) => (
+                  <TaskCard
+                    key={getId(task)}
+                    task={task}
+                    columns={columns}
+                    onMove={onMoveTask}
+                    onDelete={onDeleteTask}
+                    onEdit={onEditTask}
+                    deleteDialogId={deleteDialogId}
+                    setDeleteDialogId={setDeleteDialogId}
+                  />
+                ))}
           </DroppableColumn>
         );
       })}

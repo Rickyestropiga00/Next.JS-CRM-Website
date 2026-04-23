@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ProductStatus } from '../data';
 import { ProductsTableHeader } from './table-header';
 import { ProductsTableBody } from './table-body';
 import { ProductsPaginationBar } from './pagination-bar';
@@ -15,7 +14,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Product, ProductTypes } from '@/types/interface';
+import {
+  Product,
+  ProductTypes,
+  ProductStatus,
+  DeleteResponse,
+} from '@/types/interface';
+import { useTableActions } from '@/hooks/use-table-actions';
 
 // Dynamically import modals to reduce initial bundle size
 const EditProductPopover = dynamic(
@@ -56,16 +61,14 @@ import { Trash, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { useFetch } from '@/hooks/use-fetch';
+import { useBulkDelete } from '@/hooks/use-bulk-delete';
 
 export function ProductsTable() {
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<string>('all');
-  const [type, setType] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<keyof Product>('id');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const { data: productsData, setData: setProductsData } =
-    useFetch<Product>('product');
-  const [selected, setSelected] = useState<string[]>([]);
+  const {
+    data: productsData,
+    setData: setProductsData,
+    loading: productsLoading,
+  } = useFetch<Product>('product');
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
@@ -73,8 +76,6 @@ export function ProductsTable() {
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const statusOptions: ProductStatus[] = ['Active', 'Disabled'];
 
@@ -84,158 +85,61 @@ export function ProductsTable() {
     'Service',
     'Subscription',
   ];
+  const {
+    filters,
+    setFilters,
+    filtered,
+    paginated,
+    totalPages,
+    selected,
+    setSelected,
+    sortBy,
+    sortDir,
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    handleDelete,
+    handleAdd,
+    handleEdit,
+    handleSort,
+    handleSelectAll,
+    handleSelectRow,
+  } = useTableActions<Product>({
+    data: productsData,
+    setData: setProductsData,
+    getId: (p) => p.id || p._id || '',
 
-  // Filtering
-  const filtered = useMemo(() => {
-    return productsData.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.code.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = status === 'all' ? true : p.status === status;
-      const matchesType = type === 'all' ? true : p.productType === type;
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }, [productsData, search, status, type]);
+    filtersConfig: {
+      searchKeys: ['name', 'code'],
+      filterKeys: [
+        { key: 'status', defaultValue: 'all' },
+        { key: 'productType', defaultValue: 'all' },
+      ],
+    },
+  });
 
-  // Sorting
-  const sorted = useMemo(() => {
-    if (!sortBy) return filtered;
-    return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? '';
-      const bVal = b[sortBy] ?? '';
+  const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
+    endpoint: '/api/bulk-delete',
+    type: 'product',
 
-      if (sortBy === 'id') {
-        const aNum = Number(aVal);
-        const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
-        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (sortBy === 'price' || sortBy === 'stock') {
-        const aNum = Number(aVal);
-        const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
-        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (sortBy === 'date') {
-        const aDate = new Date(aVal as string);
-        const bDate = new Date(bVal as string);
-        if (aDate < bDate) return sortDir === 'asc' ? -1 : 1;
-        if (aDate > bDate) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-      return 0;
-    });
-  }, [filtered, sortBy, sortDir]);
-
-  const totalRows = sorted.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const paginated = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage;
-    return sorted.slice(start, start + rowsPerPage);
-  }, [sorted, currentPage, rowsPerPage]);
-
-  // Reset to page 1 if rowsPerPage changes and currentPage is out of range
-  React.useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages, currentPage]);
-
-  function handleDelete(id: string) {
-    setProductsData((prev) => prev.filter((p) => getId(p) !== id));
-  }
-
-  function handleAddProduct(newProduct: Product) {
-    setProductsData((prev) => [newProduct, ...prev]);
-    // Reset to first page when adding new product
-    setCurrentPage(1);
-  }
-
-  function handleEdit(updatedProduct: Product) {
-    setProductsData((prev) =>
-      prev.map((product) =>
-        getId(product) === getId(updatedProduct) ? updatedProduct : product
-      )
-    );
-  }
-
-  function handleSort(col: keyof Product) {
-    if (sortBy === col) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(col);
-      setSortDir('asc');
-    }
-  }
-
-  function handleSelectAll(checked: boolean) {
-    if (checked) {
-      setSelected((prev) => [
-        ...prev.filter((id) => !paginated.some((c) => getId(c) === id)),
-        ...paginated.map((c) => getId(c)),
-      ]);
-    } else {
-      setSelected((prev) =>
-        prev.filter((id) => !paginated.some((c) => getId(c) === id))
+    onSuccess: (ids, data) => {
+      setProductsData((prev) =>
+        prev.filter(
+          (p) =>
+            !(p._id && ids.includes(p._id)) && !(p.id && ids.includes(p.id))
+        )
       );
-    }
-  }
 
-  function handleSelectRow(product: Product, checked: boolean) {
-    const productId = getId(product);
+      setSelected([]);
+      setShowConfirm(false);
+      toast.success(data.message);
+    },
 
-    if (!productId) return;
-
-    if (checked) {
-      setSelected((prev) =>
-        prev.includes(productId) ? prev : [...prev, productId]
-      );
-    } else {
-      setSelected((prev) => prev.filter((s) => s !== productId));
-    }
-  }
-
-  async function handleDeleteSelected() {
-    console.log('Selected IDs:', selected);
-
-    try {
-      const res = await fetch('/api/bulk-delete?type=product', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selected }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setProductsData((prev) =>
-          prev.filter(
-            (p) =>
-              !(p._id && selected.includes(p._id)) &&
-              !(p.id && selected.includes(p.id))
-          )
-        );
-
-        setSelected([]);
-        setShowConfirm(false);
-
-        toast.success(data.message);
-      } else {
-        toast.error(data.error);
-      }
-    } catch (error) {
-      console.error(error);
+    onError: () => {
       toast.error('Something went wrong');
-    }
-  }
+    },
+  });
 
   return (
     <>
@@ -243,11 +147,24 @@ export function ProductsTable() {
         <div className="flex gap-2 flex-wrap items-center">
           <Input
             placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={filters.search}
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }))
+            }
             className="w-full md:w-64"
           />
-          <Select value={status} onValueChange={setStatus}>
+          <Select
+            value={filters.status || 'all'}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                status: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
@@ -262,7 +179,15 @@ export function ProductsTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Select value={type} onValueChange={setType}>
+          <Select
+            value={filters.productType}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                productType: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
@@ -301,7 +226,7 @@ export function ProductsTable() {
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={handleDeleteSelected}
+                  onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
                   Delete
@@ -326,7 +251,7 @@ export function ProductsTable() {
               selected={selected}
               paginated={paginated}
               onSelectAll={handleSelectAll}
-              sortBy={sortBy}
+              sortBy={sortBy ?? 'productId'}
               sortDir={sortDir}
               onSort={handleSort}
             />
@@ -339,6 +264,7 @@ export function ProductsTable() {
               setDeleteDialogId={setDeleteDialogId}
               setEditProductId={setEditProductId}
               onProductClick={setSelectedProductId}
+              productsLoading={productsLoading}
             />
           </Table>
         </div>
@@ -346,7 +272,7 @@ export function ProductsTable() {
 
       <ProductsPaginationBar
         selectedCount={selected.length}
-        totalRows={totalRows}
+        totalRows={filtered.length}
         currentPage={currentPage}
         totalPages={totalPages}
         rowsPerPage={rowsPerPage}
@@ -371,7 +297,7 @@ export function ProductsTable() {
       <AddProductPopover
         isOpen={showAddProduct}
         onAddProduct={(newProduct) => {
-          handleAddProduct(newProduct);
+          handleAdd(newProduct);
           setShowAddProduct(false);
         }}
         onClose={() => setShowAddProduct(false)}

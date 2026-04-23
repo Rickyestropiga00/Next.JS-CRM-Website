@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,9 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProductStatus, ProductTypes } from '../data';
+
 import Image from 'next/image';
-import { Product } from '@/types/interface';
+import { Product, ProductStatus, ProductTypes } from '@/types/interface';
+import {
+  validateNumber,
+  validatePrice,
+  validateRequired,
+} from '@/lib/validations';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface AddProductPopoverProps {
   onAddProduct: (product: Product) => void;
@@ -26,6 +33,15 @@ interface ValidationErrors {
   price?: string;
   stock?: string;
 }
+type ProductForm = {
+  name: string;
+  code: string;
+  productType: string;
+  stock: string;
+  price: string;
+  status: string;
+  image: string;
+};
 
 export function AddProductPopover({
   onAddProduct,
@@ -39,32 +55,40 @@ export function AddProductPopover({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    productType: 'Physical' as ProductTypes,
-    stock: '',
-    price: '',
-    status: 'Active' as ProductStatus,
-    image: '',
-  });
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const initialData = useMemo(
+    () => ({
+      name: '',
+      code: '',
+      productType: 'Physical' as ProductTypes,
+      stock: '',
+      price: '',
+      status: 'Active' as ProductStatus,
+      image: '',
+    }),
+    []
+  );
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name', 1),
+    code: (v: string) => validateRequired(v, 'Code'),
+    stock: (v: string) => validateNumber(Number(v), 'Stock'),
+    price: (v: string) => validatePrice(Number(v)),
+  };
+  const {
+    formData,
+    errors,
+    setErrors,
+    handleChange,
+    handleCancel,
+    validateForm,
+    isFormValid,
+  } = useFormHandler<ProductForm>(
+    initialData,
+    isModalOpen,
+    validationRules,
+    onClose
+  );
+  const { handleSubmit, loading } = useFormSubmit<ProductForm>();
 
-  // Reset form data when popover opens
-  React.useEffect(() => {
-    if (isModalOpen) {
-      setFormData({
-        name: '',
-        code: '',
-        productType: 'Physical',
-        stock: '',
-        price: '',
-        status: 'Active',
-        image: '',
-      });
-      setErrors({});
-    }
-  }, [isModalOpen]);
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -73,127 +97,45 @@ export function AddProductPopover({
     };
   }, [imagePreview]);
 
-  // Validation functions
-  const validateName = (name: string): string | undefined => {
-    if (!name.trim()) return 'Name is required';
-    return undefined;
-  };
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, formData, validateForm, {
+      url: '/api/product',
+      formData: true,
 
-  const validateCode = (code: string): string | undefined => {
-    if (!code.trim()) return 'Product code is required';
-    return undefined;
-  };
+      buildBody: () => {
+        const fd = new FormData();
 
-  const validatePrice = (price: string): string | undefined => {
-    if (!price.trim()) return 'Price is required';
-    const numPrice = parseFloat(price);
-    if (isNaN(numPrice) || numPrice <= 0)
-      return 'Price must be a positive number';
-    return undefined;
-  };
+        fd.append('name', formData.name.trim());
+        fd.append('code', formData.code.trim());
+        fd.append('productType', formData.productType);
+        fd.append('stock', String(formData.stock));
+        fd.append('price', String(formData.price));
+        fd.append('status', formData.status);
 
-  const validateStock = (stock: string): string | undefined => {
-    if (!stock.trim()) return 'Stock is required';
-    const numStock = parseInt(stock);
-    if (isNaN(numStock) || numStock < 0)
-      return 'Stock must be a non-negative number';
-    return undefined;
-  };
+        if (imageFile) {
+          fd.append('image', imageFile);
+        }
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+        return fd;
+      },
 
-    const nameError = validateName(formData.name);
-    if (nameError) newErrors.name = nameError;
+      onSuccess: (result: Product) => {
+        onAddProduct(result);
+        setImagePreview(null);
+        setImageFile(null);
+      },
 
-    const codeError = validateCode(formData.code);
-    if (codeError) newErrors.code = codeError;
+      onClose,
+      setErrors,
+      onError: (err) => {
+        setErrors((prev) => ({
+          ...prev,
+          general:
+            err instanceof Error ? err.message : 'Failed to save product',
+        }));
+      },
+    });
 
-    const priceError = validatePrice(formData.price);
-    if (priceError) newErrors.price = priceError;
-
-    const stockError = validateStock(formData.stock);
-    if (stockError) newErrors.stock = stockError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateName(formData.name) &&
-      !validateCode(formData.code) &&
-      !validatePrice(formData.price) &&
-      !validateStock(formData.stock)
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      const formDataToSend = new FormData();
-
-      formDataToSend.append('name', formData.name.trim());
-      formDataToSend.append('code', formData.code.trim());
-      formDataToSend.append('productType', formData.productType);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('status', formData.status);
-
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      }
-
-      const response = await fetch('/api/product', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Invalid response from server');
-      }
-
-      switch (response.status) {
-        case 201:
-          onAddProduct(data);
-          setImagePreview(null);
-          setImageFile(null);
-          break;
-        case 400:
-          throw new Error(data.error || 'Validation error');
-        default:
-          throw new Error('Failed to save product');
-      }
-
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error saving product:', error);
-      const message =
-        error instanceof Error ? error.message : 'Failed to save product.';
-
-      setErrors((prev) => ({
-        ...prev,
-        code: message,
-      }));
-    }
-  };
-
-  const handleCancel = () => {
-    if (onClose) {
-      setImagePreview(null);
-      onClose();
-    }
-  };
   const handleImageChange = (file: File | null) => {
     if (!file) return;
 
@@ -207,34 +149,6 @@ export function AddProductPopover({
     return '/products/product-1.webp';
   };
   const imageSrc = getImageSrc();
-
-  const handleNameChange = (value: string) => {
-    setFormData({ ...formData, name: value });
-    // Always validate and update errors when name changes
-    const nameError = validateName(value);
-    setErrors((prev) => ({ ...prev, name: nameError }));
-  };
-
-  const handleCodeChange = (value: string) => {
-    setFormData({ ...formData, code: value });
-    // Always validate and update errors when code changes
-    const codeError = validateCode(value);
-    setErrors((prev) => ({ ...prev, code: codeError }));
-  };
-
-  const handlePriceChange = (value: string) => {
-    setFormData({ ...formData, price: value });
-    // Always validate and update errors when price changes
-    const priceError = validatePrice(value);
-    setErrors((prev) => ({ ...prev, price: priceError }));
-  };
-
-  const handleStockChange = (value: string) => {
-    setFormData({ ...formData, stock: value });
-    // Always validate and update errors when stock changes
-    const stockError = validateStock(value);
-    setErrors((prev) => ({ ...prev, stock: stockError }));
-  };
 
   if (!isModalOpen) return null;
 
@@ -256,7 +170,7 @@ export function AddProductPopover({
           </div>
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
             className="space-y-4 sm:space-y-6"
             encType="multipart/form-data"
           >
@@ -315,7 +229,7 @@ export function AddProductPopover({
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
+                  onChange={(e) => handleChange('name', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.name ? 'border-red-500' : ''
                   }`}
@@ -332,7 +246,7 @@ export function AddProductPopover({
                 <Input
                   id="code"
                   value={formData.code}
-                  onChange={(e) => handleCodeChange(e.target.value)}
+                  onChange={(e) => handleChange('code', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.code ? 'border-red-500' : ''
                   }`}
@@ -353,7 +267,7 @@ export function AddProductPopover({
                 <Select
                   value={formData.productType}
                   onValueChange={(value: ProductTypes) =>
-                    setFormData({ ...formData, productType: value })
+                    handleChange('productType', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -374,7 +288,7 @@ export function AddProductPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: ProductStatus) =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -400,7 +314,7 @@ export function AddProductPopover({
                   step="0.01"
                   min="0"
                   value={formData.price}
-                  onChange={(e) => handlePriceChange(e.target.value)}
+                  onChange={(e) => handleChange('price', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.price ? 'border-red-500' : ''
                   }`}
@@ -419,7 +333,7 @@ export function AddProductPopover({
                   type="number"
                   min="0"
                   value={formData.stock}
-                  onChange={(e) => handleStockChange(e.target.value)}
+                  onChange={(e) => handleChange('stock', e.target.value)}
                   className={`h-8 sm:h-9 text-xs ${
                     errors.stock ? 'border-red-500' : ''
                   }`}
@@ -430,6 +344,12 @@ export function AddProductPopover({
                 )}
               </div>
             </div>
+
+            {errors.general && (
+              <p className="text-xs text-red-500 font-bold text-center">
+                {errors.general}
+              </p>
+            )}
 
             <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
               <Button
@@ -442,11 +362,11 @@ export function AddProductPopover({
               </Button>
               <Button
                 size="sm"
-                onClick={handleSubmit}
+                type="submit"
                 className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
               >
-                Add Product
+                {loading ? 'Adding Product...' : 'Add Product'}
               </Button>
             </div>
           </form>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Task } from '@/types/interface';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { validateRequired } from '@/lib/validations';
+import { useFormSubmit } from '@/hooks/use-form-submit';
+import { toast } from 'sonner';
 
 interface EditTaskPopoverProps {
   task: Task;
@@ -20,11 +24,15 @@ interface EditTaskPopoverProps {
   onClose: () => void;
   open: boolean;
 }
-
-interface ValidationErrors {
-  title?: string;
-  description?: string;
-}
+const statusColors: Record<string, string> = {
+  DESIGN: 'var(--badge-design)',
+  DEVELOPMENT: 'var(--badge-development)',
+  TESTING: 'var(--badge-testing)',
+  CONTENT: 'var(--badge-content)',
+  MARKETING: 'var(--badge-marketing)',
+  MEETING: 'var(--badge-meeting)',
+  'FOLLOW-UP': 'var(--badge-followup)',
+};
 
 export function EditTaskPopover({
   task,
@@ -32,124 +40,62 @@ export function EditTaskPopover({
   onClose,
   open,
 }: EditTaskPopoverProps) {
-  const [formData, setFormData] = useState<Task>(task);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
-  // Reset form data when task changes or popover opens
-  React.useEffect(() => {
-    if (open) {
-      setFormData(task);
-      setErrors({});
-    }
-  }, [task, open]);
-
-  // Validation functions
-  const validateTitle = (title: string): string | undefined => {
-    if (!title.trim()) return 'Title is required';
-    return undefined;
-  };
-
-  const validateDescription = (description: string): string | undefined => {
-    if (!description.trim()) return 'Description is required';
-    return undefined;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const titleError = validateTitle(formData.title);
-    if (titleError) newErrors.title = titleError;
-
-    const descriptionError = validateDescription(formData.description);
-    if (descriptionError) newErrors.description = descriptionError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateTitle(formData.title) &&
-      !validateDescription(formData.description)
-    );
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
+  const {
+    formData,
+    errors,
+    handleChange,
+    validateForm,
+    isFormValid,
+    setFormData,
+    setErrors,
+    handleCancel,
+    hasChanges,
+  } = useFormHandler<Task>(
+    task,
+    open,
+    {
+      title: (v) => validateRequired(v, 'title'),
+      description: (v) => validateRequired(v, 'description'),
+    },
+    () => onClose()
+  );
+  const { handleSubmit, loading } = useFormSubmit<Task>();
+  const toastId = 'task-update';
+  const onSubmit = (e: React.FormEvent) => {
+    toast.loading('Saving changes...', { id: toastId });
     if (task._id) {
-      try {
-        const res = await fetch(`/api/task/${formData._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+      handleSubmit(e, formData, validateForm, {
+        url: `/api/task/${formData._id}`,
+        method: 'PUT',
+        buildBody: (data) => ({
+          title: data.title.trim(),
+          description: data.description.trim(),
+          status: data.status,
+          priority: data.priority,
+          column: data.column,
+        }),
+        onSuccess: (result) => {
+          onSave(result.data);
+          toast.success(result.message, { id: toastId });
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error('Failed to update task', { id: toastId });
+        },
 
-        let result: any = {};
-
-        try {
-          result = await res.json();
-        } catch {
-          result = { error: 'Server did not return a  valid JSON' };
-        }
-        switch (res.status) {
-          case 200:
-            onSave(result.data);
-            onClose();
-            console.log(result.message);
-            return;
-          case 500:
-            throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+        setErrors,
+        onClose,
+      });
     } else {
       if (validateForm()) {
-        // Update statusColor based on the selected status
-        const statusColors: Record<string, string> = {
-          DESIGN: 'var(--badge-design)',
-          DEVELOPMENT: 'var(--badge-development)',
-          TESTING: 'var(--badge-testing)',
-          CONTENT: 'var(--badge-content)',
-          MARKETING: 'var(--badge-marketing)',
-          MEETING: 'var(--badge-meeting)',
-          'FOLLOW-UP': 'var(--badge-followup)',
-        };
-
         const updatedTask = {
           ...formData,
           statusColor: statusColors[formData.status] || formData.statusColor,
         };
-
         onSave(updatedTask);
+        toast.success('Task updated locally', { id: toastId });
       }
     }
-  };
-
-  const handleCancel = () => {
-    setFormData(task); // Reset form data
-    setErrors({});
-    onClose();
-  };
-
-  const handleTitleChange = (value: string) => {
-    setFormData({ ...formData, title: value });
-    // Always validate and update errors when title changes
-    const titleError = validateTitle(value);
-    setErrors((prev) => ({ ...prev, title: titleError }));
-  };
-
-  const handleDescriptionChange = (value: string) => {
-    setFormData({ ...formData, description: value });
-    // Always validate and update errors when description changes
-    const descriptionError = validateDescription(value);
-    setErrors((prev) => ({ ...prev, description: descriptionError }));
   };
 
   if (!open) return null;
@@ -178,7 +124,7 @@ export function EditTaskPopover({
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
+                onChange={(e) => handleChange('title', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.title ? 'border-red-500' : ''
                 }`}
@@ -198,7 +144,7 @@ export function EditTaskPopover({
                 id="description"
                 value={formData.description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleDescriptionChange(e.target.value)
+                  handleChange('description', e.target.value)
                 }
                 placeholder="Enter task description..."
                 className={`h-16 sm:h-20 text-xs resize-none ${
@@ -293,11 +239,11 @@ export function EditTaskPopover({
             </Button>
             <Button
               size="sm"
-              onClick={handleSave}
+              onClick={onSubmit}
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || !hasChanges || loading}
             >
-              Save Changes
+              {loading ? 'Saving Changes...' : 'Save Changes'}
             </Button>
           </div>
         </div>

@@ -13,9 +13,15 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
-import { validateEmail, validatePhone } from '@/lib/validations';
+import {
+  validateEmail,
+  validatePhone,
+  validateRequired,
+} from '@/lib/validations';
 import { Agent } from '@/types/interface';
 import { toast } from 'sonner';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface EditAgentPopoverProps {
   agent: Agent;
@@ -35,96 +41,55 @@ export function EditAgentPopover({
   onClose,
   open,
 }: EditAgentPopoverProps) {
-  const [formData, setFormData] = useState<Agent>(agent);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  // Reset form data when agent changes or popover opens
-  React.useEffect(() => {
-    if (open) {
-      setFormData(agent);
-      setErrors({});
-    }
-  }, [agent, open]);
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
-
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) newErrors.phone = phoneError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name'),
+    email: (v: string) => validateRequired(v, 'Email') || validateEmail(v),
+    phone: (v: string) => validateRequired(v, 'Phone') || validatePhone(v),
   };
+  const {
+    formData,
+    errors,
+    handleChange,
+    validateForm,
+    isFormValid,
+    setErrors,
+    handleCancel,
+    hasChanges,
+  } = useFormHandler<Agent>(agent, open, validationRules, () => onClose());
+  const { handleSubmit, loading } = useFormSubmit<Agent>();
+  const toastId = 'agent-update';
 
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return !validateEmail(formData.email) && !validatePhone(formData.phone);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm() || isUpdating) return;
-    setIsUpdating(true);
-    const toastId = 'agent-update';
-
+  const onSubmit = (e: React.FormEvent) => {
     toast.loading('Saving changes...', { id: toastId });
+    if (agent._id) {
+      handleSubmit(e, formData, validateForm, {
+        url: `/api/agent/${formData._id}`,
+        method: 'PUT',
 
-    if (formData._id) {
-      try {
-        const res = await fetch(`/api/agent/${formData._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+        buildBody: (data) => ({
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          role: data.role,
+          status: data.status,
+          assignedCustomers: [],
+          notes: data.notes?.trim() ? data.notes.trim() : undefined,
+        }),
 
-        let result: any = {};
+        onSuccess: (result) => {
+          toast.success(result.message, { id: toastId });
 
-        try {
-          result = await res.json();
-        } catch {
-          result = { error: 'Server did not return valid JSON' };
-        }
+          onSave(result.data);
+        },
 
-        switch (res.status) {
-          case 200:
-            const updatedAgent = {
-              ...result.data,
-              id: result.data.agentId || result.data._id || formData.id,
-            };
-            toast.success(result.message, { id: toastId });
-            onSave(updatedAgent);
-            onClose();
-            console.log(result.message);
-            return;
-          case 400:
-            const newErrors: ValidationErrors = {};
+        onError: (err) => {
+          console.error(err);
+          toast.error('Failed to update agent', { id: toastId });
+        },
 
-            const fields: (keyof ValidationErrors)[] = ['email', 'phone'];
-
-            fields.forEach((field) => {
-              if (result.error?.toLowerCase().includes(field)) {
-                newErrors[field] = result.error;
-              }
-            });
-
-            setErrors(newErrors);
-            toast.dismiss(toastId);
-            break;
-          case 500:
-            throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsUpdating(false);
-      }
+        setErrors,
+        onClose,
+      });
     } else {
       if (validateForm()) {
         onSave(formData);
@@ -134,28 +99,8 @@ export function EditAgentPopover({
     }
   };
 
-  const handleCancel = () => {
-    setFormData(agent); // Reset form data
-    setErrors({});
-    onClose();
-  };
-
-  const handleEmailChange = (value: string) => {
-    setFormData({ ...formData, email: value });
-    // Always validate and update errors when email changes
-    const emailError = validateEmail(value);
-    setErrors((prev) => ({ ...prev, email: emailError }));
-  };
-
-  const handlePhoneChange = (value: string) => {
-    setFormData({ ...formData, phone: value });
-    // Always validate and update errors when phone changes
-    const phoneError = validatePhone(value);
-    setErrors((prev) => ({ ...prev, phone: phoneError }));
-  };
-
   return (
-    <ModalWrapper open={open} onClose={handleCancel}>
+    <ModalWrapper open={open} onClose={onClose}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
           <h4 className="font-medium text-sm sm:text-base">Edit Agent</h4>
@@ -175,9 +120,7 @@ export function EditAgentPopover({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => handleChange('name', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
               />
             </div>
@@ -189,7 +132,7 @@ export function EditAgentPopover({
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.phone ? 'border-red-500' : ''
                 }`}
@@ -211,7 +154,7 @@ export function EditAgentPopover({
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
+                onChange={(e) => handleChange('email', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
@@ -228,7 +171,7 @@ export function EditAgentPopover({
                 <Select
                   value={formData.role}
                   onValueChange={(value: 'Admin' | 'Agent' | 'Manager') =>
-                    setFormData({ ...formData, role: value })
+                    handleChange('role', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -248,7 +191,7 @@ export function EditAgentPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: 'Active' | 'Inactive' | 'On Leave') =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -273,7 +216,7 @@ export function EditAgentPopover({
               id="notes"
               value={formData.notes || ''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setFormData({ ...formData, notes: e.target.value })
+                handleChange('notes', e.target.value)
               }
               placeholder="Add notes..."
               className="h-16 sm:h-20 text-xs resize-none"
@@ -292,11 +235,11 @@ export function EditAgentPopover({
           </Button>
           <Button
             size="sm"
-            onClick={handleSave}
+            onClick={onSubmit}
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || !hasChanges || loading}
           >
-            Save Changes
+            {loading ? 'Saving Changes...' : 'Save Changes'}
           </Button>
         </div>
       </div>

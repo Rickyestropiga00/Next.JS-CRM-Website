@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { OrderStatus, PaymentStatus } from '../data';
-import { Order } from '@/types/interface';
+import {
+  DeleteResponse,
+  Order,
+  OrderStatus,
+  PaymentStatus,
+} from '@/types/interface';
 import { OrdersTableHeader } from './table-header';
 import { OrdersTableBody } from './table-body';
 import { OrdersPaginationBar } from './pagination-bar';
+import { useTableActions } from '@/hooks/use-table-actions';
 
 import {
   AlertDialog,
@@ -57,22 +62,19 @@ import { Trash, Plus } from 'lucide-react';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
 import { useFetch } from '@/hooks/use-fetch';
+import { useBulkDelete } from '@/hooks/use-bulk-delete';
 
 export function OrdersTable() {
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<string>('all');
-  const [payment, setPayment] = useState<string>('all');
-  const [productType, setProductType] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<keyof Order>('id');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const { data: ordersData, setData: setOrdersData } = useFetch<Order>('order');
-  const [selected, setSelected] = useState<string[]>([]);
+  const {
+    data: ordersData,
+    setData: setOrdersData,
+    loading: ordersLoading,
+  } = useFetch<Order>('order');
+
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editOrderId, setEditOrderId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddOrder, setShowAddOrder] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const statusOptions: OrderStatus[] = [
@@ -83,169 +85,62 @@ export function OrdersTable() {
   ];
   const paymentOptions: PaymentStatus[] = ['Paid', 'Unpaid'];
   const productTypeOptions = ['Physical', 'Digital', 'Service', 'Subscription'];
+  const {
+    filters,
+    setFilters,
+    filtered,
+    paginated,
+    totalPages,
+    selected,
+    setSelected,
+    sortBy,
+    sortDir,
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    handleDelete,
+    handleAdd,
+    handleEdit,
+    handleSort,
+    handleSelectAll,
+    handleSelectRow,
+  } = useTableActions<Order>({
+    data: ordersData,
+    setData: setOrdersData,
+    getId: (o) => o.id || o._id || '',
 
-  // Filtering
-  const filtered = useMemo(() => {
-    return ordersData.filter((order) => {
-      const customerName =
-        typeof order.customer === 'string'
-          ? order.customer
-          : order.customer?.name ?? 'Unknown';
-      const productName =
-        typeof order.product === 'string'
-          ? order.product
-          : order.product?.name ?? 'Unknown';
-      const matchesSearch =
-        (order.id ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (customerName ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (productName ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        String(order.quantity ?? '').includes(search.toLowerCase());
-      const matchesStatus = status === 'all' ? true : order.status === status;
-      const matchesPayment =
-        payment === 'all' ? true : order.payment === payment;
-      const matchesProductType =
-        productType === 'all' ? true : order.productType === productType;
-      return (
-        matchesSearch && matchesStatus && matchesPayment && matchesProductType
+    filtersConfig: {
+      searchKeys: ['customer'],
+      filterKeys: [
+        { key: 'status', defaultValue: 'all' },
+        { key: 'productType', defaultValue: 'all' },
+        { key: 'payment', defaultValue: 'all' },
+      ],
+    },
+  });
+
+  const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
+    endpoint: '/api/bulk-delete',
+    type: 'order',
+
+    onSuccess: (ids, data) => {
+      setOrdersData((prev) =>
+        prev.filter(
+          (o) =>
+            !(o._id && ids.includes(o._id)) && !(o.id && ids.includes(o.id))
+        )
       );
-    });
-  }, [ordersData, search, status, payment, productType]);
 
-  // Sorting
-  const sorted = useMemo(() => {
-    if (!sortBy) return filtered;
-    return [...filtered].sort((a, b) => {
-      const aVal = a[sortBy] ?? '';
-      const bVal = b[sortBy] ?? '';
+      setSelected([]);
+      setShowConfirm(false);
+      toast.success(data.message);
+    },
 
-      if (sortBy === 'id') {
-        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (sortBy === 'total' || sortBy === 'quantity') {
-        const aNum = Number(aVal);
-        const bNum = Number(bVal);
-        if (aNum < bNum) return sortDir === 'asc' ? -1 : 1;
-        if (aNum > bNum) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (sortBy === 'createdAt') {
-        const aDate = new Date(aVal as string);
-        const bDate = new Date(bVal as string);
-        if (aDate < bDate) return sortDir === 'asc' ? -1 : 1;
-        if (aDate > bDate) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      }
-      return 0;
-    });
-  }, [filtered, sortBy, sortDir]);
-
-  const totalRows = sorted.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const paginated = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage;
-    return sorted.slice(start, start + rowsPerPage);
-  }, [sorted, currentPage, rowsPerPage]);
-
-  // Reset to page 1 if rowsPerPage changes and currentPage is out of range
-  React.useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(1);
-  }, [rowsPerPage, totalPages, currentPage]);
-
-  function handleDelete(id: string) {
-    setOrdersData((prev) =>
-      prev.filter((order) => order.id !== id && order._id !== id)
-    );
-  }
-
-  function handleAddOrder(newOrder: Order) {
-    setOrdersData((prev) => [newOrder, ...prev]);
-    // Reset to first page when adding new order
-    setCurrentPage(1);
-  }
-
-  function handleEdit(updatedOrder: Order) {
-    setOrdersData((prev) =>
-      prev.map((order) =>
-        getId(order) === getId(updatedOrder) ? updatedOrder : order
-      )
-    );
-  }
-
-  function handleSort(col: keyof Order) {
-    if (sortBy === col) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(col);
-      setSortDir('asc');
-    }
-  }
-
-  function handleSelectAll(checked: boolean) {
-    if (checked) {
-      setSelected((prev) => [
-        ...prev.filter((id) => !paginated.some((c) => getId(c) === id)),
-        ...paginated.map((c) => getId(c)),
-      ]);
-    } else {
-      setSelected((prev) =>
-        prev.filter((id) => !paginated.some((c) => getId(c) === id))
-      );
-    }
-  }
-
-  function handleSelectRow(order: Order, checked: boolean) {
-    const orderId = getId(order);
-
-    if (!orderId) return;
-
-    if (checked) {
-      setSelected((prev) =>
-        prev.includes(orderId) ? prev : [...prev, orderId]
-      );
-    } else {
-      setSelected((prev) => prev.filter((s) => s !== orderId));
-    }
-  }
-
-  async function handleDeleteSelected() {
-    try {
-      const res = await fetch('/api/bulk-delete?type=order', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selected }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setOrdersData((prev) =>
-          prev.filter(
-            (p) =>
-              !(p._id && selected.includes(p._id)) &&
-              !(p.id && selected.includes(p.id))
-          )
-        );
-        setSelected([]);
-        setShowConfirm(false);
-
-        toast.success(data.message);
-      } else {
-        toast.error(data.error);
-      }
-    } catch (error) {
-      console.error(error);
+    onError: () => {
       toast.error('Something went wrong');
-    }
-  }
+    },
+  });
 
   const paginatedForHeader = useMemo(() => {
     return paginated.map((order, index) => ({
@@ -259,11 +154,24 @@ export function OrdersTable() {
         <div className="flex gap-2 flex-wrap items-center">
           <Input
             placeholder="Search orders..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={filters.search}
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }))
+            }
             className="w-full md:w-64"
           />
-          <Select value={productType} onValueChange={setProductType}>
+          <Select
+            value={filters.productType || 'all'}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                productType: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
@@ -278,7 +186,15 @@ export function OrdersTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Select value={status} onValueChange={setStatus}>
+          <Select
+            value={filters.status || 'all'}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                status: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
@@ -293,7 +209,15 @@ export function OrdersTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Select value={payment} onValueChange={setPayment}>
+          <Select
+            value={filters.payment}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                payment: value,
+              }))
+            }
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Payment" />
             </SelectTrigger>
@@ -332,7 +256,7 @@ export function OrdersTable() {
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={handleDeleteSelected}
+                  onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
                   Delete
@@ -357,7 +281,7 @@ export function OrdersTable() {
               selected={selected}
               paginated={paginatedForHeader}
               onSelectAll={handleSelectAll}
-              sortBy={sortBy}
+              sortBy={sortBy ?? 'orderId'}
               sortDir={sortDir}
               onSort={handleSort}
             />
@@ -370,6 +294,7 @@ export function OrdersTable() {
               setDeleteDialogId={setDeleteDialogId}
               setEditOrderId={setEditOrderId}
               onOrderClick={setSelectedOrderId}
+              ordersLoading={ordersLoading}
             />
           </Table>
         </div>
@@ -377,7 +302,7 @@ export function OrdersTable() {
 
       <OrdersPaginationBar
         selectedCount={selected.length}
-        totalRows={totalRows}
+        totalRows={filtered.length}
         currentPage={currentPage}
         totalPages={totalPages}
         rowsPerPage={rowsPerPage}
@@ -402,7 +327,7 @@ export function OrdersTable() {
       <AddOrderPopover
         isOpen={showAddOrder}
         onAddOrder={(newOrder) => {
-          handleAddOrder(newOrder);
+          handleAdd(newOrder);
           setShowAddOrder(false);
         }}
         onClose={() => setShowAddOrder(false)}
