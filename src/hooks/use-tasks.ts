@@ -16,7 +16,6 @@ function dispatchTasksUpdate() {
 }
 
 export function useTasks() {
-  // const [isLoading, setIsLoading] = useState(true);
   const {
     data: tasksData,
     setData: setTasksData,

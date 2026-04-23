@@ -25,7 +25,7 @@ import {
 import { formatPhone } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
-import { fetchData } from '@/lib/api/fetch-data';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
 
 interface TableBodyProps {
   paginated: any[];
@@ -37,6 +37,7 @@ interface TableBodyProps {
   setEditCustomerId: (id: string | null) => void;
   onCustomerClick: (id: string) => void;
   setViewOrderCustomerId: (id: string | null) => void;
+  customersLoading?: boolean;
 }
 
 export function CustomersTableBody({
@@ -49,6 +50,7 @@ export function CustomersTableBody({
   setEditCustomerId,
   onCustomerClick,
   setViewOrderCustomerId,
+  customersLoading,
 }: TableBodyProps) {
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
@@ -83,6 +85,9 @@ export function CustomersTableBody({
       setDeleteDialogId(null);
     }
   };
+  if (customersLoading) {
+    return <TableSkeleton rows={10} columns={12} />;
+  }
 
   return (
     <TableBody className="pl-5">

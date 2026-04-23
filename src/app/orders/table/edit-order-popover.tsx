@@ -12,11 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
-import {
-  validateRequired,
-  validateNumber,
-  validatePrice,
-} from '@/lib/validations';
+import { validateRequired, validateNumber } from '@/lib/validations';
 import { OrderStatus, PaymentStatus } from '../data';
 import { toast } from 'sonner';
 import { Customer, Order, Product } from '@/types/interface';
@@ -30,6 +26,8 @@ import {
 } from '@/components/ui/combobox';
 import { formatPrice } from '@/utils/formatters';
 import { useFetch } from '@/hooks/use-fetch';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface EditOrderPopoverProps {
   order: Order;
@@ -38,21 +36,33 @@ interface EditOrderPopoverProps {
   open: boolean;
 }
 
-interface ValidationErrors {
-  customer?: string;
-  quantity?: string;
-  total?: string;
-}
-
 export function EditOrderPopover({
   order,
   onSave,
   onClose,
   open,
 }: EditOrderPopoverProps) {
-  const [formData, setFormData] = useState<Order>(order);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isUpdating, setIsUpdating] = useState(false);
+  const validationRules = {
+    address: (v: string) => validateRequired(v, 'Address'),
+    quantity: (v: number) => {
+      if (v === null || v === undefined) {
+        return 'Quantity is required';
+      }
+
+      return validateNumber(Number(v), 'Quantity');
+    },
+  };
+  const {
+    formData,
+    errors,
+    handleChange,
+    validateForm,
+    isFormValid,
+    setFormData,
+    setErrors,
+    handleCancel,
+    hasChanges,
+  } = useFormHandler<Order>(order, open, validationRules, () => onClose());
   const { data: customersData } = useFetch<Customer>('customer', false, false); // false, false to get database data only
   const { data: productsData } = useFetch<Product>('product', false, false);
   const [inputValue, setInputValue] = useState('');
@@ -61,8 +71,6 @@ export function EditOrderPopover({
   // Reset form data when order changes or popover opens
   React.useEffect(() => {
     if (open) {
-      setFormData(order);
-      setErrors({});
       setInputValue(
         typeof order.customer === 'string'
           ? order.customer
@@ -75,95 +83,45 @@ export function EditOrderPopover({
       );
     }
   }, [order, open]);
+  const { handleSubmit, loading } = useFormSubmit<Order>();
+  const toastId = 'order-update';
 
-  // Validation functions using shared utilities
-  const validateCustomer = (customer: string): string | undefined => {
-    return validateRequired(customer, 'Customer name');
-  };
-
-  const validateQuantity = (quantity: number): string | undefined => {
-    return validateNumber(quantity, 'Quantity', 0, 999);
-  };
-
-  const validateTotal = (total: number): string | undefined => {
-    return validatePrice(total, 'Total');
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    const customerError = validateCustomer(String(formData.customer));
-    if (customerError) newErrors.customer = customerError;
-
-    const quantityError = validateQuantity(formData.quantity);
-    if (quantityError) newErrors.quantity = quantityError;
-
-    const totalError = validateTotal(formData.total);
-    if (totalError) newErrors.total = totalError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateCustomer(String(formData.customer)) &&
-      !validateQuantity(formData.quantity) &&
-      !validateTotal(formData.total)
-    );
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm() || isUpdating) return;
-    setIsUpdating(true);
-    const toastId = 'order-update';
-
+  const onSubmit = (e: React.FormEvent) => {
     toast.loading('Saving changes...', { id: toastId });
 
-    if (formData._id) {
-      try {
-        const res = await fetch(`/api/order/${formData._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+    if (order._id) {
+      handleSubmit(e, formData, validateForm, {
+        url: `/api/order/${order._id}`,
+        method: 'PUT',
+        buildBody: (data) => ({
+          ...data,
+          address: data.address.trim(),
+          productType: data.productType,
+          item: data.item.trim(),
+          quantity: data.quantity,
+          total: data.total,
+          payment: data.payment,
+          status: data.status,
+        }),
+        onSuccess: (result) => {
+          const savedOrder: Order = {
+            ...result.data,
+            customer:
+              customersData.find((c) => c._id === result.data.customer) || null,
+            product:
+              productsData.find((p) => p._id === result.data.product) || null,
+          };
+          onSave(savedOrder);
+          toast.success(result.message, { id: toastId });
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error('Failed to update order', { id: toastId });
+        },
 
-        let result: any = {};
-
-        try {
-          result = await res.json();
-        } catch {
-          result = { error: 'Server did not return a valid JSON' };
-        }
-
-        switch (res.status) {
-          case 200:
-            const savedOrder: Order = {
-              ...result.data,
-              customer:
-                customersData.find((c) => c._id === result.data.customer) ||
-                null,
-              product:
-                productsData.find((p) => p._id === result.data.product) || null,
-            };
-            onSave(savedOrder);
-            onClose();
-            toast.success(result.message, { id: toastId });
-            console.log(result.message);
-            return;
-          case 500:
-            throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.dismiss(toastId);
-      } finally {
-        setIsUpdating(false);
-      }
+        setErrors,
+        onClose,
+      });
     } else {
       if (validateForm()) {
         const selectedProduct =
@@ -188,10 +146,8 @@ export function EditOrderPopover({
     }
   };
 
-  const handleCancel = () => {
-    setFormData(order); // Reset form data
-    setErrors({});
-    onClose();
+  const validateQuantity = (quantity: number): string | undefined => {
+    return validateNumber(quantity, 'Quantity', 0, 999);
   };
 
   const handleQuantityChange = (value: number) => {
@@ -205,7 +161,6 @@ export function EditOrderPopover({
           ? qty * (prev.product.price || 0)
           : 0,
     }));
-
     const quantityError = validateQuantity(value);
     setErrors((prev) => ({ ...prev, quantity: quantityError }));
   };
@@ -235,7 +190,7 @@ export function EditOrderPopover({
               </Label>
               <Input
                 id="id"
-                value={formData.orderId}
+                value={formData.orderId ?? formData.id}
                 disabled
                 className="h-8 sm:h-9 text-xs bg-muted"
               />
@@ -323,9 +278,7 @@ export function EditOrderPopover({
               <Input
                 id="address"
                 value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
+                onChange={(e) => handleChange('address', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
                 placeholder="Enter shipping address"
               />
@@ -531,11 +484,11 @@ export function EditOrderPopover({
           </Button>
           <Button
             size="sm"
-            onClick={handleSave}
+            onClick={onSubmit}
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || !hasChanges || loading}
           >
-            Save Changes
+            {loading ? 'Saving Changes...' : 'Save Changes'}
           </Button>
         </div>
       </div>

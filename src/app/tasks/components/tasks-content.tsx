@@ -42,9 +42,7 @@ const AddNewTaskPopover = dynamic(
   { ssr: false }
 );
 
-interface TasksContentProps {}
-
-export function TasksContent({}: TasksContentProps) {
+export function TasksContent() {
   const { state } = useSidebar();
   const isSidebarCollapsed = state === 'collapsed';
   const {
@@ -53,6 +51,7 @@ export function TasksContent({}: TasksContentProps) {
     updateTask,
     deleteTask,
     moveTask,
+    tasksLoading,
   } = useTasks();
 
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
@@ -183,6 +182,7 @@ export function TasksContent({}: TasksContentProps) {
           deleteDialogId={deleteDialogId}
           setDeleteDialogId={setDeleteDialogId}
           isSidebarCollapsed={isSidebarCollapsed}
+          tasksLoading={tasksLoading}
         />
       </DndContext>
 

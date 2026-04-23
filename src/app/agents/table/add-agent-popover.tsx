@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,8 @@ import {
   validatePhone,
 } from '@/lib/validations';
 import { Agent } from '@/types/interface';
+import { useFormHandler } from '@/hooks/use-form-handler';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 
 interface AddAgentPopoverProps {
   onAddAgent: (agent: Agent) => void;
@@ -29,7 +31,16 @@ interface ValidationErrors {
   name?: string;
   email?: string;
   phone?: string;
+  general?: string;
 }
+type AgentForm = {
+  name: string;
+  email: string;
+  phone: string;
+  role: Agent['role'];
+  status: Agent['status'];
+  notes: string;
+};
 
 export function AddAgentPopover({
   onAddAgent,
@@ -41,154 +52,60 @@ export function AddAgentPopover({
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
 
-  // Generate a unique temporary ID (A31, A32, A33, etc.)
-  const generateTempId = (): string => {
-    const random = Math.floor(Math.random() * 70) + 31; // Generate A31 to A99
-    return `A${random.toString().padStart(2, '0')}`;
-  };
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    role: 'Agent' as Agent['role'],
-    status: 'Active' as Agent['status'],
-    notes: '',
-  });
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const initialData = useMemo(
+    () => ({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'Agent' as Agent['role'],
+      status: 'Active' as Agent['status'],
+      notes: '',
+    }),
+    []
+  );
 
-  // Reset form data when popover opens
-  React.useEffect(() => {
-    if (isModalOpen) {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        role: 'Agent',
-        status: 'Active',
-        notes: '',
-      });
-      setErrors({});
-    }
-  }, [isModalOpen]);
-
-  // Validation functions using shared utilities
-  const validateName = (name: string): string | undefined => {
-    return validateRequired(name, 'Name', 1);
+  const validationRules = {
+    name: (v: string) => validateRequired(v, 'Name', 1),
+    email: (v: string) => validateEmail(v),
+    phone: (v: string) => validatePhone(v),
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+  const {
+    formData,
+    errors,
+    setErrors,
+    validateForm,
+    isFormValid,
+    handleCancel,
+    handleChange,
+  } = useFormHandler(initialData, isModalOpen, validationRules, onClose);
 
-    const nameError = validateName(formData.name);
-    if (nameError) newErrors.name = nameError;
+  const { handleSubmit, loading } = useFormSubmit<AgentForm>();
 
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
-
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) newErrors.phone = phoneError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Check if form is valid for enabling/disabling save button
-  const isFormValid = (): boolean => {
-    return (
-      !validateName(formData.name) &&
-      !validateEmail(formData.email) &&
-      !validatePhone(formData.phone)
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          role: formData.role.trim(),
-          status: formData.status.trim(),
-          assignedCustomers: [], // New agents start with no assigned customers
-          notes: formData.notes.trim(),
-        }),
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-        console.log('STATUS:', response.status);
-        console.log('DATA:', data);
-      } catch {
-        throw new Error('Invalid response from server');
-      }
-
-      switch (response.status) {
-        case 201:
-          onAddAgent(data); // update UI
-          break;
-        case 400:
-          if (data.field) {
-            setErrors((prev) => ({
-              ...prev,
-              [data.field]: data.error,
-            }));
-            return;
-          }
-          throw new Error(data.error || 'Validation error');
-        default:
-          throw new Error('Failed to save agent');
-      }
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error saving agent:', error);
-
-      setErrors((prev) => ({
-        ...prev,
-        description:
-          error instanceof Error ? error.message : 'Failed to save agent.',
-      }));
-    }
-  };
-
-  const handleCancel = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handleNameChange = (value: string) => {
-    setFormData({ ...formData, name: value });
-    // Always validate and update errors when name changes
-    const nameError = validateName(value);
-    setErrors((prev) => ({ ...prev, name: nameError }));
-  };
-
-  const handleEmailChange = (value: string) => {
-    setFormData({ ...formData, email: value });
-    // Always validate and update errors when email changes
-    const emailError = validateEmail(value);
-    setErrors((prev) => ({ ...prev, email: emailError }));
-  };
-
-  const handlePhoneChange = (value: string) => {
-    setFormData({ ...formData, phone: value });
-    // Always validate and update errors when phone changes
-    const phoneError = validatePhone(value);
-    setErrors((prev) => ({ ...prev, phone: phoneError }));
-  };
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, formData, validateForm, {
+      url: '/api/agent',
+      buildBody: (data) => ({
+        name: data.name.trim(),
+        email: data.email.trim(),
+        phone: data.phone.trim(),
+        role: data.role,
+        status: data.status,
+        assignedCustomers: [],
+        notes: data.notes?.trim() || '',
+      }),
+      onSuccess: (result: Agent) => {
+        onAddAgent(result);
+      },
+      onClose,
+      setErrors,
+      onError: (err) => {
+        setErrors((prev) => ({
+          ...prev,
+          general: err instanceof Error ? err.message : 'Failed to save agent',
+        }));
+      },
+    });
 
   return (
     <ModalWrapper open={isModalOpen} onClose={handleCancel}>
@@ -201,7 +118,7 @@ export function AddAgentPopover({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
           {/* Row 1: Name and Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
@@ -211,7 +128,7 @@ export function AddAgentPopover({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleNameChange(e.target.value)}
+                onChange={(e) => handleChange('name', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.name ? 'border-red-500' : ''
                 }`}
@@ -229,7 +146,7 @@ export function AddAgentPopover({
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.phone ? 'border-red-500' : ''
                 }`}
@@ -251,7 +168,7 @@ export function AddAgentPopover({
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
+                onChange={(e) => handleChange('email', e.target.value)}
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
@@ -269,7 +186,7 @@ export function AddAgentPopover({
                 <Select
                   value={formData.role}
                   onValueChange={(value: 'Admin' | 'Agent' | 'Manager') =>
-                    setFormData({ ...formData, role: value })
+                    handleChange('role', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -289,7 +206,7 @@ export function AddAgentPopover({
                 <Select
                   value={formData.status}
                   onValueChange={(value: 'Active' | 'Inactive' | 'On Leave') =>
-                    setFormData({ ...formData, status: value })
+                    handleChange('status', value)
                   }
                 >
                   <SelectTrigger className="h-8 text-xs w-full">
@@ -314,12 +231,17 @@ export function AddAgentPopover({
               id="notes"
               value={formData.notes}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setFormData({ ...formData, notes: e.target.value })
+                handleChange('notes', e.target.value)
               }
               placeholder="Add notes..."
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
+          {errors.general && (
+            <p className="text-xs text-red-500 font-bold text-center">
+              {errors.general}
+            </p>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
             <Button
@@ -331,12 +253,12 @@ export function AddAgentPopover({
               Cancel
             </Button>
             <Button
+              type="submit"
               size="sm"
-              onClick={handleSubmit}
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || loading}
             >
-              Add Agent
+              {loading ? 'Adding Agent...' : 'Add Agent'}
             </Button>
           </div>
         </form>

@@ -9,7 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import { Loader, Trash2, User } from 'lucide-react';
+import { Trash2, User } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { UserType } from '../page';
@@ -70,6 +70,7 @@ const PersonalInformationCard = ({
       case 200:
         toast.success(data.message, { id: toastId });
         setUser((prev) =>
+          
           prev
             ? {
                 ...prev,
@@ -133,7 +134,6 @@ const PersonalInformationCard = ({
     }
   };
 
-  if (!user) return <Loader className="mx-auto mt-20 animate-spin" />;
   return (
     <Card>
       <CardHeader>
