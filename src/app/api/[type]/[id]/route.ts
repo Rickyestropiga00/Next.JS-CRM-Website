@@ -6,6 +6,7 @@ import Order from '@/models/Orders';
 import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
+import { deleteAgentById } from '@/lib/agent-service';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -115,6 +116,15 @@ export async function DELETE(
     }
 
     const Model = modelMap[type];
+    if (type === 'agent') {
+      await deleteAgentById(id);
+
+      return NextResponse.json({
+        message: 'Agent deleted successfully',
+        success: true,
+      });
+    }
+
     const deleted = await Model.findByIdAndDelete(id);
 
     if (!deleted) {

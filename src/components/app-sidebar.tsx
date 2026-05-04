@@ -15,14 +15,10 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-
-const user = {
-  name: 'test',
-  email: 'test@example.com',
-  avatar: 'https://github.com/shadcn.png',
-};
+import { useUser } from '@/hooks/use-user';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -43,7 +39,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <AppNavigation groups={navGroups} />
+        <AppNavigation groups={navGroups} role={user?.role ?? 'Agent'} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -7,6 +7,7 @@ import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
 import { generateCustomId } from '@/lib/generate-id';
+import { createUser, findUserByEmail } from '@/lib/auth';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -97,6 +98,20 @@ export async function POST(
         30
       );
       body.agentId = agentId;
+      const existingUser = await findUserByEmail(body.email);
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Email already registered' },
+          { status: 400 }
+        );
+      }
+
+      const cleanName = body.name.replace(/\s+/g, '');
+      const tempPassword = `${cleanName}123`;
+
+      const user = await createUser(body.email, tempPassword, body.name);
+
+      body.userId = user.id || user._id;
     }
 
     const created = await Model.create(body);
@@ -154,7 +169,7 @@ export async function GET(
 
       const assignedCustomers = await Customer.find({
         _id: { $in: currentAgent.assignedCustomers || [] },
-      });
+      }).lean();
 
       const unassignedCustomers = await Customer.find({
         _id: { $nin: allAssignedCustomerIds || [] },

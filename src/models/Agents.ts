@@ -4,6 +4,7 @@ export type statusType = 'Active' | 'Inactive' | 'On Leave';
 export interface IAgents extends Document {
   agentId: string;
   name: string;
+  userId: mongoose.Schema.Types.ObjectId;
   email: string;
   phone: string;
   role: roleType;
@@ -22,6 +23,11 @@ const agentsSchema = new Schema<IAgents>(
       type: String,
       required: true,
       unique: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     name: {
       type: String,
@@ -59,12 +65,24 @@ const agentsSchema = new Schema<IAgents>(
     },
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 60 * 60 * 1000),
+      default: () => new Date(Date.now() + 4 * 60 * 60 * 1000),
       index: { expires: 0 },
     },
   },
   { timestamps: true }
 );
+
+agentsSchema.pre('findOneAndDelete', async function () {
+  const doc = await this.model.findOne(this.getFilter());
+
+  if (!doc) return;
+
+  const user = await mongoose.model('User').findById(doc.userId);
+
+  if (user?.role === 'Admin') return;
+
+  await mongoose.model('User').findByIdAndDelete(doc.userId);
+});
 
 const Agents =
   mongoose.models.Agents || mongoose.model<IAgents>('Agents', agentsSchema);
