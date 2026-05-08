@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type FilterConfig<T> = {
   searchKeys?: (keyof T)[];
@@ -7,6 +7,7 @@ type FilterConfig<T> = {
     defaultValue: string;
   }[];
   customFilter?: (item: T, state: Record<string, any>) => boolean;
+  skipFilter?: boolean;
 };
 
 export function useTableActions<T>({
@@ -42,17 +43,19 @@ export function useTableActions<T>({
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // FILTERING
-
   const filtered = useMemo(() => {
-    return data.filter((item: any) => {
+    const safeData = Array.isArray(data) ? data : [];
+    if (filtersConfig?.skipFilter) {
+      return safeData;
+    }
+
+    return safeData.filter((item: any) => {
       const search = filters.search || '';
 
-      // custom filter (priority)
       if (filtersConfig?.customFilter) {
         return filtersConfig.customFilter(item, filters);
       }
 
-      // SEARCH
       const searchKeys = filtersConfig?.searchKeys ?? [];
 
       const matchesSearch =
@@ -61,7 +64,6 @@ export function useTableActions<T>({
           : searchKeys.some((key) => {
               const value = item[key];
 
-              // 🔥 FIX: handle nested object (like customer.name)
               if (typeof value === 'object' && value !== null) {
                 return Object.values(value).some((v) =>
                   String(v ?? '')
@@ -75,13 +77,12 @@ export function useTableActions<T>({
                 .includes(search.toLowerCase());
             });
 
-      // FILTER KEYS
       const matchesFilters =
-        filtersConfig?.filterKeys?.every(({ key, defaultValue }) => {
-          const value = item[key];
+        filtersConfig?.filterKeys?.every(({ key }) => {
           const stateValue = filters[key as string];
+          if (!stateValue || stateValue === 'all') return true;
 
-          return stateValue === defaultValue || value === stateValue;
+          return item[key] === stateValue;
         }) ?? true;
 
       return matchesSearch && matchesFilters;
@@ -125,8 +126,12 @@ export function useTableActions<T>({
   }
 
   function handleAdd(newItem: T) {
-    setData((prev) => [newItem, ...prev]);
-    setCurrentPage(1);
+    console.log('ADDING:', newItem);
+    setData((prev) => {
+      const updated = [newItem, ...prev];
+      console.log('UPDATED STATE:', updated);
+      return updated;
+    });
   }
 
   function handleEdit(updatedItem: T) {

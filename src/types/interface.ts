@@ -66,6 +66,7 @@ export type Agent = {
   _id?: string; // For MongoDB documents
   id: string;
   agentId?: string;
+  userId?: string;
   name: string;
   email: string;
   phone: string;
@@ -101,4 +102,19 @@ export type Task = {
 
 export type DeleteResponse = {
   message: string;
+};
+export type Role = 'admin' | 'manager' | 'agent';
+
+export type UserType = {
+  _id: string;
+  name: string;
+  email: string;
+  role: Role;
+  phone?: string;
+  company?: string;
+  location?: string;
+  avatar?: string | null;
+  avatarType?: string | null;
+  createdAt: string;
+  lastLogin: string;
 };

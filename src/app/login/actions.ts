@@ -42,6 +42,12 @@ export async function loginAction(
     const cookieStore = await cookies();
     const userId = user._id?.toString?.() || user.id;
 
+    const sessionData = {
+      id: userId,
+      role: user?.role,
+      email: user.email,
+    };
+
     if (!userId) {
       return { error: 'User ID missing' };
     }
@@ -51,7 +57,7 @@ export async function loginAction(
       { $currentDate: { lastLogin: true } }
     );
 
-    cookieStore.set(SESSION_KEY, userId, {
+    cookieStore.set(SESSION_KEY, JSON.stringify(sessionData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

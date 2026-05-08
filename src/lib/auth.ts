@@ -52,12 +52,28 @@ export async function createUser(
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const session = cookieStore.get(SESSION_KEY)?.value;
-  return !!session;
+  if (!session) return false;
+  try {
+    const parsed = JSON.parse(session);
+    return !!parsed?.id;
+  } catch {
+    return false;
+  }
 }
-// Get current user from session
+
 export async function getCurrentUser(): Promise<IUser | null> {
   const cookieStore = await cookies();
-  const userId = cookieStore.get(SESSION_KEY)?.value;
+  const session = cookieStore.get(SESSION_KEY)?.value;
+
+  if (!session) return null;
+
+  let userId: string;
+  try {
+    const parsed = JSON.parse(session);
+    userId = parsed?.id;
+  } catch {
+    return null;
+  }
 
   if (!userId) return null;
 

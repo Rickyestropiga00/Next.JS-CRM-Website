@@ -1,6 +1,6 @@
-"use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 // Define and export navGroups here for use in both sidebar and breadcrumbs
 import {
@@ -19,51 +19,58 @@ import {
   SquareUser,
   ListTodo,
   ChartColumn,
-} from "lucide-react";
+} from 'lucide-react';
 
 export const navGroups: AppNavGroup[] = [
   {
-    label: "Workspace",
+    label: 'Workspace',
     items: [
       {
-        title: "Dashboard",
-        url: "/dashboard",
+        title: 'Dashboard',
+        url: '/dashboard',
         icon: LayoutDashboard,
+        roles: ['Admin', 'Agent'],
       },
       {
-        title: "Orders",
-        url: "/orders",
+        title: 'Orders',
+        url: '/orders',
         icon: ShoppingCart,
+        roles: ['Admin', 'Agent'],
       },
       {
-        title: "Products",
-        url: "/products",
+        title: 'Products',
+        url: '/products',
         icon: ShoppingBag,
+        roles: ['Admin', 'Agent'],
       },
       {
-        title: "Tasks",
-        url: "/tasks",
+        title: 'Tasks',
+        url: '/tasks',
         icon: ListTodo,
+        roles: ['Admin', 'Agent'],
       },
       {
-        title: "Analytics",
-        url: "/analytics",
+        title: 'Analytics',
+        url: '/analytics',
         icon: ChartColumn,
+        roles: ['Admin', 'Agent'],
       },
     ],
   },
   {
-    label: "Client Management",
+    label: 'Client Management',
     items: [
       {
-        title: "Customers",
-        url: "/customers",
+        title: 'Customers',
+        url: '/customers',
         icon: Users,
+        roles: ['Admin', 'Agent'],
       },
       {
-        title: "Agents",
-        url: "/agents",
+        title: 'Agents',
+        url: '/agents',
         icon: SquareUser,
+        roles: ['Admin'],
       },
     ],
   },
@@ -75,16 +82,38 @@ export type AppNavGroup = {
     title: string;
     url: string;
     icon: React.ElementType;
+    roles: string[];
   }[];
 };
 
-export function AppNavigation({ groups }: { groups: AppNavGroup[] }) {
+export function AppNavigation({
+  groups,
+  role,
+}: {
+  groups: AppNavGroup[];
+  role: string;
+}) {
   const pathname = usePathname();
   useSidebar(); // Ensures context is available if needed
 
+  const normalizedRole = role?.toLowerCase();
+
+  const filteredGroups = groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item: any) =>
+        item.roles
+          ? item.roles
+              .map((r: string) => r.toLowerCase())
+              .includes(normalizedRole)
+          : true
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <>
-      {groups.map((group) => (
+      {filteredGroups.map((group) => (
         <SidebarGroup
           key={group.label}
           className="group-data-[collapsible=icon]:hidden"

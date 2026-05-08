@@ -5,7 +5,11 @@ import Customer from '@/models/Customer';
 import Order from '@/models/Orders';
 import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
+import User from '@/models/User';
 import mongoose from 'mongoose';
+import { deleteAgentById } from '@/lib/agent-service';
+import { getCurrentUser } from '@/lib/auth';
+import { requirePermission } from '@/utils/requirePermissions';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -13,6 +17,13 @@ const modelMap: Record<string, mongoose.Model<any>> = {
   order: Order,
   agent: Agents,
   task: Tasks,
+};
+const resourceMap: Record<string, any> = {
+  customer: 'customer',
+  product: 'product',
+  order: 'order',
+  agent: 'agent',
+  task: 'task',
 };
 
 export async function PUT(
@@ -23,6 +34,21 @@ export async function PUT(
     await dbConnect();
 
     const { id, type } = await params;
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const resource = resourceMap[type];
+
+    if (!resource) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
+
+    try {
+      requirePermission(user.role, resource, 'update');
+    } catch (err) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     if (!id || !type || !modelMap[type]) {
       return NextResponse.json(
@@ -36,6 +62,24 @@ export async function PUT(
 
     if (type === 'agent') {
       const { assign = [], unassign = [], ...rest } = body;
+      const existingAgent = await Agents.findById(id);
+      if (!existingAgent) {
+        return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+      }
+      const existingUser = await User.findOne({
+        email: rest.email,
+        _id: { $ne: existingAgent.userId },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          {
+            field: 'email',
+            error: 'Email already exists',
+          },
+          { status: 400 }
+        );
+      }
 
       const update: any = { ...rest };
 
@@ -54,6 +98,14 @@ export async function PUT(
       const updatedAgent = await Agents.findByIdAndUpdate(id, update, {
         new: true,
       });
+      if (updatedAgent.userId) {
+        await User.findByIdAndUpdate(updatedAgent.userId, {
+          name: rest.name,
+          email: rest.email,
+          role: rest.role,
+          status: rest.status,
+        });
+      }
 
       return NextResponse.json({
         success: true,
@@ -107,6 +159,27 @@ export async function DELETE(
     await dbConnect();
 
     const { id, type } = await params;
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const resource = resourceMap[type];
+
+    if (!resource) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
+
+    try {
+      requirePermission(user.role, resource, 'delete');
+    } catch (err) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (!type || !modelMap[type]) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
     if (!id || !type || !modelMap[type]) {
       return NextResponse.json(
         { error: 'Invalid type or ID' },
@@ -115,6 +188,15 @@ export async function DELETE(
     }
 
     const Model = modelMap[type];
+    if (type === 'agent') {
+      await deleteAgentById(id);
+
+      return NextResponse.json({
+        message: 'Agent deleted successfully',
+        success: true,
+      });
+    }
+
     const deleted = await Model.findByIdAndDelete(id);
 
     if (!deleted) {
@@ -135,6 +217,21 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const body = await req.json();
+  const { id } = await params;
+
+  const updatedAgent = await Agents.findByIdAndUpdate(
+    id,
+    { $set: body },
+    { new: true }
+  );
+
+  return Response.json(updatedAgent);
 }
 
 function capitalize(word: string) {

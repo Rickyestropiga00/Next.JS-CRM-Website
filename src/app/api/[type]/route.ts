@@ -7,6 +7,9 @@ import Agents from '@/models/Agents';
 import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
 import { generateCustomId } from '@/lib/generate-id';
+import { createUser, findUserByEmail, getCurrentUser } from '@/lib/auth';
+
+import { requirePermission } from '@/utils/requirePermissions';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -14,6 +17,14 @@ const modelMap: Record<string, mongoose.Model<any>> = {
   order: Order,
   agent: Agents,
   task: Tasks,
+};
+
+const resourceMap: Record<string, any> = {
+  customer: 'customer',
+  product: 'product',
+  order: 'order',
+  agent: 'agent',
+  task: 'task',
 };
 
 export async function POST(
@@ -24,6 +35,23 @@ export async function POST(
     await dbConnect();
 
     const { type } = await params;
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const resource = resourceMap[type];
+
+    if (!resource) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
+
+    try {
+      requirePermission(user.role, resource, 'create');
+    } catch (err) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     if (!type || !modelMap[type]) {
       return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
@@ -97,9 +125,35 @@ export async function POST(
         30
       );
       body.agentId = agentId;
+      const existingUser = await findUserByEmail(body.email);
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Email already registered' },
+          { status: 400 }
+        );
+      }
+
+      const cleanName = body.name.replace(/\s+/g, '');
+      const tempPassword = `${cleanName}123`;
+
+      const user = await createUser(body.email, tempPassword, body.name);
+
+      body.userId = user.id || user._id;
     }
 
     const created = await Model.create(body);
+
+    if (type === 'customer' && user?.role === 'agent') {
+      const agent = await Agents.findOne({ userId: user._id });
+
+      if (agent) {
+        await Agents.findByIdAndUpdate(agent._id, {
+          $addToSet: {
+            assignedCustomers: created._id,
+          },
+        });
+      }
+    }
 
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
@@ -154,7 +208,7 @@ export async function GET(
 
       const assignedCustomers = await Customer.find({
         _id: { $in: currentAgent.assignedCustomers || [] },
-      });
+      }).lean();
 
       const unassignedCustomers = await Customer.find({
         _id: { $nin: allAssignedCustomerIds || [] },

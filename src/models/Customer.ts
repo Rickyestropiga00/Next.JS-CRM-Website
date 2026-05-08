@@ -57,7 +57,7 @@ const customerSchema = new Schema<ICustomer>(
     },
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 60 * 60 * 1000),
+      default: () => new Date(Date.now() + 4 * 60 * 60 * 1000),
       index: { expires: 0 },
     },
   },
