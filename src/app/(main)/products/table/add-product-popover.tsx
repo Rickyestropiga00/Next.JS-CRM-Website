@@ -125,7 +125,10 @@ export function AddProductPopover({
         setImageFile(null);
       },
 
-      onClose,
+      onClose: () => {
+        setImagePreview(null);
+        setImageFile(null);
+      },
       setErrors,
       onError: (err) => {
         setErrors((prev) => ({

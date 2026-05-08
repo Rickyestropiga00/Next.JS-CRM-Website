@@ -64,7 +64,9 @@ export function AddOrderPopover({
 
   const { data: customersData } = useFetch<Customer>('customer', false, false);
   const { data: productsData } = useFetch<Product>('product', false, false);
-  const filteredCustomers = useFilteredCustomers(customersData);
+  const { data: agents } = useFetch<Agent>('agent');
+  const { user } = useUser();
+  const filteredCustomers = useFilteredCustomers(customersData, agents, user);
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;

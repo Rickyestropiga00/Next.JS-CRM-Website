@@ -126,8 +126,12 @@ export function useTableActions<T>({
   }
 
   function handleAdd(newItem: T) {
-    setData((prev) => [newItem, ...prev]);
-    setCurrentPage(1);
+    console.log('ADDING:', newItem);
+    setData((prev) => {
+      const updated = [newItem, ...prev];
+      console.log('UPDATED STATE:', updated);
+      return updated;
+    });
   }
 
   function handleEdit(updatedItem: T) {

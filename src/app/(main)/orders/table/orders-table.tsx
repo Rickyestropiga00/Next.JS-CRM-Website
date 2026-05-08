@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Agent,
+  Customer,
   DeleteResponse,
   Order,
   OrderStatus,
@@ -66,6 +67,7 @@ import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useUser } from '@/hooks/use-user';
 import { useFilteredOrderByAgent } from '@/hooks/use-filter-orders';
+import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 
 export function OrdersTable() {
   const {
@@ -80,6 +82,9 @@ export function OrdersTable() {
   const [showAddOrder, setShowAddOrder] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { user } = useUser();
+  const { data: customersData } = useFetch<Customer>('customer', false, false);
+  const { data: agents } = useFetch<Agent>('agent', false, false);
+  const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const { filteredOrder, agentsLoading } = useFilteredOrderByAgent(ordersData);
 
   const isReady = !ordersLoading && (user?.role !== 'agent' || !agentsLoading);
@@ -327,6 +332,7 @@ export function OrdersTable() {
           }}
           onClose={() => setEditOrderId(null)}
           open={true}
+          customer={filteredCustomers}
         />
       )}
 

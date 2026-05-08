@@ -85,6 +85,11 @@ export function EditAgentPopover({
         onError: (err) => {
           console.error(err);
           toast.error('Failed to update agent', { id: toastId });
+          setErrors((prev) => ({
+            ...prev,
+            general:
+              err instanceof Error ? err.message : 'Failed to save customer',
+          }));
         },
 
         setErrors,
@@ -223,6 +228,11 @@ export function EditAgentPopover({
             />
           </div>
         </div>
+        {errors.general && (
+          <p className="text-xs text-red-500 font-bold text-center">
+            {errors.general}
+          </p>
+        )}
 
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
           <Button

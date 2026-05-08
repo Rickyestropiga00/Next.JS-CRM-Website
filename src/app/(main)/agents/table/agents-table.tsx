@@ -80,9 +80,6 @@ export function AgentsTable() {
     setData: setAgentData,
     loading: agentsLoading,
   } = useFetch<Agent>('agent');
-  console.log('[AgentsTable] RENDER');
-  console.log('[AgentsTable] agentData:', agentData);
-  console.log('[FILTERED INPUT]', agentData);
 
   const {
     filters,

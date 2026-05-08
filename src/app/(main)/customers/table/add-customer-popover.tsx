@@ -17,14 +17,16 @@ import {
   validateEmail,
   validatePhone,
 } from '@/lib/validations';
-import { Customer, CustomerStatus } from '@/types/interface';
+import { Agent, Customer, CustomerStatus } from '@/types/interface';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useUser } from '@/hooks/use-user';
 
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
   isOpen?: boolean;
   onClose?: () => void;
+  setAgents: React.Dispatch<React.SetStateAction<Agent[]>>;
 }
 
 interface ValidationErrors {
@@ -46,6 +48,7 @@ export function AddCustomerPopover({
   onAddCustomer,
   isOpen = false,
   onClose,
+  setAgents,
 }: AddCustomerPopoverProps) {
   const [internalIsOpen] = useState(false);
 
@@ -83,6 +86,8 @@ export function AddCustomerPopover({
     onClose
   );
 
+  const { user } = useUser();
+
   const { handleSubmit, loading } = useFormSubmit<CustomerForm>();
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
@@ -95,8 +100,22 @@ export function AddCustomerPopover({
         status: data.status,
         notes: data.notes.trim(),
       }),
-      onSuccess: (result: Customer) => {
+      onSuccess: (result) => {
         onAddCustomer(result);
+        if (!user) return;
+        setAgents((prev) =>
+          prev.map((agent) =>
+            agent.userId === user._id
+              ? {
+                  ...agent,
+                  assignedCustomers: [
+                    ...(agent.assignedCustomers || []),
+                    result._id,
+                  ],
+                }
+              : agent
+          )
+        );
       },
       onClose,
       setErrors,

@@ -16,7 +16,7 @@ const protectedRoutes = [
   '/account',
 ];
 // Routes accessible only when NOT authenticated
-const authRoutes = ['/login'];
+const authRoutes = ['/login', '/register'];
 export function middleware(request: NextRequest) {
   const session = request.cookies.get(SESSION_KEY)?.value;
   const pathname = request.nextUrl.pathname;
@@ -32,11 +32,23 @@ export function middleware(request: NextRequest) {
   if (isAuthRoute && session) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
+  if (session) {
+    try {
+      const user = JSON.parse(session);
+
+      if (
+        pathname.startsWith('/agents') &&
+        user.role.toLowerCase() !== 'admin'
+      ) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } catch (error) {
+      console.error('Invalid session format', error);
+    }
+  }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|products).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

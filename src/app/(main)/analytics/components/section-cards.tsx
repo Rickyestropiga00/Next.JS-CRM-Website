@@ -18,6 +18,7 @@ import { Order } from '@/types/interface';
 import { useMemo } from 'react';
 import { formatPrice } from '@/utils/formatters';
 import { useFetch } from '@/hooks/use-fetch';
+import { useFilteredOrderByAgent } from '@/hooks/use-filter-orders';
 
 export function SectionCards() {
   const { data: orders, loading: ordersLoading } = useFetch<Order>(
@@ -25,12 +26,13 @@ export function SectionCards() {
     false,
     false
   );
+  const { filteredOrder } = useFilteredOrderByAgent(orders);
 
   const calculateTotalRevenue = useMemo(() => {
-    return orders
+    return filteredOrder
       .filter((order) => order.status !== 'Canceled')
       .reduce((acc, order) => acc + (order.total || 0), 0);
-  }, [orders]);
+  }, [filteredOrder]);
 
   const total = 1250 + calculateTotalRevenue;
 

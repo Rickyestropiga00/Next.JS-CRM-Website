@@ -25,6 +25,8 @@ import { Task, ColumnKey } from '@/types/interface';
 import { timeAgo } from '@/utils/formatters';
 import { getId } from '@/utils/helper';
 import { useDraggable } from '@dnd-kit/core';
+import { Can } from '@/components/auth/can';
+import { useUser } from '@/hooks/use-user';
 
 const statusColors: Record<string, string> = {
   DESIGN: 'var(--badge-design)',
@@ -55,6 +57,7 @@ export function TaskCard({
   deleteDialogId,
   setDeleteDialogId,
 }: TaskCardProps) {
+  const { user } = useUser();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isGripHovered, setIsGripHovered] = React.useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -254,50 +257,54 @@ export function TaskCard({
               <Pencil className="h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <AlertDialog
-              open={deleteDialogId === task.id}
-              onOpenChange={(open) => setDeleteDialogId(open ? task.id : null)}
-            >
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault();
-                    setDeleteDialogId(task.id);
-                  }}
-                  className="text-primary focus:text-primary font-semibold"
-                >
-                  <Trash className="h-4 w-4 text-primary" />
-                  Delete
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this task?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. Are you sure you want to
-                    delete &quot;
-                    {task.title} &quot;?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel
-                    onClick={() => setDeleteDialogId(null)}
-                    className="cursor-pointer"
-                  >
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      handleDelete(task);
-                      setDeleteDialogId(null);
+            <Can role={user?.role} action="delete" resource="task">
+              <AlertDialog
+                open={deleteDialogId === task.id}
+                onOpenChange={(open) =>
+                  setDeleteDialogId(open ? task.id : null)
+                }
+              >
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setDeleteDialogId(task.id);
                     }}
-                    className="cursor-pointer"
+                    className="text-primary focus:text-primary font-semibold"
                   >
+                    <Trash className="h-4 w-4 text-primary" />
                     Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. Are you sure you want to
+                      delete &quot;
+                      {task.title} &quot;?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
+                      onClick={() => setDeleteDialogId(null)}
+                      className="cursor-pointer"
+                    >
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        handleDelete(task);
+                        setDeleteDialogId(null);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </Can>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

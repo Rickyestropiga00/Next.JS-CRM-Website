@@ -35,6 +35,7 @@ interface EditOrderPopoverProps {
   onSave: (updatedOrder: Order) => void;
   onClose: () => void;
   open: boolean;
+  customer: Customer[];
 }
 
 export function EditOrderPopover({
@@ -42,6 +43,7 @@ export function EditOrderPopover({
   onSave,
   onClose,
   open,
+  customer,
 }: EditOrderPopoverProps) {
   const validationRules = {
     address: (v: string) => validateRequired(v, 'Address'),
@@ -69,7 +71,6 @@ export function EditOrderPopover({
   const { data: productsData } = useFetch<Product>('product', false, false);
   const [inputValue, setInputValue] = useState('');
   const [productInputValue, setProductInputValue] = useState('');
-  const filteredCustomers = useFilteredCustomers(customersData);
 
   // Reset form data when order changes or popover opens
   React.useEffect(() => {
@@ -229,7 +230,7 @@ export function EditOrderPopover({
               </Label>
 
               <Combobox
-                items={filteredCustomers.map((c) => ({
+                items={customer.map((c) => ({
                   label: c.name,
                   value: c._id,
                 }))}
@@ -240,7 +241,7 @@ export function EditOrderPopover({
                 }
                 onValueChange={(value) => {
                   const selected =
-                    filteredCustomers.find((c) => c._id === value) || null;
+                    customer.find((c) => c._id === value) || null;
                   setFormData({ ...formData, customer: selected });
                   setInputValue(selected?.name || '');
                 }}
@@ -250,9 +251,7 @@ export function EditOrderPopover({
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onBlur={() => {
-                    const matched = filteredCustomers.find(
-                      (c) => c.name === inputValue
-                    );
+                    const matched = customer.find((c) => c.name === inputValue);
                     if (!matched) {
                       setInputValue('');
                       setFormData({ ...formData, customer: null });

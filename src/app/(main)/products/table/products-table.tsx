@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ProductsTableHeader } from './table-header';
 import { ProductsTableBody } from './table-body';
@@ -302,14 +302,16 @@ export function ProductsTable() {
       )}
 
       {/* Add Product Modal - Rendered outside table structure */}
-      <AddProductPopover
-        isOpen={showAddProduct}
-        onAddProduct={(newProduct) => {
-          handleAdd(newProduct);
-          setShowAddProduct(false);
-        }}
-        onClose={() => setShowAddProduct(false)}
-      />
+      <Can role={user?.role} action="create" resource="product">
+        <AddProductPopover
+          isOpen={showAddProduct}
+          onAddProduct={(newProduct) => {
+            handleAdd(newProduct);
+            setShowAddProduct(false);
+          }}
+          onClose={() => setShowAddProduct(false)}
+        />
+      </Can>
       <ProductDetailsModal
         product={
           selectedProductId

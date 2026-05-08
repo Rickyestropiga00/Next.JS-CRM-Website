@@ -71,6 +71,7 @@ import { getId } from '@/utils/helper';
 import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
+import { useUser } from '@/hooks/use-user';
 
 export function CustomersTable() {
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
@@ -85,12 +86,15 @@ export function CustomersTable() {
     null
   );
 
+  const { data: agents, setData: setAgents } = useFetch<Agent>('agent');
+  const { user } = useUser();
+
   const {
     data: customersData,
     setData: setCustomersData,
     loading: customersLoading,
   } = useFetch<Customer>('customer');
-  const filteredCustomers = useFilteredCustomers(customersData);
+  const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const statusOptions: CustomerStatus[] = [
     'Lead',
     'Active',
@@ -176,6 +180,37 @@ export function CustomersTable() {
       toast.error('Something went wrong');
     },
   });
+
+  async function handleDeleteCustomer(customerId: string) {
+    handleDelete(customerId);
+
+    setAgents((prev) =>
+      prev.map((agent) => ({
+        ...agent,
+        assignedCustomers: (agent.assignedCustomers || []).filter(
+          (id) => id !== customerId
+        ),
+      }))
+    );
+
+    const affectedAgents = agents.filter((agent) =>
+      (agent.assignedCustomers || []).includes(customerId)
+    );
+
+    await Promise.all(
+      affectedAgents.map((agent) =>
+        fetch(`/api/agent/${agent._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assignedCustomers: (agent.assignedCustomers || []).filter(
+              (id) => id !== customerId
+            ),
+          }),
+        })
+      )
+    );
+  }
 
   return (
     <>
@@ -274,7 +309,7 @@ export function CustomersTable() {
               paginated={paginated}
               selected={selected}
               onSelectRow={handleSelectRow}
-              onDelete={handleDelete}
+              onDelete={handleDeleteCustomer}
               deleteDialogId={deleteDialogId}
               setDeleteDialogId={setDeleteDialogId}
               setEditCustomerId={setEditCustomerId}
@@ -313,10 +348,12 @@ export function CustomersTable() {
       <AddCustomerPopover
         isOpen={showAddCustomer}
         onAddCustomer={(newCustomer) => {
+          console.log('FROM MODAL:', newCustomer);
           handleAdd(newCustomer);
           setShowAddCustomer(false);
         }}
         onClose={() => setShowAddCustomer(false)}
+        setAgents={setAgents}
       />
 
       {/* Customer Details Modal */}
