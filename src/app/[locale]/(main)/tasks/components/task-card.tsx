@@ -27,6 +27,7 @@ import { getId } from '@/utils/helper';
 import { useDraggable } from '@dnd-kit/core';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
 
 const statusColors: Record<string, string> = {
   DESIGN: 'var(--badge-design)',
@@ -58,6 +59,7 @@ export function TaskCard({
   setDeleteDialogId,
 }: TaskCardProps) {
   const { user } = useUser();
+  const timeAgoT = useTranslations('TimeAgo');
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isGripHovered, setIsGripHovered] = React.useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -200,7 +202,7 @@ export function TaskCard({
               </div>
               <div className="flex flex-wrap-reverse items-center justify-between gap-3 mt-2">
                 <span className="text-xs text-muted-foreground">
-                  {task.lastAdded ?? timeAgo(task.createdAt)}
+                  {task.lastAdded ?? timeAgo(task.createdAt, timeAgoT)}
                 </span>
                 <div className="flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
                   {task.avatars.map((avatar, idx) => (
