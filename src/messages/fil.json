@@ -1,0 +1,706 @@
+{
+  "Nav": {
+    "dashboard": "Dashboard",
+    "orders": "Mga Order",
+    "products": "Mga Produkto",
+    "tasks": "Mga Gawain",
+    "analytics": "Analitika",
+    "customers": "Mga Customer",
+    "agents": "Mga Ahente",
+    "workspace": "Workspace",
+    "client": "Pamamahala ng Kliyente"
+  },
+
+  "QuickActions": {
+    "title": "Mabilis na Aksyon",
+    "notifications": "Mga Setting ng Notipikasyon",
+    "appearance": "Hitsura",
+    "language": {
+      "title": "Wika at Rehiyon",
+      "modal": {
+        "title": "Wika at Rehiyon",
+        "description": "Piliin ang iyong nais na wika",
+        "options": {
+          "english": "Ingles",
+          "filipino": "Filipino",
+          "japanese": "Hapon"
+        }
+      }
+    },
+    "api": "Mga API Key"
+  },
+
+  "Account": {
+    "page": {
+      "title": "Account",
+      "description": "Pamahalaan ang mga setting at kagustuhan ng iyong account"
+    },
+    "summary": {
+      "title": "Buod ng Account",
+      "role": "Tungkulin",
+      "memberSince": "Miyembro mula noong",
+      "lastLogin": "Huling pag-login"
+    },
+    "personalInfo": {
+      "title": "Personal na Impormasyon",
+      "description": "I-update ang iyong personal na detalye at impormasyong pangkontak",
+      "imageLimit": "JPG, PNG o GIF. Pinakamalaking sukat 2MB."
+    },
+    "security": {
+      "title": "Seguridad",
+      "description": "Pamahalaan ang iyong password at mga setting ng seguridad"
+    }
+  },
+
+  "Buttons": {
+    "cancel": "Kanselahin",
+    "close": "Isara",
+    "delete": "Tanggalin",
+    "save": "I-save ang mga Pagbabago",
+    "saving": "Nagsa-save...",
+    "add": "Magdagdag",
+    "edit": "I-edit",
+    "upload": "I-upload",
+    "addOrder": "Magdagdag ng Order",
+    "updateOrder": "I-save ang mga Pagbabago",
+    "addProduct": "Magdagdag ng Produkto",
+    "addTask": "Magdagdag ng Gawain",
+    "addCustomer": "Magdagdag ng Customer",
+    "addAgent": "Magdagdag ng Ahente",
+    "changePhoto": "Palitan ang Larawan",
+    "updatePassword": "I-update ang Password",
+    "addComment": "Magdagdag ng Komento"
+  },
+
+  "Forms": {
+    "fields": {
+      "fullName": "Buong Pangalan",
+      "name": "Pangalan",
+      "email": "Email",
+      "phone": "Telepono",
+      "company": "Kumpanya",
+      "location": "Lokasyon",
+      "currentPassword": "Kasalukuyang Password",
+      "newPassword": "Bagong Password",
+      "confirmNewPassword": "Kumpirmahin ang Bagong Password",
+      "status": "Katayuan",
+      "notes": "Mga Tala",
+      "role": "Tungkulin",
+      "title": "Pamagat",
+      "description": "Paglalarawan",
+      "priority": "Prayoridad"
+    },
+    "placeholders": {
+      "phone": "+1234567890",
+      "notes": "Magdagdag ng mga tala...",
+      "email": "Ilagay ang email address",
+      "comment": "Magdagdag ng komento...",
+      "search": "Maghanap..."
+    },
+    "hints": {
+      "ctrlEnterSubmit": "Pindutin ang Ctrl+Enter upang isumite"
+    }
+  },
+
+  "Validations": {
+    "imageTooLarge": "Ang larawan ay dapat mas mababa sa 2MB",
+    "invalidJson": "Hindi nagbalik ng wastong JSON ang server",
+    "required": "Kailangan ang {field}",
+    "invalidResponse": "Hindi wastong tugon mula sa server"
+  },
+
+  "Statuses": {
+    "pending": "Naghihintay",
+    "inTransit": "Sa Transit",
+    "completed": "Nakumpleto",
+    "canceled": "Kinansela",
+    "active": "Aktibo",
+    "inactive": "Hindi Aktibo",
+    "onLeave": "Nasa Bakasyon",
+    "lead": "Lead",
+    "prospect": "Prospect",
+    "disabled": "Hindi Pinagana"
+  },
+
+  "Payment": {
+    "paid": "Bayad",
+    "unpaid": "Hindi Bayad",
+    "all": "Lahat ng Bayad"
+  },
+
+  "ProductTypes": {
+    "physical": "Pisikal",
+    "digital": "Digital",
+    "service": "Serbisyo",
+    "subscription": "Subscription"
+  },
+
+  "Roles": {
+    "admin": "Admin",
+    "agent": "Ahente",
+    "manager": "Tagapamahala"
+  },
+
+  "Priority": {
+    "low": "Mababa",
+    "medium": "Katamtaman",
+    "high": "Mataas"
+  },
+
+  "TaskStatus": {
+    "design": "Disenyo",
+    "development": "Pag-unlad",
+    "testing": "Pagsusuri",
+    "content": "Nilalaman",
+    "marketing": "Marketing",
+    "meeting": "Pulungan",
+    "followUp": "Follow-up",
+    "done": "Tapos"
+  },
+
+  "TaskColumns": {
+    "todo": "Gagawin",
+    "inprogress": "Isinasagawa",
+    "inreview": "Sinusuri",
+    "done": "Tapos"
+  },
+
+  "Pagination": {
+    "selectedRows": "{selectedCount} ng {totalRows} hilera (mga) napili.",
+    "rowsPerPage": "Mga hilera bawat pahina",
+    "aria": {
+      "firstPage": "Pumunta sa unang pahina",
+      "previousPage": "Pumunta sa nakaraang pahina",
+      "nextPage": "Pumunta sa susunod na pahina",
+      "lastPage": "Pumunta sa huling pahina"
+    }
+  },
+
+  "ConfirmDelete": {
+    "cannotUndo": "Hindi maibabalik ang aksyong ito.",
+    "singleTitle": "Tanggalin ang {item}?",
+    "singleDescription": "Hindi maibabalik ang aksyong ito. Sigurado ka bang nais mong tanggalin ang {name}?",
+    "bulkTitle": "Tanggalin ang napiling {items}?",
+    "bulkDescription": "Hindi maibabalik ang aksyong ito. Sigurado ka bang nais mong tanggalin ang napiling {items}?"
+  },
+
+  "Messages": {
+    "somethingWentWrong": "May nagkamaling nangyari",
+    "saving": "Isinusulat ang mga pagbabago...",
+    "addSuccess": "Matagumpay na naidagdag ang {item}",
+    "updateSuccess": "Matagumpay na na-update ang {item}",
+    "deleteSuccess": "Matagumpay na natanggal ang {item}",
+    "updateLocal": "Na-update ang {item} lokal",
+    "failedSave": "Nabigong i-save ang {item}",
+    "failedUpdate": "Nabigong i-update ang {item}",
+    "failedDelete": "Nabigong i-delete ang {item}"
+  },
+
+  "Table": {
+    "noDataFound": "Walang {item} Natagpuan!",
+    "loading": "Naglo-load ng {items}...",
+    "empty": "Walang {items} natagpuan",
+    "deleteSelected": "Tanggalin ang napili",
+    "selectAll": "Piliin lahat",
+    "selectRow": "Piliin ang hilera para sa {name}",
+    "actions": "Mga Aksyon",
+    "filters": {
+      "allStatus": "Lahat ng Katayuan",
+      "allTypes": "Lahat ng Uri",
+      "allRoles": "Lahat ng Tungkulin",
+      "allPayment": "Lahat ng Bayad"
+    }
+  },
+  "TimeAgo": {
+    "never": "Hindi pa nag-login",
+    "justNow": "Kakaalis lang",
+    "year": "{count, plural, other {# taon ang nakalipas}}",
+    "month": "{count, plural, other {# buwan ang nakalipas}}",
+    "day": "{count, plural, other {# araw ang nakalipas}}",
+    "hour": "{count, plural, other {# oras ang nakalipas}}",
+    "minute": "{count, plural, other {# minuto ang nakalipas}}"
+  },
+
+  "Orders": {
+    "page": {
+      "searchPlaceholder": "Maghanap ng mga order..."
+    },
+    "modal": {
+      "addTitle": "Magdagdag ng Bagong Order",
+      "addDescription": "Lumikha ng bagong order. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "editTitle": "I-edit ang Order",
+      "editDescription": "I-update ang impormasyon ng order. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "detailsTitle": "Detalye ng Order"
+    },
+    "sections": {
+      "customer": "Customer",
+      "product": "Produkto",
+      "payment": "Bayad",
+      "order": "Detalye ng Order",
+      "delivery": "Paghahatid",
+      "timeline": "Takdang Oras"
+    },
+    "fields": {
+      "orderId": "ID ng Order",
+      "orderDate": "Petsa ng Order",
+      "name": "Pangalan",
+      "orderIdNote": "Hindi maaaring baguhin ang Order ID",
+      "customer": "Pangalan ng Customer",
+      "productName": "Pangalan ng Produkto",
+      "address": "Address ng Pagpapadala",
+      "quantity": "Dami",
+      "itemCode": "Kodigo ng Item",
+      "productType": "Uri ng Produkto",
+      "orderStatus": "Katayuan ng Order",
+      "total": "Kabuuan",
+      "paymentStatus": "Katayuan ng Bayad",
+      "date": "Petsa",
+      "units": "{count} Yunit"
+    },
+    "placeholders": {
+      "deliveryAddress": "Ilagay ang address ng pagpapadala",
+      "itemCode": "Ilagay ang kodigo ng item",
+      "selectCustomer": "Pumili ng customer",
+      "selectProduct": "Pumili ng produkto"
+    },
+    "fallback": {
+      "noCustomer": "Walang natagpuang customer.",
+      "noProduct": "Walang natagpuang produkto.",
+      "unknown": "Hindi alam",
+      "notAvailable": "N/A"
+    },
+    "columns": {
+      "name": "Pangalan",
+      "orderId": "ID ng Order",
+      "customer": "Pangalan ng Customer",
+      "date": "Petsa",
+      "type": "Uri",
+      "address": "Address ng Pagpapadala",
+      "quantity": "Dami",
+      "status": "Katayuan",
+      "total": "Kabuuan",
+      "units": "yunit",
+      "product": "Produkto",
+      "payment": "Bayad",
+      "actions": "Mga Aksyon"
+    },
+    "buttons": {
+      "adding": "Nagdadagdag ng Order...",
+      "updating": "Isinusulat ang mga Pagbabago..."
+    }
+  },
+
+  "Products": {
+    "modal": {
+      "addTitle": "Magdagdag ng Bagong Produkto",
+      "addDescription": "Lumikha ng bagong produkto. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "editTitle": "I-edit ang Produkto",
+      "editDescription": "I-update ang impormasyon ng produkto. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "detailsTitle": "Detalye ng Produkto"
+    },
+    "fields": {
+      "productName": "Pangalan ng Produkto",
+      "productCode": "Kodigo ng Produkto",
+      "productType": "Uri ng Produkto",
+      "status": "Katayuan",
+      "price": "Presyo",
+      "stock": "Stock",
+      "releaseDate": "Petsa ng Paglabas"
+    },
+    "placeholders": {
+      "productCode": "e.g., LP-PRO-001",
+      "price": "0.00",
+      "stock": "0"
+    },
+    "image": {
+      "label": "Larawan ng Produkto",
+      "fallbackAlt": "Larawan ng produkto"
+    },
+    "details": {
+      "sections": {
+        "productInfo": "Impormasyon ng Produkto",
+        "category": "Kategorya",
+        "pricing": "Pagpepresyo",
+        "inventory": "Imbentaryo",
+        "status": "Katayuan",
+        "timeline": "Takdang Oras"
+      },
+      "labels": {
+        "code": "Kodigo",
+        "name": "Pangalan",
+        "type": "Uri",
+        "price": "Presyo",
+        "stockLevel": "Antas ng Stock",
+        "currentStatus": "Kasalukuyang Katayuan",
+        "createdDate": "Petsa ng Paglikha"
+      }
+    },
+    "messages": {
+      "notApplicableStock": "Hindi naaangkop para sa mga produktong {type}"
+    },
+    "columns": {
+      "id": "ID",
+      "name": "Pangalan",
+      "code": "Kodigo",
+      "type": "Uri",
+      "date": "Petsa",
+      "stock": "Stock",
+      "price": "Presyo",
+      "status": "Katayuan",
+      "actions": "Mga Aksyon"
+    },
+    "table": {
+      "searchPlaceholder": "Maghanap ng mga produkto..."
+    },
+    "buttons": {
+      "adding": "Nagdadagdag ng Produkto...",
+      "saving": "Isinusulat ang mga Pagbabago..."
+    }
+  },
+
+  "Tasks": {
+    "modal": {
+      "addTitle": "Magdagdag ng Gawain {column}",
+      "addDescription": "Lumikha ng bagong gawain. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "editTitle": "I-edit ang Gawain",
+      "editDescription": "I-update ang impormasyon ng gawain. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina."
+    },
+    "fields": {
+      "title": "Pamagat ng Gawain",
+      "description": "Paglalarawan",
+      "status": "Katayuan",
+      "priority": "Prayoridad",
+      "column": "Haligi"
+    },
+    "placeholders": {
+      "title": "Ilagay ang pamagat ng gawain",
+      "description": "Ilagay ang paglalarawan ng gawain..."
+    },
+    "board": {
+      "header": {
+        "addTask": "Magdagdag ng Gawain",
+        "taskCount": "{count} gawain"
+      },
+      "empty": "Wala pang gawain",
+      "dropzone": {
+        "label": "Ilagay dito",
+        "hint": "Bitawan upang ilipat ang gawain"
+      }
+    },
+    "taskCard": {
+      "actions": {
+        "markDone": "Markahan bilang tapos",
+        "moveTo": "Ilipat sa"
+      },
+      "labels": {
+        "priority": "Prayoridad"
+      },
+      "tooltips": {
+        "drag": "I-drag upang ilipat ang card"
+      }
+    },
+    "filters": {
+      "allStatus": "Lahat ng Katayuan",
+      "allPriority": "Lahat ng Prayoridad"
+    },
+    "header": {
+      "addNewTask": "Magdagdag ng Bagong Gawain"
+    },
+    "buttons": {
+      "adding": "Nagdadagdag ng Gawain...",
+      "saving": "Isinusulat ang mga Pagbabago..."
+    }
+  },
+
+  "Customers": {
+    "modal": {
+      "addTitle": "Magdagdag ng Bagong Customer",
+      "addDescription": "Lumikha ng bagong customer. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "editTitle": "I-edit ang Customer",
+      "editDescription": "I-update ang impormasyong customer. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "detailsTitle": "Detalye ng Customer",
+      "viewOrderTitle": "Kasaysayan ng Order",
+      "viewOrderDescription": "Tingnan ang lahat ng order na ginawa ni {name}"
+    },
+    "fields": {
+      "name": "Pangalan",
+      "email": "Email",
+      "phone": "Telepono",
+      "company": "Kumpanya",
+      "status": "Katayuan",
+      "notes": "Mga Tala"
+    },
+    "placeholders": {
+      "name": "Ilagay ang pangalan ng customer",
+      "company": "Pangalan ng kumpanya (opsyonal)",
+      "noCompany": "Walang tinukoy na kumpanya",
+      "comment": "Magdagdag ng komento tungkol sa customer na ito..."
+    },
+    "details": {
+      "labels": {
+        "id": "ID",
+        "contact": "Contact",
+        "company": "Kumpanya",
+        "organization": "Organisasyon",
+        "timeline": "Takdang Oras",
+        "status": "Kasalukuyang Katayuan",
+        "notes": "Mga Tala",
+        "comments": "Mga Komento",
+        "email": "Email",
+        "phone": "Telepono",
+        "created": "Nilikha",
+        "lastContacted": "Huling Nakontak"
+      },
+      "comments": {
+        "empty": "Wala pang komento"
+      }
+    },
+    "table": {
+      "searchPlaceholder": "Maghanap ng pangalan o email...",
+      "emptyState": "Walang Customer Natagpuan!",
+      "columns": {
+        "id": "ID",
+        "name": "Pangalan",
+        "email": "Email",
+        "phone": "Telepono",
+        "company": "Kumpanya",
+        "status": "Katayuan",
+        "lastContacted": "Huling Nakontak",
+        "createdAt": "Nilikha No",
+        "notes": "Mga Tala",
+        "comment": "Komento",
+        "actions": "Mga Aksyon"
+      }
+    },
+    "viewOrder": {
+      "emptyState": "Walang Order Pa",
+      "order": {
+        "id": "ID ng Order",
+        "status": "Katayuan",
+        "address": "Address",
+        "product": "Produkto",
+        "total": "Kabuuan",
+        "payment": "Bayad",
+        "createdAt": "Nilikha No",
+        "quantity": "Dami"
+      },
+      "actions": {
+        "toggleDetails": "I-toggle ang detalye"
+      }
+    },
+    "pagination": {
+      "page": "Pahina {page}"
+    },
+    "buttons": {
+      "adding": "Nagdadagdag ng Customer...",
+      "saving": "Isinusulat ang mga Pagbabago..."
+    }
+  },
+
+  "Agents": {
+    "modal": {
+      "addTitle": "Magdagdag ng Bagong Ahente",
+      "addDescription": "Lumikha ng bagong ahente. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "editTitle": "I-edit ang Ahente",
+      "editDescription": "I-update ang impormasyong ahente. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina.",
+      "detailsTitle": "Detalye ng Ahente"
+    },
+    "fields": {
+      "name": "Pangalan",
+      "phone": "Telepono",
+      "email": "Email",
+      "role": "Tungkulin",
+      "status": "Katayuan",
+      "notes": "Mga Tala"
+    },
+    "placeholders": {
+      "name": "Ilagay ang pangalan ng ahente",
+      "notes": "Magdagdag ng mga tala...",
+      "comment": "Magdagdag ng komento tungkol sa ahente na ito...",
+      "search": "Maghanap ng pangalan o email..."
+    },
+    "details": {
+      "sections": {
+        "contact": "Contact",
+        "role": "Tungkulin",
+        "timeline": "Takdang Oras",
+        "assigned": "Itinalaga",
+        "notes": "Mga Tala",
+        "comments": "Mga Komento"
+      },
+      "fields": {
+        "email": "Email",
+        "phone": "Telepono",
+        "position": "Posisyon",
+        "created": "Nilikha",
+        "lastLogin": "Huling Login",
+        "customers": "Mga Customer"
+      },
+      "assigned": {
+        "none": "Walang naka-assign na customer",
+        "single": "{count} customer na naka-assign",
+        "multiple": "{count} customers na naka-assign"
+      },
+      "notes": {
+        "empty": "Walang magagamit na mga tala"
+      },
+      "comments": {
+        "empty": "-"
+      }
+    },
+    "assign": {
+      "title": "Naka-assign na Customer",
+      "subtitle": "Mag-assign ng Customer para kay {name}",
+      "notAssigned": "Hindi Naka-assign",
+      "assigned": "Naka-assign",
+      "allSelected": "Piliin lahat",
+      "noUnassigned": "Lahat ng customer ay naka-assign na",
+      "noAssigned": "Wala pang naka-assign na customer"
+    },
+    "table": {
+      "emptyState": "Walang Ahente Natagpuan!",
+      "columns": {
+        "id": "ID",
+        "name": "Pangalan",
+        "email": "Email",
+        "phone": "Telepono",
+        "role": "Tungkulin",
+        "status": "Katayuan",
+        "assignedCustomers": "Mga Naka-assign na Customer",
+        "createdAt": "Nilikha No",
+        "lastLogin": "Huling Login",
+        "notes": "Mga Tala",
+        "comment": "Komento",
+        "actions": "Mga Aksyon"
+      }
+    },
+    "buttons": {
+      "adding": "Nagdadagdag ng Ahente...",
+      "saving": "Isinusulat ang mga Pagbabago..."
+    }
+  },
+
+  "Dashboard": {
+    "orderStats": {
+      "total": {
+        "label": "Kabuuang Order",
+        "description": "Lahat ng order sa sistema"
+      },
+      "pending": {
+        "label": "Naghihintay",
+        "description": "Naghihintay ng pagproseso"
+      },
+      "inTransit": {
+        "label": "Sa Transit",
+        "description": "Kasalukuyang ipinapadala"
+      },
+      "completed": {
+        "label": "Nakumpleto",
+        "description": "Matagumpay na naihatid"
+      },
+      "cancelled": {
+        "label": "Kinansela",
+        "description": "Kinansela ang order"
+      }
+    },
+
+    "topSellingProducts": {
+      "title": "Pinakamabentang Produkto",
+      "description": "Batay sa kabuuang dami ng nabenta",
+      "unitsSold": "{count} yunit na nabenta",
+      "empty": "Walang datos ng benta",
+      "modal": {
+        "title": "Detalye ng Pinakamabentang Produkto",
+        "sections": {
+          "productInfo": "Impormasyon ng Produkto",
+          "salesOverview": "Pangkalahatang Benta",
+          "availability": "Pagkakaroon ng Produkto",
+          "orderStatus": "Pangkalahatang Katayuan ng Order"
+        },
+        "fields": {
+          "price": "Presyo",
+          "type": "Uri",
+          "totalQuantity": "Kabuuang Dami na Nabenta",
+          "totalRevenue": "Kabuuang Kita",
+          "stock": "Stock",
+          "status": "Katayuan",
+          "productId": "ID: {code}"
+        },
+        "orderStatus": {
+          "completed": "Mga Nakumpletong Order",
+          "pending": "Mga Naghihintay na Order",
+          "inTransit": "Mga Order na Nasa Transit",
+          "units": "{count} Yunit"
+        }
+      }
+    },
+
+    "customersAgentsChart": {
+      "title": "Customer vs Ahente",
+      "description": "Kasalukuyang distribusyon",
+      "total": "Kabuuan: {count} rekord",
+      "breakdown": "{customers} customer at {agents} ahente"
+    },
+
+    "tasksSection": {
+      "title": "Aking mga Gawain",
+      "addNewTask": "Magdagdag ng Bagong Gawain",
+      "loading": "Naglo-load ng mga gawain...",
+      "taskCount": "{count} gawain",
+      "columns": {
+        "todo": "Gagawin",
+        "inprogress": "Isinasagawa",
+        "inreview": "Sinusuri",
+        "done": "Tapos"
+      }
+    }
+  },
+
+  "Analytics": {
+    "sectionCards": {
+      "totalRevenue": {
+        "label": "Kabuuang Kita",
+        "trend": "Tumaas ngayong buwan",
+        "description": "Mga bisita sa huling 6 na buwan",
+        "badge": "+12.5%",
+        "loading": "Naglo-load ng kita..."
+      },
+      "newCustomers": {
+        "label": "Bagong Customer",
+        "trend": "Baba sa panahong ito",
+        "description": "Kailangan ng pansin ang pagkuha",
+        "badge": "-20%"
+      },
+      "activeAccounts": {
+        "label": "Aktibong Account",
+        "trend": "Malakas na pagpapanatili ng user",
+        "description": "Ang pakikilahok ay lumagpas sa target",
+        "badge": "+12.5%"
+      },
+      "growthRate": {
+        "label": "Rate ng Paglago",
+        "trend": "Matatag na pagganap",
+        "description": "Natugunan ang mga projection ng paglago",
+        "badge": "+4.5%"
+      }
+    },
+    "areaChart": {
+      "title": "Area Chart - Gradient",
+      "description": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan",
+      "trend": "Tumaas ng 5.2% ngayong buwan",
+      "footer": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan"
+    },
+    "barChart": {
+      "title": "Bar Chart - Multiple",
+      "description": "Enero - Disyembre 2024",
+      "trend": "Tumaas ng 5.2% ngayong buwan",
+      "footer": "Ipinapakita ang kabuuang bisita sa huling 12 na buwan"
+    },
+    "radarChart": {
+      "title": "Radar Chart - Legend",
+      "description": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan",
+      "trend": "Tumaas ng 5.2% ngayong buwan",
+      "footer": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan"
+    }
+  }
+}

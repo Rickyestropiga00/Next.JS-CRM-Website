@@ -1,0 +1,707 @@
+{
+  "Nav": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "products": "Products",
+    "tasks": "Tasks",
+    "analytics": "Analytics",
+    "customers": "Customers",
+    "agents": "Agents",
+    "workspace": "Workspace",
+    "client": "Client Management"
+  },
+
+  "QuickActions": {
+    "title": "Quick Actions",
+    "notifications": "Notification Settings",
+    "appearance": "Appearance",
+    "language": {
+      "title": "Language and Region",
+      "modal": {
+        "title": "Language and Region",
+        "description": "Select your preferred language",
+        "options": {
+          "english": "English",
+          "filipino": "Filipino",
+          "japanese": "Japanese"
+        }
+      }
+    },
+    "api": "API Keys"
+  },
+
+  "Account": {
+    "page": {
+      "title": "Account",
+      "description": "Manage your account settings and preferences"
+    },
+    "summary": {
+      "title": "Account Summary",
+      "role": "Role",
+      "memberSince": "Member since",
+      "lastLogin": "Last login"
+    },
+    "personalInfo": {
+      "title": "Personal Information",
+      "description": "Update your personal details and contact information",
+      "imageLimit": "JPG, PNG or GIF. Max size 2MB."
+    },
+    "security": {
+      "title": "Security",
+      "description": "Manage your password and security settings"
+    }
+  },
+
+  "Buttons": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "add": "Add",
+    "edit": "Edit",
+    "upload": "Upload",
+    "addOrder": "Add New Order",
+    "updateOrder": "Save Changes",
+    "addProduct": "Add New Product",
+    "addTask": "Add New Task",
+    "addCustomer": "Add New Customer",
+    "addAgent": "Add New Agent",
+    "changePhoto": "Change Photo",
+    "updatePassword": "Update Password",
+    "addComment": "Add Comment"
+  },
+
+  "Forms": {
+    "fields": {
+      "fullName": "Full Name",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "company": "Company",
+      "location": "Location",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "status": "Status",
+      "notes": "Notes",
+      "role": "Role",
+      "title": "Title",
+      "description": "Description",
+      "priority": "Priority"
+    },
+    "placeholders": {
+      "phone": "+1234567890",
+      "notes": "Add notes...",
+      "email": "Enter email address",
+      "comment": "Add a comment...",
+      "search": "Search..."
+    },
+    "hints": {
+      "ctrlEnterSubmit": "Press Ctrl+Enter to submit"
+    }
+  },
+
+  "Validations": {
+    "imageTooLarge": "Image must be less than 2MB",
+    "invalidJson": "Server did not return valid JSON",
+    "required": "{field} is required",
+    "invalidResponse": "Invalid response from server"
+  },
+
+  "Statuses": {
+    "pending": "Pending",
+    "inTransit": "In Transit",
+    "completed": "Completed",
+    "canceled": "Canceled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "onLeave": "On Leave",
+    "lead": "Lead",
+    "prospect": "Prospect",
+    "disabled": "Disabled"
+  },
+
+  "Payment": {
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "all": "All Payment"
+  },
+
+  "ProductTypes": {
+    "physical": "Physical",
+    "digital": "Digital",
+    "service": "Service",
+    "subscription": "Subscription"
+  },
+
+  "Roles": {
+    "admin": "Admin",
+    "agent": "Agent",
+    "manager": "Manager"
+  },
+
+  "Priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+
+  "TaskStatus": {
+    "design": "Design",
+    "development": "Development",
+    "testing": "Testing",
+    "content": "Content",
+    "marketing": "Marketing",
+    "meeting": "Meeting",
+    "followUp": "Follow-up",
+    "done": "Done"
+  },
+
+  "TaskColumns": {
+    "todo": "To Do",
+    "inprogress": "In Progress",
+    "inreview": "In Review",
+    "done": "Done"
+  },
+
+  "Pagination": {
+    "selectedRows": "{selectedCount} of {totalRows} row(s) selected.",
+    "rowsPerPage": "Rows per page",
+    "aria": {
+      "firstPage": "Go to first page",
+      "previousPage": "Go to previous page",
+      "nextPage": "Go to next page",
+      "lastPage": "Go to last page"
+    }
+  },
+
+  "ConfirmDelete": {
+    "cannotUndo": "This action cannot be undone.",
+    "singleTitle": "Delete this {item}?",
+    "singleDescription": "This action cannot be undone. Are you sure you want to delete {name}?",
+    "bulkTitle": "Delete selected {items}?",
+    "bulkDescription": "This action cannot be undone. Are you sure you want to delete the selected {items}?"
+  },
+
+  "Messages": {
+    "somethingWentWrong": "Something went wrong",
+    "saving": "Saving changes...",
+    "addSuccess": "{item} added successfully",
+    "updateSuccess": "{item} updated successfully",
+    "deleteSuccess": "{item} deleted successfully",
+    "updateLocal": "{item} updated locally",
+    "failedSave": "Failed to save {item}",
+    "failedUpdate": "Failed to update {item}",
+    "failedDelete": "Failed to delete {item}"
+  },
+
+  "Table": {
+    "noDataFound": "No {item} Found!",
+    "loading": "Loading {items}...",
+    "empty": "No {items} found",
+    "deleteSelected": "Delete selected",
+    "selectAll": "Select all",
+    "selectRow": "Select row for {name}",
+    "actions": "Actions",
+    "filters": {
+      "allStatus": "All Status",
+      "allTypes": "All Types",
+      "allRoles": "All Roles",
+      "allPayment": "All Payment"
+    }
+  },
+  "TimeAgo": {
+    "never": "Never",
+    "justNow": "Just now",
+    "ago": "{count, plural, one {# year} other {# years}} ago",
+    "year": "{count, plural, one {# year} other {# years}} ago",
+    "month": "{count, plural, one {# month} other {# months}} ago",
+    "day": "{count, plural, one {# day} other {# days}} ago",
+    "hour": "{count, plural, one {# hour} other {# hours}} ago",
+    "minute": "{count, plural, one {# minute} other {# minutes}} ago"
+  },
+
+  "Orders": {
+    "page": {
+      "searchPlaceholder": "Search orders..."
+    },
+    "modal": {
+      "addTitle": "Add New Order",
+      "addDescription": "Create a new order. This data is temporary and will reset on page reload.",
+      "editTitle": "Edit Order",
+      "editDescription": "Update order information. Changes are temporary and will reset on page reload.",
+      "detailsTitle": "Order Details"
+    },
+    "sections": {
+      "customer": "Customer",
+      "product": "Product",
+      "payment": "Payment",
+      "order": "Order Details",
+      "delivery": "Delivery",
+      "timeline": "Timeline"
+    },
+    "fields": {
+      "orderId": "Order ID",
+      "orderDate": "Order Date",
+      "name": "Name",
+      "orderIdNote": "Order ID cannot be changed",
+      "customer": "Customer Name",
+      "productName": "Product Name",
+      "address": "Shipping Address",
+      "quantity": "Quantity",
+      "itemCode": "Item Code",
+      "productType": "Product Type",
+      "orderStatus": "Order Status",
+      "total": "Total",
+      "paymentStatus": "Payment Status",
+      "date": "Date",
+      "units": "{count} Units"
+    },
+    "placeholders": {
+      "deliveryAddress": "Enter shipping address",
+      "itemCode": "Enter item code",
+      "selectCustomer": "Select a customer",
+      "selectProduct": "Select a product"
+    },
+    "fallback": {
+      "noCustomer": "No customer found.",
+      "noProduct": "No product found.",
+      "unknown": "Unknown",
+      "notAvailable": "N/A"
+    },
+    "columns": {
+      "name": "Name",
+      "orderId": "Order ID",
+      "customer": "Customer Name",
+      "date": "Date",
+      "type": "Type",
+      "address": "Address",
+      "quantity": "Quantity",
+      "status": "Status",
+      "total": "Total",
+      "units": "units",
+      "product": "Product",
+      "payment": "Payment",
+      "actions": "Actions"
+    },
+    "buttons": {
+      "adding": "Adding Order...",
+      "updating": "Saving Changes..."
+    }
+  },
+
+  "Products": {
+    "modal": {
+      "addTitle": "Add New Product",
+      "addDescription": "Create a new product. This data is temporary and will reset on page reload.",
+      "editTitle": "Edit Product",
+      "editDescription": "Update product information. Changes are temporary and will reset on page reload.",
+      "detailsTitle": "Product Details"
+    },
+    "fields": {
+      "productName": "Product Name",
+      "productCode": "Product Code",
+      "productType": "Product Type",
+      "status": "Status",
+      "price": "Price",
+      "stock": "Stock",
+      "releaseDate": "Release Date"
+    },
+    "placeholders": {
+      "productCode": "e.g., LP-PRO-001",
+      "price": "0.00",
+      "stock": "0"
+    },
+    "image": {
+      "label": "Product Image",
+      "fallbackAlt": "Product image"
+    },
+    "details": {
+      "sections": {
+        "productInfo": "Product Info",
+        "category": "Category",
+        "pricing": "Pricing",
+        "inventory": "Inventory",
+        "status": "Status",
+        "timeline": "Timeline"
+      },
+      "labels": {
+        "code": "Code",
+        "name": "Name",
+        "type": "Type",
+        "price": "Price",
+        "stockLevel": "Stock Level",
+        "currentStatus": "Current Status",
+        "createdDate": "Created Date"
+      }
+    },
+    "messages": {
+      "notApplicableStock": "Not applicable for {type} products"
+    },
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "code": "Code",
+      "type": "Type",
+      "date": "Date",
+      "stock": "Stock",
+      "price": "Price",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "table": {
+      "searchPlaceholder": "Search products..."
+    },
+    "buttons": {
+      "adding": "Adding Product...",
+      "saving": "Saving Changes..."
+    }
+  },
+
+  "Tasks": {
+    "modal": {
+      "addTitle": "Add {column} Task",
+      "addDescription": "Create a new task. This data is temporary and will reset on page reload.",
+      "editTitle": "Edit Task",
+      "editDescription": "Update task information. Changes are temporary and will reset on page reload."
+    },
+    "fields": {
+      "title": "Task Title",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "column": "Column"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Enter task description..."
+    },
+    "board": {
+      "header": {
+        "addTask": "Add Task",
+        "taskCount": "{count} tasks"
+      },
+      "empty": "No tasks yet",
+      "dropzone": {
+        "label": "Drop here",
+        "hint": "Release to move task"
+      }
+    },
+    "taskCard": {
+      "actions": {
+        "markDone": "Mark as done",
+        "moveTo": "Move to"
+      },
+      "labels": {
+        "priority": "Priority"
+      },
+      "tooltips": {
+        "drag": "Drag to move card"
+      }
+    },
+    "filters": {
+      "allStatus": "All Status",
+      "allPriority": "All Priority"
+    },
+    "header": {
+      "addNewTask": "Add New Task"
+    },
+    "buttons": {
+      "adding": "Adding Task...",
+      "saving": "Saving Changes..."
+    }
+  },
+
+  "Customers": {
+    "modal": {
+      "addTitle": "Add New Customer",
+      "addDescription": "Create a new customer. This data is temporary and will reset on page reload.",
+      "editTitle": "Edit Customer",
+      "editDescription": "Update customer information. Changes are temporary and will reset on page reload.",
+      "detailsTitle": "Customer Details",
+      "viewOrderTitle": "Order History",
+      "viewOrderDescription": "View all orders placed by {name}"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "company": "Company",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "name": "Enter customer name",
+      "company": "Company name (optional)",
+      "noCompany": "No company specified",
+      "comment": "Add a comment about this customer..."
+    },
+    "details": {
+      "labels": {
+        "id": "ID",
+        "contact": "Contact",
+        "company": "Company",
+        "organization": "Organization",
+        "timeline": "Timeline",
+        "status": "Current Status",
+        "notes": "Notes",
+        "comments": "Comments",
+        "email": "Email",
+        "phone": "Phone",
+        "created": "Created",
+        "lastContacted": "Last Contacted"
+      },
+      "comments": {
+        "empty": "No comments yet"
+      }
+    },
+    "table": {
+      "searchPlaceholder": "Search name or email...",
+      "emptyState": "No Customer Found!",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company",
+        "status": "Status",
+        "lastContacted": "Last Contacted",
+        "createdAt": "Created At",
+        "notes": "Notes",
+        "comment": "Comment",
+        "actions": "Actions"
+      }
+    },
+    "viewOrder": {
+      "emptyState": "No Order Yet",
+      "order": {
+        "id": "Order ID",
+        "status": "Status",
+        "address": "Address",
+        "product": "Product",
+        "total": "Total",
+        "payment": "Payment",
+        "createdAt": "Created At",
+        "quantity": "Quantity"
+      },
+      "actions": {
+        "toggleDetails": "Toggle details"
+      }
+    },
+    "pagination": {
+      "page": "Page {page}"
+    },
+    "buttons": {
+      "adding": "Adding Customer...",
+      "saving": "Saving Changes..."
+    }
+  },
+
+  "Agents": {
+    "modal": {
+      "addTitle": "Add New Agent",
+      "addDescription": "Create a new agent. This data is temporary and will reset on page reload.",
+      "editTitle": "Edit Agent",
+      "editDescription": "Update agent information. Changes are temporary and will reset on page reload.",
+      "detailsTitle": "Agent Details"
+    },
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "name": "Enter agent name",
+      "notes": "Add notes...",
+      "comment": "Add a comment about this agent...",
+      "search": "Search name or email..."
+    },
+    "details": {
+      "sections": {
+        "contact": "Contact",
+        "role": "Role",
+        "timeline": "Timeline",
+        "assigned": "Assigned",
+        "notes": "Notes",
+        "comments": "Comments"
+      },
+      "fields": {
+        "email": "Email",
+        "phone": "Phone",
+        "position": "Position",
+        "created": "Created",
+        "lastLogin": "Last Login",
+        "customers": "Customers"
+      },
+      "assigned": {
+        "none": "No customers assigned",
+        "single": "{count} customer assigned",
+        "multiple": "{count} customers assigned"
+      },
+      "notes": {
+        "empty": "No notes available"
+      },
+      "comments": {
+        "empty": "-"
+      }
+    },
+    "assign": {
+      "title": "Assigned Customer",
+      "subtitle": "Assign Customer for {name}",
+      "notAssigned": "Not Assigned",
+      "assigned": "Assigned",
+      "allSelected": "Select all",
+      "noUnassigned": "All customers are already assigned",
+      "noAssigned": "No assigned customers yet"
+    },
+    "table": {
+      "emptyState": "No Agents Found!",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "role": "Role",
+        "status": "Status",
+        "assignedCustomers": "Assigned Customers",
+        "createdAt": "Created At",
+        "lastLogin": "Last Login",
+        "notes": "Notes",
+        "comment": "Comment",
+        "actions": "Actions"
+      }
+    },
+    "buttons": {
+      "adding": "Adding Agent...",
+      "saving": "Saving Changes..."
+    }
+  },
+
+  "Dashboard": {
+    "orderStats": {
+      "total": {
+        "label": "Total Orders",
+        "description": "All orders in the system"
+      },
+      "pending": {
+        "label": "Pending",
+        "description": "Awaiting processing"
+      },
+      "inTransit": {
+        "label": "In Transit",
+        "description": "Currently shipping"
+      },
+      "completed": {
+        "label": "Completed",
+        "description": "Successfully delivered"
+      },
+      "cancelled": {
+        "label": "Cancelled",
+        "description": "Order cancelled"
+      }
+    },
+
+    "topSellingProducts": {
+      "title": "Top Selling Products",
+      "description": "Based on total quantities sold",
+      "unitsSold": "{count} units sold",
+      "empty": "No sales data available",
+      "modal": {
+        "title": "Top Selling Product Details",
+        "sections": {
+          "productInfo": "Product Information",
+          "salesOverview": "Sales Overview",
+          "availability": "Product Availability",
+          "orderStatus": "Order Status Overview"
+        },
+        "fields": {
+          "price": "Price",
+          "type": "Type",
+          "totalQuantity": "Total Quantity Sold",
+          "totalRevenue": "Total Revenue",
+          "stock": "Stock",
+          "status": "Status",
+          "productId": "ID: {code}"
+        },
+        "orderStatus": {
+          "completed": "Completed Orders",
+          "pending": "Pending Orders",
+          "inTransit": "In Transit Orders",
+          "units": "{count} Units"
+        }
+      }
+    },
+
+    "customersAgentsChart": {
+      "title": "Customers vs Agents",
+      "description": "Current distribution",
+      "total": "Total: {count} records",
+      "breakdown": "{customers} customers and {agents} agents"
+    },
+
+    "tasksSection": {
+      "title": "My Tasks",
+      "addNewTask": "Add New Task",
+      "loading": "Loading tasks...",
+      "taskCount": "{count} tasks",
+      "columns": {
+        "todo": "To Do",
+        "inprogress": "In Progress",
+        "inreview": "In Review",
+        "done": "Done"
+      }
+    }
+  },
+
+  "Analytics": {
+    "sectionCards": {
+      "totalRevenue": {
+        "label": "Total Revenue",
+        "trend": "Trending up this month",
+        "description": "Visitors for the last 6 months",
+        "badge": "+12.5%",
+        "loading": "Loading revenue..."
+      },
+      "newCustomers": {
+        "label": "New Customers",
+        "trend": "Down this period",
+        "description": "Acquisition needs attention",
+        "badge": "-20%"
+      },
+      "activeAccounts": {
+        "label": "Active Accounts",
+        "trend": "Strong user retention",
+        "description": "Engagement exceed targets",
+        "badge": "+12.5%"
+      },
+      "growthRate": {
+        "label": "Growth Rate",
+        "trend": "Steady performance",
+        "description": "Meets growth projections",
+        "badge": "+4.5%"
+      }
+    },
+    "areaChart": {
+      "title": "Area Chart - Gradient",
+      "description": "Showing total visitors for the last 6 months",
+      "trend": "Trending up by 5.2% this month",
+      "footer": "Showing total visitors for the last 6 months"
+    },
+    "barChart": {
+      "title": "Bar Chart - Multiple",
+      "description": "January - December 2024",
+      "trend": "Trending up by 5.2% this month",
+      "footer": "Showing total visitors for the last 12 months"
+    },
+    "radarChart": {
+      "title": "Radar Chart - Legend",
+      "description": "Showing total visitors for the last 6 months",
+      "trend": "Trending up by 5.2% this month",
+      "footer": "Showing total visitors for the last 6 months"
+    }
+  }
+}

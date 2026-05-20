@@ -1,11 +1,11 @@
 'use client';
 import { fetchData } from '@/lib/api/fetch-data';
 import { useEffect, useRef, useState } from 'react';
-import { agents as mockAgents } from '@/app/(main)/agents/data';
-import { orders as mockOrders } from '@/app/(main)/orders/data';
-import { customers as mockCustomers } from '@/app/(main)/customers/data';
-import { products as mockProducts } from '@/app/(main)/products/data';
-import { tasks as mockTasks } from '@/app/(main)/tasks/data';
+import { agents as mockAgents } from '@/app/data/agents.ts';
+import { orders as mockOrders } from '@/app/data/orders.ts';
+import { customers as mockCustomers } from '@/app/data/customers.ts';
+import { products as mockProducts } from '@/app/data/products.ts';
+import { tasks as mockTasks } from '@/app/data/tasks.ts';
 const mockDataMap: Record<string, any[]> = {
   agent: mockAgents,
   order: mockOrders,
