@@ -1,0 +1,708 @@
+{
+  "Nav": {
+    "dashboard": "ダッシュボード",
+    "orders": "注文",
+    "products": "製品",
+    "tasks": "タスク",
+    "analytics": "分析",
+    "customers": "顧客",
+    "agents": "エージェント",
+    "workspace": "ワークスペース",
+    "client": "クライアント管理"
+  },
+
+  "QuickActions": {
+    "title": "クイックアクション",
+    "notifications": "通知設定",
+    "appearance": "外観",
+    "language": {
+      "title": "言語と地域",
+      "modal": {
+        "title": "言語と地域",
+        "description": "希望する言語を選択してください",
+        "options": {
+          "english": "英語",
+          "filipino": "フィリピン語",
+          "japanese": "日本語"
+        }
+      }
+    },
+    "api": "APIキー"
+  },
+
+  "Account": {
+    "page": {
+      "title": "アカウント",
+      "description": "アカウント設定とプリファレンスを管理する"
+    },
+    "summary": {
+      "title": "アカウント概要",
+      "role": "役割",
+      "memberSince": "加入日",
+      "lastLogin": "最終ログイン"
+    },
+    "personalInfo": {
+      "title": "個人情報",
+      "description": "個人の詳細と連絡先情報を更新する",
+      "imageLimit": "JPG、PNG、またはGIF。最大サイズ2MB。"
+    },
+    "security": {
+      "title": "セキュリティ",
+      "description": "パスワードとセキュリティ設定を管理する"
+    }
+  },
+
+  "Buttons": {
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "delete": "削除",
+    "save": "変更を保存",
+    "saving": "保存中...",
+    "add": "追加",
+    "edit": "編集",
+    "upload": "アップロード",
+    "addOrder": "注文を追加",
+    "updateOrder": "変更を保存",
+    "addProduct": "製品を追加",
+    "addTask": "タスクを追加",
+    "addCustomer": "顧客を追加",
+    "addAgent": "エージェントを追加",
+    "changePhoto": "写真を変更",
+    "updatePassword": "パスワードを更新",
+    "addComment": "コメントを追加"
+  },
+
+  "Forms": {
+    "fields": {
+      "fullName": "氏名",
+      "name": "名前",
+      "email": "メール",
+      "phone": "電話",
+      "company": "会社",
+      "location": "場所",
+      "currentPassword": "現在のパスワード",
+      "newPassword": "新しいパスワード",
+      "confirmNewPassword": "新しいパスワードを確認",
+      "status": "ステータス",
+      "notes": "メモ",
+      "role": "役割",
+      "title": "タイトル",
+      "description": "説明",
+      "priority": "優先度"
+    },
+    "placeholders": {
+      "phone": "+1234567890",
+      "notes": "メモを追加...",
+      "email": "メールアドレスを入力",
+      "comment": "コメントを追加...",
+      "search": "検索..."
+    },
+    "hints": {
+      "ctrlEnterSubmit": "Ctrl+Enterで送信"
+    }
+  },
+
+  "Validations": {
+    "imageTooLarge": "画像は2MB未満である必要があります",
+    "invalidJson": "サーバーが有効なJSONを返しませんでした",
+    "required": "{field} は必須です",
+    "invalidResponse": "サーバーからの無効な応答"
+  },
+
+  "Statuses": {
+    "pending": "保留中",
+    "inTransit": "輸送中",
+    "completed": "完了",
+    "canceled": "キャンセル",
+    "active": "アクティブ",
+    "inactive": "非アクティブ",
+    "onLeave": "休暇中",
+    "lead": "リード",
+    "prospect": "見込み客",
+    "disabled": "無効"
+  },
+
+  "Payment": {
+    "paid": "支払済み",
+    "unpaid": "未払い",
+    "all": "すべての支払い"
+  },
+
+  "ProductTypes": {
+    "physical": "物理",
+    "digital": "デジタル",
+    "service": "サービス",
+    "subscription": "サブスクリプション"
+  },
+
+  "Roles": {
+    "admin": "管理者",
+    "agent": "エージェント",
+    "manager": "マネージャー"
+  },
+
+  "Priority": {
+    "low": "低",
+    "medium": "中",
+    "high": "高"
+  },
+
+  "TaskStatus": {
+    "design": "デザイン",
+    "development": "開発",
+    "testing": "テスト",
+    "content": "コンテンツ",
+    "marketing": "マーケティング",
+    "meeting": "ミーティング",
+    "followUp": "フォローアップ",
+    "done": "完了"
+  },
+
+  "TaskColumns": {
+    "todo": "やること",
+    "inprogress": "進行中",
+    "inreview": "レビュー中",
+    "done": "完了"
+  },
+
+  "Pagination": {
+    "selectedRows": "{selectedCount} 件中 {totalRows} 行が選択されています。",
+    "rowsPerPage": "ページあたりの行数",
+    "aria": {
+      "firstPage": "最初のページへ",
+      "previousPage": "前のページへ",
+      "nextPage": "次のページへ",
+      "lastPage": "最後のページへ"
+    }
+  },
+
+  "ConfirmDelete": {
+    "cannotUndo": "この操作は取り消せません。",
+    "singleTitle": "{item} を削除しますか？",
+    "singleDescription": "この操作は取り消せません。{name} を削除してもよろしいですか？",
+    "bulkTitle": "選択した {items} を削除しますか？",
+    "bulkDescription": "この操作は取り消せません。選択した {items} を削除してもよろしいですか？"
+  },
+
+  "Messages": {
+    "somethingWentWrong": "何か問題が発生しました",
+    "saving": "変更を保存中...",
+    "addSuccess": "{item} が正常に追加されました",
+    "updateSuccess": "{item} が正常に更新されました",
+    "deleteSuccess": "{item} が正常に削除されました",
+    "updateLocal": "{item} がローカルで更新されました",
+    "failedSave": "{item} の保存に失敗しました",
+    "failedUpdate": "{item} の更新に失敗しました",
+    "failedDelete": "{item} の削除に失敗しました"
+  },
+
+  "Table": {
+    "noDataFound": "{item} が見つかりません！",
+    "loading": "{items} を読み込み中...",
+    "empty": "見つかりません",
+    "deleteSelected": "選択した項目を削除",
+    "selectAll": "すべて選択",
+    "selectRow": "{name} の行を選択",
+    "actions": "アクション",
+    "filters": {
+      "allStatus": "すべてのステータス",
+      "allTypes": "すべてのタイプ",
+      "allRoles": "すべての役割",
+      "allPayment": "すべての支払い"
+    }
+  },
+  "TimeAgo": {
+    "never": "決して",
+    "justNow": "たった今",
+    "ago": "{count, plural, one {# 年} other {# 年}} 前",
+    "year": "{count, plural, one {# 年} other {# 年}} 前",
+    "month": "{count, plural, one {# 月} other {# 月}} 前",
+    "day": "{count, plural, one {# 日} other {# 日}} 前",
+    "hour": "{count, plural, one {# 時間} other {# 時間}} 前",
+    "minute": "{count, plural, one {# 分} other {# 分}} 前"
+  },
+
+  "Orders": {
+    "page": {
+      "searchPlaceholder": "注文を検索..."
+    },
+    "modal": {
+      "addTitle": "新しい注文を追加",
+      "addDescription": "新しい注文を作成します。このデータは一時的で、ページリロード時にリセットされます。",
+      "editTitle": "注文を編集",
+      "editDescription": "注文情報を更新します。変更は一時的で、ページリロード時にリセットされます。",
+      "detailsTitle": "注文詳細"
+    },
+    "sections": {
+      "customer": "顧客",
+      "product": "製品",
+      "payment": "支払い",
+      "order": "注文詳細",
+      "delivery": "配達",
+      "timeline": "タイムライン"
+    },
+    "fields": {
+      "orderId": "注文ID",
+      "orderDate": "注文日",
+      "name": "名前",
+      "orderIdNote": "注文IDは変更できません",
+      "customer": "顧客名",
+      "productName": "製品名",
+      "address": "配送先住所",
+      "quantity": "数量",
+      "itemCode": "アイテムコード",
+      "productType": "製品タイプ",
+      "orderStatus": "注文ステータス",
+      "total": "合計",
+      "paymentStatus": "支払いステータス",
+      "date": "日付",
+      "units": "{count} 個"
+    },
+    "placeholders": {
+      "deliveryAddress": "配送先住所を入力",
+      "itemCode": "アイテムコードを入力",
+      "selectCustomer": "顧客を選択",
+      "selectProduct": "製品を選択"
+    },
+    "fallback": {
+      "noCustomer": "顧客が見つかりません。",
+      "noProduct": "製品が見つかりません。",
+      "unknown": "不明",
+      "notAvailable": "N/A"
+    },
+    "columns": {
+      "name": "名前",
+      "orderId": "注文ID",
+      "customer": "顧客名",
+      "productName": "製品名",
+      "date": "日付",
+      "type": "タイプ",
+      "address": "配送先住所",
+      "quantity": "数量",
+      "status": "ステータス",
+      "total": "合計",
+      "units": "単位",
+      "product": "製品",
+      "payment": "支払い",
+      "actions": "アクション"
+    },
+    "buttons": {
+      "adding": "注文を追加中...",
+      "updating": "変更を保存中..."
+    }
+  },
+
+  "Products": {
+    "modal": {
+      "addTitle": "新しい製品を追加",
+      "addDescription": "新しい製品を作成します。このデータは一時的で、ページリロード時にリセットされます。",
+      "editTitle": "製品を編集",
+      "editDescription": "製品情報を更新します。変更は一時的で、ページリロード時にリセットされます。",
+      "detailsTitle": "製品詳細"
+    },
+    "fields": {
+      "productName": "製品名",
+      "productCode": "製品コード",
+      "productType": "製品タイプ",
+      "status": "ステータス",
+      "price": "価格",
+      "stock": "在庫",
+      "releaseDate": "リリース日"
+    },
+    "placeholders": {
+      "productCode": "例: LP-PRO-001",
+      "price": "0.00",
+      "stock": "0"
+    },
+    "image": {
+      "label": "製品画像",
+      "fallbackAlt": "製品画像"
+    },
+    "details": {
+      "sections": {
+        "productInfo": "製品情報",
+        "category": "カテゴリ",
+        "pricing": "価格設定",
+        "inventory": "在庫",
+        "status": "ステータス",
+        "timeline": "タイムライン"
+      },
+      "labels": {
+        "code": "コード",
+        "name": "名前",
+        "type": "タイプ",
+        "price": "価格",
+        "stockLevel": "在庫レベル",
+        "currentStatus": "現在のステータス",
+        "createdDate": "作成日"
+      }
+    },
+    "messages": {
+      "notApplicableStock": "{type} 製品には在庫は適用されません"
+    },
+    "columns": {
+      "id": "ID",
+      "name": "名前",
+      "code": "コード",
+      "type": "タイプ",
+      "date": "日付",
+      "stock": "在庫",
+      "price": "価格",
+      "status": "ステータス",
+      "actions": "アクション"
+    },
+    "table": {
+      "searchPlaceholder": "製品を検索..."
+    },
+    "buttons": {
+      "adding": "製品を追加中...",
+      "saving": "変更を保存中..."
+    }
+  },
+
+  "Tasks": {
+    "modal": {
+      "addTitle": "{column} タスクを追加",
+      "addDescription": "新しいタスクを作成します。このデータは一時的で、ページリロード時にリセットされます。",
+      "editTitle": "タスクを編集",
+      "editDescription": "タスク情報を更新します。変更は一時的で、ページリロード時にリセットされます。"
+    },
+    "fields": {
+      "title": "タスクタイトル",
+      "description": "説明",
+      "status": "ステータス",
+      "priority": "優先度",
+      "column": "カラム"
+    },
+    "placeholders": {
+      "title": "タスクタイトルを入力",
+      "description": "タスクの説明を入力..."
+    },
+    "board": {
+      "header": {
+        "addTask": "タスクを追加",
+        "taskCount": "{count} 件のタスク"
+      },
+      "empty": "タスクがありません",
+      "dropzone": {
+        "label": "ここにドロップ",
+        "hint": "離すとタスクが移動します"
+      }
+    },
+    "taskCard": {
+      "actions": {
+        "markDone": "完了としてマーク",
+        "moveTo": "移動先"
+      },
+      "labels": {
+        "priority": "優先度"
+      },
+      "tooltips": {
+        "drag": "カードをドラッグして移動"
+      }
+    },
+    "filters": {
+      "allStatus": "すべてのステータス",
+      "allPriority": "すべての優先度"
+    },
+    "header": {
+      "addNewTask": "新しいタスクを追加"
+    },
+    "buttons": {
+      "adding": "タスクを追加中...",
+      "saving": "変更を保存中..."
+    }
+  },
+
+  "Customers": {
+    "modal": {
+      "addTitle": "新しい顧客を追加",
+      "addDescription": "新しい顧客を作成します。このデータは一時的で、ページリロード時にリセットされます。",
+      "editTitle": "顧客を編集",
+      "editDescription": "顧客情報を更新します。変更は一時的で、ページリロード時にリセットされます。",
+      "detailsTitle": "顧客詳細",
+      "viewOrderTitle": "注文履歴",
+      "viewOrderDescription": "{name} のすべての注文を表示"
+    },
+    "fields": {
+      "name": "名前",
+      "email": "メール",
+      "phone": "電話",
+      "company": "会社",
+      "status": "ステータス",
+      "notes": "メモ"
+    },
+    "placeholders": {
+      "name": "顧客名を入力",
+      "company": "会社名（任意）",
+      "noCompany": "会社が指定されていません",
+      "comment": "この顧客についてのコメントを追加..."
+    },
+    "details": {
+      "labels": {
+        "id": "ID",
+        "contact": "連絡先",
+        "company": "会社",
+        "organization": "組織",
+        "timeline": "タイムライン",
+        "status": "現在のステータス",
+        "notes": "メモ",
+        "comments": "コメント",
+        "email": "メール",
+        "phone": "電話",
+        "created": "作成日",
+        "lastContacted": "最終連絡日"
+      },
+      "comments": {
+        "empty": "コメントはまだありません"
+      }
+    },
+    "table": {
+      "searchPlaceholder": "名前またはメールを検索...",
+      "emptyState": "顧客が見つかりません！",
+      "columns": {
+        "id": "ID",
+        "name": "名前",
+        "email": "メール",
+        "phone": "電話",
+        "company": "会社",
+        "status": "ステータス",
+        "lastContacted": "最終連絡日",
+        "createdAt": "作成日時",
+        "notes": "メモ",
+        "comment": "コメント",
+        "actions": "アクション"
+      }
+    },
+    "viewOrder": {
+      "emptyState": "注文はまだありません",
+      "order": {
+        "id": "注文ID",
+        "status": "ステータス",
+        "address": "住所",
+        "product": "製品",
+        "total": "合計",
+        "payment": "支払い",
+        "createdAt": "作成日時",
+        "quantity": "数量"
+      },
+      "actions": {
+        "toggleDetails": "詳細を切り替え"
+      }
+    },
+    "pagination": {
+      "page": "ページ {page}"
+    },
+    "buttons": {
+      "adding": "顧客を追加中...",
+      "saving": "変更を保存中..."
+    }
+  },
+
+  "Agents": {
+    "modal": {
+      "addTitle": "新しいエージェントを追加",
+      "addDescription": "新しいエージェントを作成します。このデータは一時的で、ページリロード時にリセットされます。",
+      "editTitle": "エージェントを編集",
+      "editDescription": "エージェント情報を更新します。変更は一時的で、ページリロード時にリセットされます。",
+      "detailsTitle": "エージェント詳細"
+    },
+    "fields": {
+      "name": "名前",
+      "phone": "電話",
+      "email": "メール",
+      "role": "役割",
+      "status": "ステータス",
+      "notes": "メモ"
+    },
+    "placeholders": {
+      "name": "エージェント名を入力",
+      "notes": "メモを追加...",
+      "comment": "このエージェントについてのコメントを追加...",
+      "search": "名前またはメールを検索..."
+    },
+    "details": {
+      "sections": {
+        "contact": "連絡先",
+        "role": "役割",
+        "timeline": "タイムライン",
+        "assigned": "担当",
+        "notes": "メモ",
+        "comments": "コメント"
+      },
+      "fields": {
+        "email": "メール",
+        "phone": "電話",
+        "position": "役職",
+        "created": "作成日",
+        "lastLogin": "最終ログイン",
+        "customers": "顧客"
+      },
+      "assigned": {
+        "none": "担当顧客なし",
+        "single": "{count} 件の顧客が担当",
+        "multiple": "{count} 件の顧客が担当"
+      },
+      "notes": {
+        "empty": "メモはありません"
+      },
+      "comments": {
+        "empty": "-"
+      }
+    },
+    "assign": {
+      "title": "担当顧客",
+      "subtitle": "{name} の担当顧客を割り当て",
+      "notAssigned": "未割り当て",
+      "assigned": "割り当て済み",
+      "allSelected": "すべて選択",
+      "noUnassigned": "すべての顧客がすでに割り当てられています",
+      "noAssigned": "まだ割り当てられた顧客はありません"
+    },
+    "table": {
+      "emptyState": "エージェントが見つかりません！",
+      "columns": {
+        "id": "ID",
+        "name": "名前",
+        "email": "メール",
+        "phone": "電話",
+        "role": "役割",
+        "status": "ステータス",
+        "assignedCustomers": "担当顧客",
+        "createdAt": "作成日時",
+        "lastLogin": "最終ログイン",
+        "notes": "メモ",
+        "comment": "コメント",
+        "actions": "アクション"
+      }
+    },
+    "buttons": {
+      "adding": "エージェントを追加中...",
+      "saving": "変更を保存中..."
+    }
+  },
+
+  "Dashboard": {
+    "orderStats": {
+      "total": {
+        "label": "総注文数",
+        "description": "システム内のすべての注文"
+      },
+      "pending": {
+        "label": "保留中",
+        "description": "処理待ち"
+      },
+      "inTransit": {
+        "label": "輸送中",
+        "description": "現在配送中"
+      },
+      "completed": {
+        "label": "完了",
+        "description": "正常に配達済み"
+      },
+      "cancelled": {
+        "label": "キャンセル済み",
+        "description": "注文がキャンセルされました"
+      }
+    },
+
+    "topSellingProducts": {
+      "title": "ベストセラー製品",
+      "description": "販売数量合計に基づく",
+      "unitsSold": "{count} 個販売",
+      "empty": "販売データがありません",
+      "modal": {
+        "title": "ベストセラー製品詳細",
+        "sections": {
+          "productInfo": "製品情報",
+          "salesOverview": "販売概要",
+          "availability": "製品の在庫状況",
+          "orderStatus": "注文ステータス概要"
+        },
+        "fields": {
+          "price": "価格",
+          "type": "タイプ",
+          "totalQuantity": "販売合計数量",
+          "totalRevenue": "総収益",
+          "stock": "在庫",
+          "status": "ステータス",
+          "productId": "ID: {code}"
+        },
+        "orderStatus": {
+          "completed": "完了した注文",
+          "pending": "保留中の注文",
+          "inTransit": "輸送中の注文",
+          "units": "{count} 個"
+        }
+      }
+    },
+
+    "customersAgentsChart": {
+      "title": "顧客 vs エージェント",
+      "description": "現在の分布",
+      "total": "合計: {count} 件",
+      "breakdown": "{customers} 顧客 と {agents} エージェント"
+    },
+
+    "tasksSection": {
+      "title": "私のタスク",
+      "addNewTask": "新しいタスクを追加",
+      "loading": "タスクを読み込み中...",
+      "taskCount": "{count} 件のタスク",
+      "columns": {
+        "todo": "やること",
+        "inprogress": "進行中",
+        "inreview": "レビュー中",
+        "done": "完了"
+      }
+    }
+  },
+
+  "Analytics": {
+    "sectionCards": {
+      "totalRevenue": {
+        "label": "総収益",
+        "trend": "今月上昇中",
+        "description": "過去6か月の訪問者数",
+        "badge": "+12.5%",
+        "loading": "収益を読み込み中..."
+      },
+      "newCustomers": {
+        "label": "新規顧客",
+        "trend": "この期間は減少",
+        "description": "獲得には注意が必要",
+        "badge": "-20%"
+      },
+      "activeAccounts": {
+        "label": "アクティブアカウント",
+        "trend": "ユーザー維持率が高い",
+        "description": "エンゲージメントが目標を超える",
+        "badge": "+12.5%"
+      },
+      "growthRate": {
+        "label": "成長率",
+        "trend": "安定したパフォーマンス",
+        "description": "成長予測を満たす",
+        "badge": "+4.5%"
+      }
+    },
+    "areaChart": {
+      "title": "エリアチャート - グラデーション",
+      "description": "過去6か月の総訪問者数を表示",
+      "trend": "今月5.2%上昇中",
+      "footer": "過去6か月の総訪問者数を表示"
+    },
+    "barChart": {
+      "title": "棒グラフ - 複数",
+      "description": "2024年1月〜12月",
+      "trend": "今月5.2%上昇中",
+      "footer": "過去12か月の総訪問者数を表示"
+    },
+    "radarChart": {
+      "title": "レーダーチャート - 凡例",
+      "description": "過去6か月の総訪問者数を表示",
+      "trend": "今月5.2%上昇中",
+      "footer": "過去6か月の総訪問者数を表示"
+    }
+  }
+}

@@ -3,8 +3,16 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { redirectWithLocale } from './utils/helper';
+
 const SESSION_KEY = 'crm_session';
-// Routes that require authentication
+
+const intlMiddleware = createMiddleware({
+  locales: ['en', 'fil', 'ja'],
+  defaultLocale: 'en',
+});
+
 const protectedRoutes = [
   '/dashboard',
   '/customers',
@@ -15,40 +23,54 @@ const protectedRoutes = [
   '/analytics',
   '/account',
 ];
-// Routes accessible only when NOT authenticated
+
 const authRoutes = ['/login', '/register'];
+
 export function middleware(request: NextRequest) {
   const session = request.cookies.get(SESSION_KEY)?.value;
   const pathname = request.nextUrl.pathname;
-  // Check if trying to access protected route without session
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+
+  const localeMatch = pathname.match(/^\/(en|fil|ja)(\/|$)/);
+  const locale = localeMatch ? localeMatch[1] : 'en';
+  const cleanPath = pathname.replace(/^\/(en|fil|ja)/, '') || '/';
+
+  const isProtectedRoute = protectedRoutes.some((r) => cleanPath.startsWith(r));
   if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return redirectWithLocale(request, locale, '/login');
   }
-  // Check if trying to access auth routes with active session
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+
+  const isAuthRoute = authRoutes.some((r) => cleanPath.startsWith(r));
+  if (isAuthRoute && !localeMatch) {
+    return NextResponse.next();
+  }
+  if (cleanPath === '/') {
+    if (session) {
+      return redirectWithLocale(request, locale, '/dashboard');
+    }
+
+    return redirectWithLocale(request, locale, '/login');
+  }
   if (isAuthRoute && session) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return redirectWithLocale(request, locale, '/dashboard');
   }
+
   if (session) {
     try {
       const user = JSON.parse(session);
-
       if (
-        pathname.startsWith('/agents') &&
+        cleanPath.startsWith('/agents') &&
         user.role.toLowerCase() !== 'admin'
       ) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        return redirectWithLocale(request, locale, '/dashboard');
       }
     } catch (error) {
       console.error('Invalid session format', error);
     }
   }
-  return NextResponse.next();
+
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next|.*\\..*).*)'],
 };

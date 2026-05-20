@@ -1,33 +1,34 @@
-import React from "react";
+import { useTranslations } from 'next-intl';
+import React from 'react';
 
 /**
  * Status badge color mappings for different entity types
  */
 const statusColorMaps = {
   agent: {
-    Active: "var(--badge-active)",
-    Inactive: "var(--badge-inactive)",
-    "On Leave": "var(--badge-priority-medium)",
+    Active: 'var(--badge-active)',
+    Inactive: 'var(--badge-inactive)',
+    'On Leave': 'var(--badge-priority-medium)',
   },
   customer: {
-    Lead: "var(--badge-lead)",
-    Active: "var(--badge-active)",
-    Inactive: "var(--badge-inactive)",
-    Prospect: "var(--badge-prospect)",
+    Lead: 'var(--badge-lead)',
+    Active: 'var(--badge-active)',
+    Inactive: 'var(--badge-inactive)',
+    Prospect: 'var(--badge-prospect)',
   },
   product: {
-    Active: "var(--badge-active)",
-    Disabled: "var(--badge-priority-high)",
+    Active: 'var(--badge-active)',
+    Disabled: 'var(--badge-priority-high)',
   },
   order: {
-    Pending: "var(--badge-priority-medium)",
-    "In Transit": "var(--badge-design)",
-    Completed: "var(--badge-active)",
-    Canceled: "var(--badge-priority-high)",
+    Pending: 'var(--badge-priority-medium)',
+    'In Transit': 'var(--badge-design)',
+    Completed: 'var(--badge-active)',
+    Canceled: 'var(--badge-priority-high)',
   },
   payment: {
-    Paid: "var(--foreground)",
-    Unpaid: "var(--muted-foreground)",
+    Paid: 'var(--foreground)',
+    Unpaid: 'var(--muted-foreground)',
   },
 } as const;
 
@@ -47,19 +48,49 @@ interface StatusBadgeProps {
  */
 export function StatusBadge({ status, type, showDot }: StatusBadgeProps) {
   // Determine the color based on type and status
-  let color = "var(--badge-priority-high)";
+  let color = 'var(--badge-priority-high)';
   let isPaymentStatus = false;
+
+  const statusesT = useTranslations('Statuses');
+  const paymentT = useTranslations('Payment');
+
+  const translationKeyMap: Record<string, string> = {
+    Pending: 'pending',
+    'In Transit': 'inTransit',
+    Completed: 'completed',
+    Canceled: 'canceled',
+    Active: 'active',
+    Inactive: 'inactive',
+    'On Leave': 'onLeave',
+    Lead: 'lead',
+    Prospect: 'prospect',
+    Disabled: 'disabled',
+    Paid: 'paid',
+    Unpaid: 'unpaid',
+  };
+
+  let label = status;
+
+  const translationKey = translationKeyMap[status] || status;
+
+  if (type === 'order') {
+    label = statusesT(translationKey);
+  }
+
+  if (type === 'payment') {
+    label = paymentT(translationKey);
+  }
 
   if (type) {
     const colorMap = statusColorMaps[type];
     color = colorMap[status as keyof typeof colorMap] || color;
-    isPaymentStatus = type === "payment";
+    isPaymentStatus = type === 'payment';
   } else {
     // Auto-detect from all maps if type not specified
     for (const [mapType, colorMap] of Object.entries(statusColorMaps)) {
       if (status in colorMap) {
         color = colorMap[status as keyof typeof colorMap];
-        isPaymentStatus = mapType === "payment";
+        isPaymentStatus = mapType === 'payment';
         break;
       }
     }
@@ -71,9 +102,9 @@ export function StatusBadge({ status, type, showDot }: StatusBadgeProps) {
   return (
     <span
       className={`inline-flex items-center gap-1 py-0.5 rounded-full font-medium ${
-        isPaymentStatus ? "text-sm" : "text-xs"
+        isPaymentStatus ? 'text-sm' : 'text-xs'
       }`}
-      style={{ color, borderColor: color, background: "none" }}
+      style={{ color, borderColor: color, background: 'none' }}
     >
       {shouldShowDot && (
         <span
@@ -86,7 +117,7 @@ export function StatusBadge({ status, type, showDot }: StatusBadgeProps) {
           }}
         />
       )}
-      {status}
+      {label}
     </span>
   );
 }

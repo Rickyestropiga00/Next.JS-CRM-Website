@@ -20,37 +20,38 @@ import {
   ListTodo,
   ChartColumn,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export const navGroups: AppNavGroup[] = [
   {
-    label: 'Workspace',
+    label: 'Nav.workspace',
     items: [
       {
-        title: 'Dashboard',
+        title: 'Nav.dashboard',
         url: '/dashboard',
         icon: LayoutDashboard,
         roles: ['Admin', 'Agent'],
       },
       {
-        title: 'Orders',
+        title: 'Nav.orders',
         url: '/orders',
         icon: ShoppingCart,
         roles: ['Admin', 'Agent'],
       },
       {
-        title: 'Products',
+        title: 'Nav.products',
         url: '/products',
         icon: ShoppingBag,
         roles: ['Admin', 'Agent'],
       },
       {
-        title: 'Tasks',
+        title: 'Nav.tasks',
         url: '/tasks',
         icon: ListTodo,
         roles: ['Admin', 'Agent'],
       },
       {
-        title: 'Analytics',
+        title: 'Nav.analytics',
         url: '/analytics',
         icon: ChartColumn,
         roles: ['Admin', 'Agent'],
@@ -58,16 +59,16 @@ export const navGroups: AppNavGroup[] = [
     ],
   },
   {
-    label: 'Client Management',
+    label: 'Nav.client',
     items: [
       {
-        title: 'Customers',
+        title: 'Nav.customers',
         url: '/customers',
         icon: Users,
         roles: ['Admin', 'Agent'],
       },
       {
-        title: 'Agents',
+        title: 'Nav.agents',
         url: '/agents',
         icon: SquareUser,
         roles: ['Admin'],
@@ -93,6 +94,7 @@ export function AppNavigation({
   groups: AppNavGroup[];
   role: string;
 }) {
+  const t = useTranslations();
   const pathname = usePathname();
   useSidebar(); // Ensures context is available if needed
 
@@ -118,14 +120,14 @@ export function AppNavigation({
           key={group.label}
           className="group-data-[collapsible=icon]:hidden"
         >
-          <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroupLabel> {t(group.label)}</SidebarGroupLabel>
           <SidebarMenu>
             {group.items.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={pathname === item.url}>
                   <Link href={item.url}>
                     <item.icon />
-                    <span>{item.title}</span>
+                    <span>{t(item.title)}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

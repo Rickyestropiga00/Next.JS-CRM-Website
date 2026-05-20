@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -90,8 +90,63 @@
   --badge-priority-low: #16a34a;
   --badge-priority-medium: #d97706;
   --badge-priority-high: #dc2626;
+  --density-padding: 1rem;
+  --density-gap: 1rem;
+  --density-text: 1rem;
+}
+:root.theme-blue {
+  --primary: oklch(0.623 0.214 259.815);
+  --ring: oklch(0.623 0.214 259.815);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+
+  --chart-1: oklch(0.623 0.214 259.815);
+  --chart-2: oklch(0.707 0.165 254.624);
+  --chart-3: oklch(0.809 0.105 251.813);
+  --chart-4: oklch(0.546 0.245 262.881);
+  --chart-5: oklch(0.488 0.243 264.376);
 }
 
+:root.theme-emerald {
+  --primary: oklch(0.696 0.17 162.48);
+  --ring: oklch(0.696 0.17 162.48);
+  --sidebar-primary: oklch(0.696 0.17 162.48);
+
+  --chart-1: oklch(0.696 0.17 162.48);
+  --chart-2: oklch(0.596 0.145 163.225);
+  --chart-3: oklch(0.508 0.118 165.612);
+  --chart-4: oklch(0.432 0.095 166.913);
+  --chart-5: oklch(0.355 0.072 168.205);
+}
+
+:root.theme-violet {
+  --primary: oklch(0.606 0.25 292.717);
+  --ring: oklch(0.606 0.25 292.717);
+  --sidebar-primary: oklch(0.606 0.25 292.717);
+
+  --chart-1: oklch(0.606 0.25 292.717);
+  --chart-2: oklch(0.541 0.223 293.492);
+  --chart-3: oklch(0.488 0.196 294.107);
+  --chart-4: oklch(0.437 0.168 295.182);
+  --chart-5: oklch(0.389 0.142 296.813);
+}
+
+:root.theme-rose {
+  --primary: oklch(0.645 0.246 16.439);
+  --ring: oklch(0.645 0.246 16.439);
+  --sidebar-primary: oklch(0.645 0.246 16.439);
+}
+
+:root.density-compact {
+  --density-padding: 0.5rem;
+  --density-gap: 0.5rem;
+  --density-text: 0.875rem;
+}
+
+:root.density-ultra {
+  --density-padding: 0.25rem;
+  --density-gap: 0.25rem;
+  --density-text: 0.8rem;
+}
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);

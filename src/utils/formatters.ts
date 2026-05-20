@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 export const formatPrice = (price: number) => {
   return `$${price.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -31,27 +32,36 @@ export const formatPhone = (phone: string) => {
   return cleaned;
 };
 
-export const timeAgo = (dateString?: string) => {
-  if (!dateString) return 'Never';
+type TimeAgoTranslations = ReturnType<typeof useTranslations<'TimeAgo'>>;
 
-  const seconds = Math.floor(
-    (new Date().getTime() - new Date(dateString).getTime()) / 1000
-  );
+export const timeAgo = (
+  date: string | Date | undefined,
+  t: TimeAgoTranslations
+): string => {
+  if (!date) return t('never');
 
-  const intervals = {
-    year: 31536000,
-    month: 2592000,
-    day: 86400,
-    hour: 3600,
-    minute: 60,
-  };
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - new Date(date).getTime()) / 1000);
 
-  for (const [key, value] of Object.entries(intervals)) {
-    const interval = Math.floor(seconds / value);
-    if (interval >= 1) {
-      return `${interval} ${key}${interval > 1 ? 's' : ''} ago`;
+  if (seconds < 10) return t('justNow');
+
+  const intervals: {
+    unit: 'year' | 'month' | 'day' | 'hour' | 'minute';
+    seconds: number;
+  }[] = [
+    { unit: 'year', seconds: 31536000 },
+    { unit: 'month', seconds: 2592000 },
+    { unit: 'day', seconds: 86400 },
+    { unit: 'hour', seconds: 3600 },
+    { unit: 'minute', seconds: 60 },
+  ];
+
+  for (const interval of intervals) {
+    const count = Math.floor(seconds / interval.seconds);
+    if (count >= 1) {
+      return t(interval.unit, { count });
     }
   }
 
-  return 'Just now';
+  return t('justNow');
 };
