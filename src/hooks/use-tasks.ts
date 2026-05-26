@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { Task } from '@/types/interface';
+import { Agent, Task } from '@/types/interface';
 import { getId } from '@/utils/helper';
 import { useFetch } from './use-fetch';
+import { useUser } from './use-user';
 
 // In-memory storage (shared across components, resets on refresh)
 let sharedTasks: Task[] = [];
@@ -16,11 +17,15 @@ function dispatchTasksUpdate() {
 }
 
 export function useTasks() {
+  const { user } = useUser();
+  const { data: agents } = useFetch<Agent>('agent');
   const {
     data: tasksData,
     setData: setTasksData,
     loading: tasksLoading,
   } = useFetch<Task>('task');
+
+  const currentAgent = agents.find((a) => a.userId === user?._id);
 
   // Load tasks on mount
   useEffect(() => {
@@ -28,6 +33,12 @@ export function useTasks() {
       sharedTasks = tasksData;
     }
   }, [tasksData]);
+  const visibleTasks = tasksData.filter((task) => {
+    if (!user) return false;
+    if (user.role === 'admin' || user.role === 'manager') return true; // see all
+    if (!currentAgent) return false;
+    return String(task.agentId) === String(currentAgent._id);
+  });
 
   // Listen for tasks updates from other components
   useEffect(() => {
@@ -95,7 +106,7 @@ export function useTasks() {
   );
 
   return {
-    tasksData,
+    tasksData: visibleTasks,
     tasksLoading,
     addTask,
     updateTask,

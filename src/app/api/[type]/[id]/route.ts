@@ -220,10 +220,26 @@ export async function DELETE(
 }
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; type: string }> }
 ) {
   const body = await req.json();
-  const { id } = await params;
+  const { id, type } = await params;
+  if (type === 'task') {
+    const updatedTask = await Tasks.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      message: 'Task updated successfully',
+      data: updatedTask,
+    });
+  }
 
   const updatedAgent = await Agents.findByIdAndUpdate(
     id,

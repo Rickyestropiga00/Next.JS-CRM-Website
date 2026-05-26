@@ -85,6 +85,7 @@ export type PriorityKey = 'LOW' | 'MEDIUM' | 'HIGH';
 export type Task = {
   _id?: string;
   id: string;
+  agentId?: string;
   title: string;
   description: string;
   status: string;

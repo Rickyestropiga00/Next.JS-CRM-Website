@@ -75,7 +75,7 @@
     "addComment": "Add Comment",
     "adding": "Adding...",
     "viewOrder": "View Order",
-    "assign": "Assign"
+    "assign": "Assign {item}"
   },
 
   "Forms": {

@@ -75,7 +75,7 @@
     "addComment": "コメントを追加",
     "adding": "追加中…",
     "viewOrder": "注文を見る",
-    "assign": "割り当て"
+    "assign": "割り当て {item}"
   },
 
   "Forms": {

@@ -246,7 +246,7 @@ export function AgentsTableBody({
                       onClick={() => setAssignCustomerAgentId(getId(a))}
                     >
                       <ClipboardCheck />
-                      {t('Buttons.assign')}
+                      {t('Buttons.assign', { item: 'Customer' })}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
