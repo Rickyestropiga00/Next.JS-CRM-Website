@@ -58,6 +58,7 @@ export function TaskCard({
   deleteDialogId,
   setDeleteDialogId,
 }: TaskCardProps) {
+  const t = useTranslations();
   const { user } = useUser();
   const timeAgoT = useTranslations('TimeAgo');
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
@@ -173,12 +174,18 @@ export function TaskCard({
                     }}
                   />
                   <span className="text-xs text-muted-foreground font-medium">
-                    {task.status}
+                    {t(
+                      `TaskStatus.${
+                        task.status === 'FOLLOW-UP'
+                          ? 'followUp'
+                          : task.status.toLowerCase()
+                      }`
+                    )}
                   </span>
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
-                    Priority:
+                    {t('Tasks.taskCard.labels.priority')}
                   </span>
                   <span
                     className="px-2 py-0.5 rounded-xs text-xs font-semibold"
@@ -192,7 +199,7 @@ export function TaskCard({
                       color: '#fff',
                     }}
                   >
-                    {task.priority}
+                    {t(`Priority.${task.priority.toLowerCase()}`).toUpperCase()}
                   </span>
                 </span>
               </div>
@@ -225,13 +232,13 @@ export function TaskCard({
                 className="text-green-600 font-semibold hover:text-green-600 focus:text-green-600"
               >
                 <CircleCheckBig className="h-4 w-4 text-green-600" />
-                Mark as done
+                {t('Tasks.taskCard.actions.markDone')}
               </DropdownMenuItem>
             )}
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Move className="h-4 w-4 mr-2" />
-                Move to
+                {t('Tasks.taskCard.actions.moveTo')}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 {columns
@@ -257,7 +264,7 @@ export function TaskCard({
               }}
             >
               <Pencil className="h-4 w-4" />
-              Edit
+              {t('Buttons.edit')}
             </DropdownMenuItem>
             <Can role={user?.role} action="delete" resource="task">
               <AlertDialog
@@ -275,16 +282,18 @@ export function TaskCard({
                     className="text-primary focus:text-primary font-semibold"
                   >
                     <Trash className="h-4 w-4 text-primary" />
-                    Delete
+                    {t('Buttons.delete')}
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {t('ConfirmDelete.singleTitle', { item: 'task' })}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. Are you sure you want to
-                      delete &quot;
-                      {task.title} &quot;?
+                      {t(`ConfirmDelete.singleDescription`, {
+                        name: task.title,
+                      })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -292,7 +301,7 @@ export function TaskCard({
                       onClick={() => setDeleteDialogId(null)}
                       className="cursor-pointer"
                     >
-                      Cancel
+                      {t('Buttons.cancel')}
                     </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => {
@@ -301,7 +310,7 @@ export function TaskCard({
                       }}
                       className="cursor-pointer"
                     >
-                      Delete
+                      {t('Buttons.delete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

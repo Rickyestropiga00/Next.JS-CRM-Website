@@ -51,6 +51,7 @@ export function OrdersTableBody({
   ordersLoading,
 }: TableBodyProps) {
   const { user } = useUser();
+  const t = useTranslations();
   const tableT = useTranslations('Table');
   const confirmDeleteT = useTranslations('ConfirmDelete');
   const productTypesT = useTranslations('ProductTypes');
@@ -94,7 +95,7 @@ export function OrdersTableBody({
       }
     } else {
       onDelete(order.id);
-      toast.success('Order deleted successfully');
+      toast.success(t('Messsages.deleteSuccess', { item: 'Order' }));
       setDeleteDialogId(null);
     }
   };

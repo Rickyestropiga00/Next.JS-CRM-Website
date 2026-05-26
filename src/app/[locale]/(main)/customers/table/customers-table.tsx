@@ -72,8 +72,12 @@ import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
+import { useSearchParams } from 'next/navigation';
 
 export function CustomersTable() {
+  const t = useTranslations();
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editCustomerId, setEditCustomerId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -88,6 +92,8 @@ export function CustomersTable() {
 
   const { data: agents, setData: setAgents } = useFetch<Agent>('agent');
   const { user } = useUser();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
   const {
     data: customersData,
@@ -95,11 +101,24 @@ export function CustomersTable() {
     loading: customersLoading,
   } = useFetch<Customer>('customer');
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
-  const statusOptions: CustomerStatus[] = [
-    'Lead',
-    'Active',
-    'Inactive',
-    'Prospect',
+
+  const statusOptions: { value: CustomerStatus; label: string }[] = [
+    {
+      value: 'Lead',
+      label: t('Statuses.lead'),
+    },
+    {
+      value: 'Active',
+      label: t('Statuses.active'),
+    },
+    {
+      value: 'Inactive',
+      label: t('Statuses.inactive'),
+    },
+    {
+      value: 'Prospect',
+      label: t('Statuses.prospect'),
+    },
   ];
 
   const {
@@ -173,7 +192,8 @@ export function CustomersTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Customer');
+      toast.success(message);
     },
 
     onError: () => {
@@ -217,7 +237,7 @@ export function CustomersTable() {
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3">
         <div className="flex gap-2 flex-wrap items-center">
           <Input
-            placeholder="Search name or email..."
+            placeholder={t('Customers.table.searchPlaceholder')}
             value={filters.search}
             onChange={(e) =>
               setFilters((prev) => ({
@@ -236,15 +256,17 @@ export function CustomersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allStatus')}
+                </SelectItem>
                 {statusOptions.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -264,21 +286,22 @@ export function CustomersTable() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete selected customers?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t('ConfirmDelete.bulkTitle', { items: 'customers' })}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. Are you sure you want to delete
-                  the selected customers?
+                  {t('ConfirmDelete.bulkDescription', { items: 'customers' })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="cursor-pointer">
-                  Cancel
+                  {t('Buttons.cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
-                  Delete
+                  {t('Buttons.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -291,7 +314,7 @@ export function CustomersTable() {
           onClick={() => setShowAddCustomer(true)}
         >
           <Plus className="h-4 w-4" />
-          Add New Customer
+          {t('Buttons.addCustomer')}
         </Button>
       </div>
       <div className="border border-border rounded-lg overflow-hidden">
@@ -316,6 +339,7 @@ export function CustomersTable() {
               onCustomerClick={setSelectedCustomerId}
               setViewOrderCustomerId={setViewOrderCustomerId}
               customersLoading={customersLoading}
+              highlightId={highlightId}
             />
           </Table>
         </div>

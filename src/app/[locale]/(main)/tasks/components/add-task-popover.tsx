@@ -15,6 +15,7 @@ import { Task, ColumnKey } from '@/types/interface';
 import { validateRequired } from '@/lib/validations';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useTranslations } from 'next-intl';
 
 interface AddTaskPopoverProps {
   onAddTask: (task: Task) => void;
@@ -47,6 +48,7 @@ export function AddTaskPopover({
   onClose,
   defaultColumn,
 }: AddTaskPopoverProps) {
+  const t = useTranslations();
   const [internalIsOpen] = useState(false);
 
   // Use external isOpen prop if provided, otherwise use internal state
@@ -75,8 +77,20 @@ export function AddTaskPopover({
   );
 
   const validationRules = {
-    title: (v: string) => validateRequired(v, 'Title'),
-    description: (v: string) => validateRequired(v, 'Description'),
+    title: (v: string) =>
+      validateRequired(
+        v,
+        t('Validations.required', { field: t('Forms.fields.title') }),
+        t
+      ),
+    description: (v: string) =>
+      validateRequired(
+        v,
+        t('Validations.required', {
+          field: t('Forms.fields.description'),
+        }),
+        t
+      ),
   };
 
   const {
@@ -146,11 +160,12 @@ export function AddTaskPopover({
         <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2 sm:space-y-3">
             <h4 className="font-medium text-sm sm:text-base">
-              Add {getColumnLabel(defaultColumn)} Task
+              {t('Tasks.modal.addTitle', {
+                column: t(`TaskColumns.${defaultColumn}`),
+              })}
             </h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Create a new task. This data is temporary and will reset on page
-              reload.
+              {t('Tasks.modal.addDescription')}
             </p>
           </div>
 
@@ -158,7 +173,7 @@ export function AddTaskPopover({
             {/* Row 1: Title */}
             <div className="space-y-2">
               <Label htmlFor="title" className="text-xs">
-                Task Title
+                {t('Tasks.fields.title')}
               </Label>
               <Input
                 id="title"
@@ -167,7 +182,7 @@ export function AddTaskPopover({
                 className={`h-8 sm:h-9 text-xs ${
                   errors.title ? 'border-red-500' : ''
                 }`}
-                placeholder="Enter task title"
+                placeholder={t('Tasks.placeholders.title')}
               />
               {errors.title && (
                 <p className="text-xs text-red-500">{errors.title}</p>
@@ -177,7 +192,7 @@ export function AddTaskPopover({
             {/* Row 2: Description */}
             <div className="space-y-2">
               <Label htmlFor="description" className="text-xs">
-                Description
+                {t('Tasks.fields.description')}
               </Label>
               <Textarea
                 id="description"
@@ -185,7 +200,7 @@ export function AddTaskPopover({
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   handleChange('description', e.target.value)
                 }
-                placeholder="Enter task description..."
+                placeholder={t('Tasks.placeholders.description')}
                 className={`h-16 sm:h-20 text-xs resize-none ${
                   errors.description ? 'border-red-500' : ''
                 }`}
@@ -199,7 +214,7 @@ export function AddTaskPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-xs">
-                  Status
+                  {t('Tasks.fields.status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -211,19 +226,33 @@ export function AddTaskPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DESIGN">Design</SelectItem>
-                    <SelectItem value="DEVELOPMENT">Development</SelectItem>
-                    <SelectItem value="TESTING">Testing</SelectItem>
-                    <SelectItem value="CONTENT">Content</SelectItem>
-                    <SelectItem value="MARKETING">Marketing</SelectItem>
-                    <SelectItem value="MEETING">Meeting</SelectItem>
-                    <SelectItem value="FOLLOW-UP">Follow-up</SelectItem>
+                    <SelectItem value="DESIGN">
+                      {t('TaskStatus.design')}
+                    </SelectItem>
+                    <SelectItem value="DEVELOPMENT">
+                      {t('TaskStatus.development')}
+                    </SelectItem>
+                    <SelectItem value="TESTING">
+                      {t('TaskStatus.testing')}
+                    </SelectItem>
+                    <SelectItem value="CONTENT">
+                      {t('TaskStatus.content')}
+                    </SelectItem>
+                    <SelectItem value="MARKETING">
+                      {t('TaskStatus.marketing')}
+                    </SelectItem>
+                    <SelectItem value="MEETING">
+                      {t('TaskStatus.meeting')}
+                    </SelectItem>
+                    <SelectItem value="FOLLOW-UP">
+                      {t('TaskStatus.followUp')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="priority" className="text-xs">
-                  Priority
+                  {t('Tasks.fields.priority')}
                 </Label>
                 <Select
                   value={formData.priority}
@@ -235,9 +264,11 @@ export function AddTaskPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="LOW">{t('Priority.low')}</SelectItem>
+                    <SelectItem value="MEDIUM">
+                      {t('Priority.medium')}
+                    </SelectItem>
+                    <SelectItem value="HIGH">{t('Priority.high')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -250,7 +281,7 @@ export function AddTaskPopover({
                 onClick={handleCancel}
                 className="h-8 sm:h-7 text-xs order-2 sm:order-1"
               >
-                Cancel
+                {t('Buttons.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -258,7 +289,7 @@ export function AddTaskPopover({
                 className="h-8 sm:h-7 text-xs order-1 sm:order-2"
                 disabled={!isFormValid() || loading}
               >
-                {loading ? 'Adding Task...' : 'Add Task'}
+                {loading ? t('Tasks.buttons.adding') : t('Buttons.addTask')}
               </Button>
             </div>
           </form>

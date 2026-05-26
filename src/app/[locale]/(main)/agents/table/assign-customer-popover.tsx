@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SquareCheck, SquareX } from 'lucide-react';
 import { customers as mockCustomer } from '@/app/data/customers.ts';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 interface Customer {
   _id?: string;
   id?: string;
@@ -35,6 +36,7 @@ export const AssignCustomerPopover = ({
   open,
   onClose,
 }: AssignCustomerPopoverProps) => {
+  const t = useTranslations();
   const [unassignedCustomers, setUnassignedCustomers] = useState<Customer[]>(
     []
   );
@@ -83,7 +85,7 @@ export const AssignCustomerPopover = ({
   const handleSave = async () => {
     setLoading(true);
     const toastId = 'update-assign';
-    toast.loading('Saving changes...', { id: toastId });
+    toast.loading(t('Messages.saving'), { id: toastId });
     if (agent._id) {
       try {
         const res = await fetch(`/api/agent/${agent._id}`, {
@@ -123,7 +125,9 @@ export const AssignCustomerPopover = ({
 
         setSelectedToAssign([]);
         setSelectedToUnassign([]);
-        toast.success('Changes update successfully', { id: toastId });
+        toast.success(t('Messages.updateSuccess', { item: 'Changes' }), {
+          id: toastId,
+        });
         onSave(data.data);
       } catch (error) {
         console.error(error);
@@ -179,11 +183,14 @@ export const AssignCustomerPopover = ({
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
           <h4 className="font-medium text-sm sm:text-base">
-            Assigned Customer
+            {t('Agents.assign.title')}
           </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Assign Customer for{' '}
-            <span className="font-bold capitalize">{agent.name}</span>
+            {t.rich('Agents.assign.subtitle', {
+              name: () => (
+                <span className="font-bold capitalize">{agent.name}</span>
+              ),
+            })}
           </p>
         </div>
         {/* Unassigned Customer */}
@@ -192,7 +199,9 @@ export const AssignCustomerPopover = ({
             <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <SquareX className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-sm font-semibold">Not Assigned</h3>
+            <h3 className="text-sm font-semibold">
+              {t('Agents.assign.notAssigned')}
+            </h3>
           </div>
           <Table>
             <TableHeader>
@@ -214,8 +223,12 @@ export const AssignCustomerPopover = ({
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[70px]">Name</TableHead>
-                <TableHead className="w-[70px]">Email</TableHead>
+                <TableHead className="w-[70px]">
+                  {t('Agents.table.columns.name')}
+                </TableHead>
+                <TableHead className="w-[70px]">
+                  {t('Agents.table.columns.email')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -225,7 +238,7 @@ export const AssignCustomerPopover = ({
                     colSpan={3}
                     className="text-center text-sm text-muted-foreground py-6"
                   >
-                    All customers are already assigned
+                    {t('Agents.assign.noUnassigned')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -267,7 +280,9 @@ export const AssignCustomerPopover = ({
             <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
               <SquareCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-sm font-semibold">Assigned</h3>
+            <h3 className="text-sm font-semibold">
+              {t('Agents.assign.assigned')}
+            </h3>
           </div>
           <Table>
             <TableHeader>
@@ -289,8 +304,12 @@ export const AssignCustomerPopover = ({
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[70px]">Name</TableHead>
-                <TableHead className="w-[70px]">Email</TableHead>
+                <TableHead className="w-[70px]">
+                  {t('Agents.table.columns.name')}
+                </TableHead>
+                <TableHead className="w-[70px]">
+                  {t('Agents.table.columns.email')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -300,7 +319,7 @@ export const AssignCustomerPopover = ({
                     colSpan={3}
                     className="text-center text-sm text-muted-foreground py-6"
                   >
-                    No assigned customers yet
+                    {t('Agents.assign.noAssigned')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -342,7 +361,7 @@ export const AssignCustomerPopover = ({
             onClick={handleCancel}
             className="h-8 sm:h-7 text-xs order-2 sm:order-1"
           >
-            Cancel
+            {t('Buttons.cancel')}
           </Button>
           <Button
             onClick={handleSave}
@@ -350,7 +369,7 @@ export const AssignCustomerPopover = ({
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
             disabled={loading}
           >
-            {loading ? 'Saving Changes...' : 'Save Changes'}
+            {loading ? t('Agents.buttons.saving') : t('Buttons.save')}
           </Button>
         </div>
       </div>

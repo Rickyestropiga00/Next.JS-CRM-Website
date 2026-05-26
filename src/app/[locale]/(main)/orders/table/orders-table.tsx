@@ -71,6 +71,7 @@ import { useUser } from '@/hooks/use-user';
 import { useFilteredOrderByAgent } from '@/hooks/use-filter-orders';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
 
 export function OrdersTable() {
   const {
@@ -91,6 +92,7 @@ export function OrdersTable() {
   const { filteredOrder, agentsLoading } = useFilteredOrderByAgent(ordersData);
 
   const isReady = !ordersLoading && (user?.role !== 'agent' || !agentsLoading);
+  const t = useTranslations();
   const ordersT = useTranslations('Orders');
   const tableT = useTranslations('Table');
   const statusesT = useTranslations('Statuses');
@@ -197,7 +199,8 @@ export function OrdersTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Order');
+      toast.success(message);
     },
 
     onError: () => {
@@ -235,7 +238,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allTypes')} />
             </SelectTrigger>
             <SelectContent>
@@ -260,7 +263,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allStatus')} />
             </SelectTrigger>
             <SelectContent>
@@ -285,7 +288,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allPayment')} />
             </SelectTrigger>
             <SelectContent>

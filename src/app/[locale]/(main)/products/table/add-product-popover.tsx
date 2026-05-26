@@ -67,10 +67,13 @@ export function AddProductPopover({
   );
 
   const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name', 1),
-    code: (v: string) => validateRequired(v, 'Code'),
-    stock: (v: string) => validateNumber(Number(v), 'Stock'),
-    price: (v: string) => validatePrice(Number(v)),
+    name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+    code: (v: string) => validateRequired(v, t('Products.fields.stock'), t),
+    stock: (v: string) => {
+      if (formData.productType !== 'Physical') return undefined;
+      return validateNumber(Number(v), t('Products.fields.stock'), t);
+    },
+    price: (v: string) => validatePrice(Number(v), t),
   };
 
   const {
@@ -232,7 +235,6 @@ export function AddProductPopover({
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
                   className="h-8 sm:h-9 text-xs"
-                  placeholder={t('Products.placeholders.search')}
                 />
                 {errors.name && (
                   <p className="text-xs text-red-500">{errors.name}</p>
@@ -267,7 +269,7 @@ export function AddProductPopover({
                     handleChange('productType', value)
                   }
                 >
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -295,7 +297,7 @@ export function AddProductPopover({
                     handleChange('status', value)
                   }
                 >
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -359,7 +361,9 @@ export function AddProductPopover({
                 type="submit"
                 disabled={!isFormValid() || loading}
               >
-                {loading ? t('Products.Buttons.add') : t('Buttons.addProduct')}
+                {loading
+                  ? t('Products.buttons.adding')
+                  : t('Buttons.addProduct')}
               </Button>
             </div>
           </form>

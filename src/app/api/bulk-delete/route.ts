@@ -43,12 +43,8 @@ export async function DELETE(req: Request) {
       await Model.deleteMany({ _id: { $in: objectIds } });
     }
 
-    const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
-    console.log('Incoming IDs:', ids);
-    console.log('Valid ObjectIds:', objectIds);
-
     return NextResponse.json(
-      { message: `${capitalizedType} deleted successfully` },
+      { message: 'DELETED_SUCCESSFULLY' },
       { status: 200 }
     );
   } catch (error) {

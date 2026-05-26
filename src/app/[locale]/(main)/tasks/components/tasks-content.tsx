@@ -16,6 +16,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { useTranslations } from 'next-intl';
 
 // Dynamically import task modals to reduce initial bundle size
 const EditTaskPopover = dynamic(
@@ -43,6 +44,7 @@ const AddNewTaskPopover = dynamic(
 );
 
 export function TasksContent() {
+  const t = useTranslations();
   const { state } = useSidebar();
   const isSidebarCollapsed = state === 'collapsed';
   const {
@@ -65,27 +67,27 @@ export function TasksContent() {
   const [showAddNewTask, setShowAddNewTask] = React.useState(false);
 
   const statusOptions = [
-    { label: 'All Categories', value: 'all' },
-    { label: 'Design', value: 'DESIGN' },
-    { label: 'Development', value: 'DEVELOPMENT' },
-    { label: 'Testing', value: 'TESTING' },
-    { label: 'Content', value: 'CONTENT' },
-    { label: 'Marketing', value: 'MARKETING' },
-    { label: 'Meeting', value: 'MEETING' },
-    { label: 'Follow-up', value: 'FOLLOW-UP' },
+    { label: t('Tasks.filters.allCategories'), value: 'all' },
+    { label: t('TaskStatus.design'), value: 'DESIGN' },
+    { label: t('TaskStatus.development'), value: 'DEVELOPMENT' },
+    { label: t('TaskStatus.testing'), value: 'TESTING' },
+    { label: t('TaskStatus.content'), value: 'CONTENT' },
+    { label: t('TaskStatus.marketing'), value: 'MARKETING' },
+    { label: t('TaskStatus.meeting'), value: 'MEETING' },
+    { label: t('TaskStatus.followUp'), value: 'FOLLOW-UP' },
   ];
   const priorityOptions = [
-    { label: 'All Priority', value: 'all' },
-    { label: 'Low', value: 'LOW' },
-    { label: 'Medium', value: 'MEDIUM' },
-    { label: 'High', value: 'HIGH' },
+    { label: t('Tasks.filters.allPriority'), value: 'all' },
+    { label: t('Priority.low'), value: 'LOW' },
+    { label: t('Priority.medium'), value: 'MEDIUM' },
+    { label: t('Priority.high'), value: 'HIGH' },
   ];
 
   const columns = [
-    { key: 'todo' as const, label: 'To do' },
-    { key: 'inprogress' as const, label: 'In progress' },
-    { key: 'inreview' as const, label: 'In review' },
-    { key: 'done' as const, label: 'Done' },
+    { key: 'todo' as const, label: t('TaskColumns.todo') },
+    { key: 'inprogress' as const, label: t('TaskColumns.inprogress') },
+    { key: 'inreview' as const, label: t('TaskColumns.inreview') },
+    { key: 'done' as const, label: t('TaskColumns.done') },
   ];
 
   // Filter tasks by status and priority
@@ -161,7 +163,7 @@ export function TasksContent() {
           onClick={() => setShowAddNewTask(true)}
         >
           <Plus className="h-4 w-4" />
-          Add New Task
+          {t('Buttons.addTask')}
         </Button>
       </div>
       <DndContext

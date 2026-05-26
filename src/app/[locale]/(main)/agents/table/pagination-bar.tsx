@@ -1,24 +1,25 @@
-import React from "react";
+import React from 'react';
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { useTranslations } from 'next-intl';
 
 interface PaginationBarProps {
   selectedCount: number;
@@ -31,7 +32,7 @@ interface PaginationBarProps {
 }
 
 const paginationIconBtnClass =
-  "flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background px-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground";
+  'flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background px-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground';
 
 function PaginationFirst({
   disabled,
@@ -45,7 +46,7 @@ function PaginationFirst({
       type="button"
       aria-label="Go to first page"
       className={`${paginationIconBtnClass} ${
-        disabled ? "pointer-events-none opacity-50" : ""
+        disabled ? 'pointer-events-none opacity-50' : ''
       }`}
       onClick={onClick}
       disabled={disabled}
@@ -67,7 +68,7 @@ function PaginationPrevious({
       type="button"
       aria-label="Go to previous page"
       className={`${paginationIconBtnClass} ${
-        disabled ? "pointer-events-none opacity-50" : ""
+        disabled ? 'pointer-events-none opacity-50' : ''
       }`}
       onClick={onClick}
       disabled={disabled}
@@ -89,7 +90,7 @@ function PaginationNext({
       type="button"
       aria-label="Go to next page"
       className={`${paginationIconBtnClass} ${
-        disabled ? "pointer-events-none opacity-50" : ""
+        disabled ? 'pointer-events-none opacity-50' : ''
       }`}
       onClick={onClick}
       disabled={disabled}
@@ -111,7 +112,7 @@ function PaginationLast({
       type="button"
       aria-label="Go to last page"
       className={`${paginationIconBtnClass} ${
-        disabled ? "pointer-events-none opacity-50" : ""
+        disabled ? 'pointer-events-none opacity-50' : ''
       }`}
       onClick={onClick}
       disabled={disabled}
@@ -130,10 +131,14 @@ export function AgentsPaginationBar({
   setRowsPerPage,
   setCurrentPage,
 }: PaginationBarProps) {
+  const t = useTranslations();
   return (
     <div className="flex flex-wrap lg:flex-nowrap items-center justify-between mt-4 px-2 gap-2">
       <div className="text-sm text-muted-foreground whitespace-nowrap w-[140px]">
-        {`${selectedCount} of ${totalRows} row(s) selected.`}
+        {t('Pagination.selectedRows', {
+          selectedCount: selectedCount,
+          totalRows: totalRows,
+        })}
       </div>
       <Pagination>
         <PaginationContent className="gap-2">
@@ -216,7 +221,7 @@ export function AgentsPaginationBar({
         </PaginationContent>
       </Pagination>
       <div className="flex items-center gap-2 text-sm whitespace-nowrap">
-        <span>Rows per page</span>
+        <span>{t('Pagination.rowsPerPage')}</span>
         <Select
           value={String(rowsPerPage)}
           onValueChange={(v) => setRowsPerPage(Number(v))}

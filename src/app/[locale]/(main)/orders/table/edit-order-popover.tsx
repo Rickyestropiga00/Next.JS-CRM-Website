@@ -46,14 +46,16 @@ export function EditOrderPopover({
   open,
   customer,
 }: EditOrderPopoverProps) {
+  const t = useTranslations();
   const validationRules = {
-    address: (v: string) => validateRequired(v, 'Address'),
+    address: (v: string) =>
+      validateRequired(v, t('Forms.fields.address'), t, 1),
     quantity: (v: number) => {
       if (v === null || v === undefined) {
         return 'Quantity is required';
       }
 
-      return validateNumber(Number(v), 'Quantity');
+      return validateNumber(Number(v), t('Orders.fields.quantity'), t);
     },
   };
 
@@ -157,7 +159,7 @@ export function EditOrderPopover({
   };
 
   const validateQuantity = (quantity: number): string | undefined => {
-    return validateNumber(quantity, 'Quantity', 0, 999);
+    return validateNumber(quantity, t('Orders.fields.quantity'), t, 0, 999);
   };
 
   const handleQuantityChange = (value: number) => {
@@ -508,7 +510,7 @@ export function EditOrderPopover({
             onClick={handleCancel}
             className="h-8 sm:h-7 text-xs order-2 sm:order-1"
           >
-            Cancel
+            {t('Buttons.cancel')}
           </Button>
           <Button
             size="sm"

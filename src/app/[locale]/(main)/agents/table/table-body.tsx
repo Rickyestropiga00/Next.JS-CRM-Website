@@ -31,6 +31,7 @@ import { formatPhone } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { useTranslations } from 'next-intl';
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -57,6 +58,7 @@ export function AgentsTableBody({
   setAssignCustomerAgentId,
   agentsLoading,
 }: TableBodyProps) {
+  const t = useTranslations();
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
     if (!comment) return 0;
@@ -85,7 +87,7 @@ export function AgentsTableBody({
       }
     } else {
       onDelete(agent.id);
-      toast.success('Agent deleted successfully');
+      toast.success(t('Messages.deleteSuccess', { item: 'Agents' }));
       setDeleteDialogId(null);
     }
   };
@@ -101,7 +103,7 @@ export function AgentsTableBody({
             colSpan={13}
             className="text-center py-6 text-muted-foreground"
           >
-            No Agents Found!
+            {t('Table.noDataFound', { item: 'Agents' })}
           </TableCell>
         </TableRow>
       ) : (
@@ -141,13 +143,17 @@ export function AgentsTableBody({
               <TableCell className="w-[120px]">
                 {formatPhone(a.phone)}
               </TableCell>
-              <TableCell className="w-[100px]">{a.role}</TableCell>
+              <TableCell className="w-[100px]">
+                {t(`Roles.${a.role.toLowerCase()}`)}
+              </TableCell>
               <TableCell className="w-[100px]">
                 <StatusBadge status={a.status} type="agent" />
               </TableCell>
-              <TableCell className="w-[150px]">
+              <TableCell className="w-[180px]">
                 {a.assignedCustomers.length > 0
-                  ? `${a.assignedCustomers.length} assigned`
+                  ? t('Agents.table.assinged', {
+                      count: a.assignedCustomers.length,
+                    })
                   : '-'}
               </TableCell>
               <TableCell className="w-[120px]">
@@ -161,7 +167,7 @@ export function AgentsTableBody({
                   {a.notes || '-'}
                 </div>
               </TableCell>
-              <TableCell className="w-[180px] max-w-[180px]">
+              <TableCell className="w-[80px] max-w-[180px]">
                 <div className="text-center">
                   {commentCount > 0 ? (
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold">
@@ -172,7 +178,7 @@ export function AgentsTableBody({
                   )}
                 </div>
               </TableCell>
-              <TableCell className="w-[70px]">
+              <TableCell className="w-[80px]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -186,7 +192,7 @@ export function AgentsTableBody({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setEditAgentId(getId(a))}>
                       <Pencil className="h-4 w-4" />
-                      Edit
+                      {t('Buttons.edit')}
                     </DropdownMenuItem>
                     <AlertDialog
                       open={deleteDialogId === a.id}
@@ -203,17 +209,18 @@ export function AgentsTableBody({
                           className="text-primary focus:text-primary font-semibold"
                         >
                           <Trash className="h-4 w-4 text-primary" />
-                          Delete
+                          {t('Buttons.delete')}
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            Delete this agent?
+                            {t('ConfirmDelete.singleTitle', { item: 'Agent' })}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. Are you sure you want
-                            to delete {a.name}?
+                            {t('ConfirmDelete.singleDescription', {
+                              name: a.name,
+                            })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -221,7 +228,7 @@ export function AgentsTableBody({
                             onClick={() => setDeleteDialogId(null)}
                             className="cursor-pointer"
                           >
-                            Cancel
+                            {t('Buttons.cancel')}
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
@@ -230,7 +237,7 @@ export function AgentsTableBody({
                             }}
                             className="cursor-pointer"
                           >
-                            Delete
+                            {t('Buttons.delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -239,7 +246,7 @@ export function AgentsTableBody({
                       onClick={() => setAssignCustomerAgentId(getId(a))}
                     >
                       <ClipboardCheck />
-                      Assign
+                      {t('Buttons.assign')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

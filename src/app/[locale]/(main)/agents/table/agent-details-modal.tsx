@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Users,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AgentDetailsModalProps {
   agent: Agent | null;
@@ -34,6 +35,7 @@ export function AgentDetailsModal({
   onClose,
   onAddComment,
 }: AgentDetailsModalProps) {
+  const t = useTranslations();
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -195,7 +197,9 @@ export function AgentDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-bold">Agent Details</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {t('Agents.modal.detailsTitle')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -220,12 +224,12 @@ export function AgentDetailsModal({
                     agent.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {agent.status}
+                  {t(`Statuses.${agent.status.toLowerCase()}`)}
                 </Badge>
                 <Badge
                   className={`${getRoleColor(agent.role)} px-2 py-0.5 text-xs`}
                 >
-                  {agent.role}
+                  {t(`Roles.${agent.role.toLowerCase()}`)}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
                   ID: {agent.id || agent.agentId}
@@ -242,18 +246,20 @@ export function AgentDetailsModal({
                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                   <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Contact</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.contact')}
+                </h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Email
+                    {t('Agents.details.fields.email')}
                   </p>
                   <p className="text-xs">{agent.email}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Phone
+                    {t('Agents.details.fields.phone')}
                   </p>
                   <p className="text-xs">{agent.phone}</p>
                 </div>
@@ -266,11 +272,13 @@ export function AgentDetailsModal({
                 <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                   <User className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Role</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.role')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Position
+                  {t('Agents.details.fields.position')}
                 </p>
                 <Badge
                   className={`${getRoleColor(agent.role)} px-2 py-0.5 text-xs`}
@@ -286,18 +294,20 @@ export function AgentDetailsModal({
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Timeline</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.timeline')}
+                </h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Created
+                    {t('Agents.details.fields.created')}
                   </p>
                   <p className="text-xs">{formatDate(agent.createdAt)}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Last Login
+                    {t('Agents.details.fields.lastLogin')}
                   </p>
                   <p className="text-xs">{formatDateTime(agent.lastLogin)}</p>
                 </div>
@@ -310,18 +320,24 @@ export function AgentDetailsModal({
                 <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                   <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Assigned</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.assigned')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Customers
+                  {t('Agents.details.fields.customers')}
                 </p>
                 <p className="text-xs">
                   {agent.assignedCustomers.length > 0
-                    ? `${agent.assignedCustomers.length} customer${
-                        agent.assignedCustomers.length !== 1 ? 's' : ''
-                      } assigned`
-                    : 'No customers assigned'}
+                    ? agent.assignedCustomers.length !== 1
+                      ? t('Agents.details.assigned.multiple', {
+                          count: agent.assignedCustomers.length,
+                        })
+                      : t('Agents.details.assigned.single', {
+                          count: agent.assignedCustomers.length,
+                        })
+                    : t('Agents.details.assigned.none')}
                 </p>
               </div>
             </div>
@@ -334,7 +350,9 @@ export function AgentDetailsModal({
                 <div className="w-8 h-8 bg-gray-100 dark:bg-gray-900/30 rounded-lg flex items-center justify-center">
                   <FileText className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Notes</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.notes')}
+                </h3>
               </div>
               {(() => {
                 const { regularNotes } = parseNotesAndComments(
@@ -363,7 +381,9 @@ export function AgentDetailsModal({
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-sm font-semibold">Comments</h3>
+                    <h3 className="text-sm font-semibold">
+                      {t('Agents.details.sections.comments')}
+                    </h3>
                     {comments.length > 0 && (
                       <Badge variant="secondary" className="text-xs">
                         {comments.length}
@@ -388,7 +408,7 @@ export function AgentDetailsModal({
                     />
                     <div className="flex justify-between items-center">
                       <p className="text-xs text-muted-foreground">
-                        Press Ctrl+Enter to submit
+                        {t('Forms.hints.ctrlEnterSubmit')}
                       </p>
                       <Button
                         onClick={handleAddComment}
@@ -412,7 +432,7 @@ export function AgentDetailsModal({
             onClick={onClose}
             className="px-4 py-2 text-sm cursor-pointer"
           >
-            Close
+            {t('Buttons.close')}
           </Button>
         </div>
       </DialogContent>

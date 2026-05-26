@@ -51,7 +51,7 @@ export function StatusBadge({ status, type, showDot }: StatusBadgeProps) {
   let color = 'var(--badge-priority-high)';
   let isPaymentStatus = false;
 
-  const statusesT = useTranslations('Statuses');
+  const t = useTranslations('Statuses');
   const paymentT = useTranslations('Payment');
 
   const translationKeyMap: Record<string, string> = {
@@ -73,8 +73,13 @@ export function StatusBadge({ status, type, showDot }: StatusBadgeProps) {
 
   const translationKey = translationKeyMap[status] || status;
 
-  if (type === 'order') {
-    label = statusesT(translationKey);
+  if (
+    type === 'order' ||
+    type === 'product' ||
+    type === 'agent' ||
+    type === 'customer'
+  ) {
+    label = t(translationKey);
   }
 
   if (type === 'payment') {

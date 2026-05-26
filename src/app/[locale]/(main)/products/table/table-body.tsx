@@ -27,6 +27,7 @@ import { getId } from '@/utils/helper';
 import { TableSkeleton } from '@/components/shared/table-skeleton';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
 
 interface TableBodyProps {
   paginated: any[];
@@ -51,6 +52,7 @@ export function ProductsTableBody({
   setEditProductId,
   productsLoading,
 }: TableBodyProps) {
+  const t = useTranslations();
   const { user } = useUser();
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString('en-US', {
@@ -87,7 +89,7 @@ export function ProductsTableBody({
       }
     } else {
       onDelete(product.id);
-      toast.success('Product deleted successfully');
+      toast.success(t('Messsages.deleteSuccess', { item: 'Product' }));
       setDeleteDialogId(null);
     }
   };
@@ -108,7 +110,7 @@ export function ProductsTableBody({
             colSpan={user?.role === 'admin' ? 10 : 9}
             className="text-center py-6 text-muted-foreground"
           >
-            No Product Found!
+            {t('Table.noDataFound', { item: 'Products' })}
           </TableCell>
         </TableRow>
       ) : (
@@ -164,7 +166,9 @@ export function ProductsTableBody({
             <TableCell className="w-[120px] font-mono text-sm">
               {p.code}
             </TableCell>
-            <TableCell className="w-[100px]">{p.productType}</TableCell>
+            <TableCell className="w-[100px]">
+              {t(`ProductTypes.${p.productType.toLowerCase()}`)}
+            </TableCell>
             <TableCell className="w-[120px]">
               {new Date(p.createdAt ?? p.date).toLocaleDateString()}
             </TableCell>
@@ -193,7 +197,7 @@ export function ProductsTableBody({
                       onClick={() => setEditProductId(getId(p))}
                     >
                       <Pencil className="h-4 w-4" />
-                      Edit
+                      {t('Buttons.edit')}
                     </DropdownMenuItem>
                     <AlertDialog
                       open={deleteDialogId === p.id}
@@ -210,17 +214,20 @@ export function ProductsTableBody({
                           className="text-primary focus:text-primary font-semibold"
                         >
                           <Trash className="h-4 w-4 text-primary" />
-                          Delete
+                          {t('Buttons.delete')}
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            Delete this product?
+                            {t('ConfirmDelete.singleTitle', {
+                              item: 'product',
+                            })}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. Are you sure you want
-                            to delete {p.name}?
+                            {t('ConfirmDelete.singleDescription', {
+                              name: p.name,
+                            })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -228,7 +235,7 @@ export function ProductsTableBody({
                             onClick={() => setDeleteDialogId(null)}
                             className="cursor-pointer"
                           >
-                            Cancel
+                            {t('Buttons.cancel')}
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
@@ -236,7 +243,7 @@ export function ProductsTableBody({
                             }}
                             className="cursor-pointer"
                           >
-                            Delete
+                            {t('Buttons.delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

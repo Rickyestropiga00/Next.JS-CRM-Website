@@ -64,8 +64,11 @@ import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
 
 export function ProductsTable() {
+  const t = useTranslations();
   const {
     data: productsData,
     setData: setProductsData,
@@ -80,14 +83,36 @@ export function ProductsTable() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
 
-  const statusOptions: ProductStatus[] = ['Active', 'Disabled'];
-
-  const typeOptions: ProductTypes[] = [
-    'Physical',
-    'Digital',
-    'Service',
-    'Subscription',
+  const statusOptions: { value: ProductStatus; label: string }[] = [
+    {
+      value: 'Active',
+      label: t('Statuses.active'),
+    },
+    {
+      value: 'Disabled',
+      label: t('Statuses.disabled'),
+    },
   ];
+
+  const typeOptions: { value: ProductTypes; label: string }[] = [
+    {
+      value: 'Physical',
+      label: t('ProductTypes.physical'),
+    },
+    {
+      value: 'Digital',
+      label: t('ProductTypes.digital'),
+    },
+    {
+      value: 'Service',
+      label: t('ProductTypes.service'),
+    },
+    {
+      value: 'Subscription',
+      label: t('ProductTypes.subscription'),
+    },
+  ];
+
   const {
     filters,
     setFilters,
@@ -136,7 +161,8 @@ export function ProductsTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Product');
+      toast.success(message);
     },
 
     onError: () => {
@@ -151,7 +177,7 @@ export function ProductsTable() {
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3">
         <div className="flex gap-2 flex-wrap items-center">
           <Input
-            placeholder="Search products..."
+            placeholder={t('Products.table.searchPlaceholder')}
             value={filters.search}
             onChange={(e) =>
               setFilters((prev) => ({
@@ -170,15 +196,17 @@ export function ProductsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allStatus')}
+                </SelectItem>
                 {statusOptions.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -193,15 +221,17 @@ export function ProductsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allTypes')}
+                </SelectItem>
                 {typeOptions.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -220,21 +250,22 @@ export function ProductsTable() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete selected products?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t('ConfirmDelete.bulkTitle', { items: 'products' })}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. Are you sure you want to delete
-                  the selected products?
+                  {t('ConfirmDelete.bulkDescription', { items: 'products' })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="cursor-pointer">
-                  Cancel
+                  {t('Buttons.cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
-                  Delete
+                  {t('Buttons.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -248,7 +279,7 @@ export function ProductsTable() {
             onClick={() => setShowAddProduct(true)}
           >
             <Plus className="h-4 w-4" />
-            Add New Product
+            {t('Buttons.addProduct')}
           </Button>
         </Can>
       </div>

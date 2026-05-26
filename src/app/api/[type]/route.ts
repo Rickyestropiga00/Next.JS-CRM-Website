@@ -128,7 +128,7 @@ export async function POST(
       const existingUser = await findUserByEmail(body.email);
       if (existingUser) {
         return NextResponse.json(
-          { error: 'Email already registered' },
+          { error: 'EMAIL_ALREADY_EXISTS' },
           { status: 400 }
         );
       }
@@ -160,25 +160,16 @@ export async function POST(
     console.error(error);
     if (error?.cause?.code === 11000) {
       const field = Object.keys(error.cause.keyValue)[0];
+      const code = `${field.toUpperCase()}_ALREADY_EXISTS`;
 
-      return NextResponse.json(
-        {
-          field,
-          error: `${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          } already exists`,
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ field, error: code }, { status: 400 });
     }
     if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err: any) => err.message);
-
-      return NextResponse.json({ error: errors[0] }, { status: 400 });
+      return NextResponse.json({ error: 'VALIDATION_ERROR' }, { status: 400 });
     }
 
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { error: 'SOMETHING_WENT_WRONG' },
       { status: 500 }
     );
   }

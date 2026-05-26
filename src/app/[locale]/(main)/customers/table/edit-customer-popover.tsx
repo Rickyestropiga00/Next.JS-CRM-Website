@@ -22,6 +22,7 @@ import { Customer, CustomerStatus } from '@/types/interface';
 import { toast } from 'sonner';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useTranslations } from 'next-intl';
 
 interface EditCustomerPopoverProps {
   customer: Customer;
@@ -41,10 +42,11 @@ export function EditCustomerPopover({
   onClose,
   open,
 }: EditCustomerPopoverProps) {
+  const t = useTranslations();
   const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name'),
-    email: (v: string) => validateEmail(v),
-    phone: (v: string) => validatePhone(v),
+    name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+    email: (v: string) => validateEmail(v, t),
+    phone: (v: string) => validatePhone(v, t),
   };
 
   const {
@@ -64,7 +66,7 @@ export function EditCustomerPopover({
   const toastId = 'customer-update';
 
   const onSubmit = (e: React.FormEvent) => {
-    toast.loading('Saving Changes...', { id: toastId });
+    toast.loading(t('Messages.saving'), { id: toastId });
     if (customer._id) {
       handleSubmit(e, formData, validateForm, {
         url: `/api/customer/${customer._id}`,
@@ -97,7 +99,9 @@ export function EditCustomerPopover({
     } else {
       if (validateForm()) {
         onSave(formData);
-        toast.success('Customer updated locally', { id: toastId });
+        toast.success(t('Messages.updateLocal', { item: 'Customer' }), {
+          id: toastId,
+        });
         onClose();
       }
     }
@@ -107,10 +111,11 @@ export function EditCustomerPopover({
     <ModalWrapper open={open} onClose={handleCancel}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Edit Customer</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('Customers.modal.editTitle')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Update customer information. Changes are temporary and will reset on
-            page reload.
+            {t('Customers.modal.editDescription')}
           </p>
         </div>
 
@@ -119,7 +124,7 @@ export function EditCustomerPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs">
-                Name
+                {t('Customers.fields.name')}
               </Label>
               <Input
                 id="name"
@@ -130,14 +135,14 @@ export function EditCustomerPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="company" className="text-xs">
-                Company
+                {t('Customers.fields.company')}
               </Label>
               <Input
                 id="company"
                 value={formData?.company || ''}
                 onChange={(e) => handleChange('company', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
-                placeholder="Company name (optional)"
+                placeholder={t('Customers.placeholders.company')}
               />
             </div>
           </div>
@@ -146,7 +151,7 @@ export function EditCustomerPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-xs">
-                Email
+                {t('Customers.fields.email')}
               </Label>
               <Input
                 id="email"
@@ -163,7 +168,7 @@ export function EditCustomerPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-xs">
-                Phone
+                {t('Customers.fields.phone')}
               </Label>
               <Input
                 id="phone"
@@ -184,7 +189,7 @@ export function EditCustomerPopover({
           {/* Row 3: Status (full width) */}
           <div className="space-y-2">
             <Label htmlFor="status" className="text-xs">
-              Status
+              {t('Customers.fields.status')}
             </Label>
             <Select
               value={formData.status}
@@ -196,10 +201,14 @@ export function EditCustomerPopover({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Lead">Lead</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Prospect">Prospect</SelectItem>
+                <SelectItem value="Lead">{t('Statuses.lead')}</SelectItem>
+                <SelectItem value="Active">{t('Statuses.active')}</SelectItem>
+                <SelectItem value="Inactive">
+                  {t('Statuses.inactive')}
+                </SelectItem>
+                <SelectItem value="Prospect">
+                  {t('Statuses.prospect')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -207,7 +216,7 @@ export function EditCustomerPopover({
           {/* Row 4: Notes (full width) */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs">
-              Notes
+              {t('Customers.fields.notes')}
             </Label>
             <Textarea
               id="notes"
@@ -215,7 +224,7 @@ export function EditCustomerPopover({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange('notes', e.target.value)
               }
-              placeholder="Add notes..."
+              placeholder={t('Forms.placeholders.addNotes')}
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
@@ -233,7 +242,7 @@ export function EditCustomerPopover({
             onClick={handleCancel}
             className="h-8 sm:h-7 text-xs order-2 sm:order-1"
           >
-            Cancel
+            {t('Buttons.cancel')}
           </Button>
           <Button
             size="sm"
@@ -241,7 +250,7 @@ export function EditCustomerPopover({
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
             disabled={!isFormValid() || !hasChanges || loading}
           >
-            {loading ? 'Saving Changes...' : 'Save Changes'}
+            {loading ? t('Customers.buttons.saving') : t('Buttons.save')}
           </Button>
         </div>
       </div>

@@ -65,8 +65,11 @@ import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
 import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
+import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
 
 export function AgentsTable() {
+  const t = useTranslations();
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editAgentId, setEditAgentId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -158,7 +161,8 @@ export function AgentsTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Agent');
+      toast.success(message);
     },
 
     onError: () => {
@@ -171,7 +175,7 @@ export function AgentsTable() {
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3">
         <div className="flex gap-2 flex-wrap items-center">
           <Input
-            placeholder="Search name or email..."
+            placeholder={t('Agents.placeholders.search')}
             value={filters.search}
             onChange={(e) =>
               setFilters((prev) => ({
@@ -191,12 +195,14 @@ export function AgentsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Roles" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allRoles')}
+                </SelectItem>
                 {roleOptions.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
@@ -215,12 +221,14 @@ export function AgentsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto ">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allStatus')}
+                </SelectItem>
                 {statusOptions.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -242,21 +250,22 @@ export function AgentsTable() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete selected agents?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t('ConfirmDelete.bulkTitle', { items: 'Agents' })}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. Are you sure you want to delete
-                  the selected agents?
+                  {t('ConfirmDelete.bulkDescription', { items: 'Agents' })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="cursor-pointer">
-                  Cancel
+                  {t('Buttons.cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
-                  Delete
+                  {t('Buttons.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -268,7 +277,7 @@ export function AgentsTable() {
           onClick={() => setShowAddAgent(true)}
         >
           <Plus className="h-4 w-4" />
-          Add New Agent
+          {t('Buttons.addAgent')}
         </Button>
       </div>
       <div className="border border-border rounded-lg overflow-hidden">

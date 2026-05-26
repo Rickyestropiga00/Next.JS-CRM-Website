@@ -22,6 +22,7 @@ import { Agent } from '@/types/interface';
 import { toast } from 'sonner';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useTranslations } from 'next-intl';
 
 interface EditAgentPopoverProps {
   agent: Agent;
@@ -41,10 +42,11 @@ export function EditAgentPopover({
   onClose,
   open,
 }: EditAgentPopoverProps) {
+  const t = useTranslations();
   const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name'),
-    email: (v: string) => validateRequired(v, 'Email') || validateEmail(v),
-    phone: (v: string) => validateRequired(v, 'Phone') || validatePhone(v),
+    name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+    email: (v: string) => validateEmail(v, t),
+    phone: (v: string) => validatePhone(v, t),
   };
   const {
     formData,
@@ -60,7 +62,7 @@ export function EditAgentPopover({
   const toastId = 'agent-update';
 
   const onSubmit = (e: React.FormEvent) => {
-    toast.loading('Saving changes...', { id: toastId });
+    toast.loading(t('Messages.saving'), { id: toastId });
     if (agent._id) {
       handleSubmit(e, formData, validateForm, {
         url: `/api/agent/${formData._id}`,
@@ -98,7 +100,9 @@ export function EditAgentPopover({
     } else {
       if (validateForm()) {
         onSave(formData);
-        toast.success('Agent updated locally', { id: toastId });
+        toast.success(t('Messages.updateLocal', { item: 'Agents' }), {
+          id: toastId,
+        });
         onClose();
       }
     }
@@ -108,10 +112,11 @@ export function EditAgentPopover({
     <ModalWrapper open={open} onClose={onClose}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Edit Agent</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('Agents.modal.editTitle')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Update agent information. Changes are temporary and will reset on
-            page reload.
+            {t('Agents.modal.editDescription')}
           </p>
         </div>
 
@@ -120,7 +125,7 @@ export function EditAgentPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs">
-                Name
+                {t('Agents.fields.name')}
               </Label>
               <Input
                 id="name"
@@ -131,7 +136,7 @@ export function EditAgentPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-xs">
-                Phone
+                {t('Agents.fields.phone')}
               </Label>
               <Input
                 id="phone"
@@ -153,7 +158,7 @@ export function EditAgentPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-xs">
-                Email
+                {t('Agents.fields.email')}
               </Label>
               <Input
                 id="email"
@@ -171,7 +176,7 @@ export function EditAgentPopover({
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="role" className="text-xs">
-                  Role
+                  {t('Agents.fields.role')}
                 </Label>
                 <Select
                   value={formData.role}
@@ -183,15 +188,17 @@ export function EditAgentPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Agent">Agent</SelectItem>
-                    <SelectItem value="Manager">Manager</SelectItem>
+                    <SelectItem value="Admin">{t('Roles.admin')}</SelectItem>
+                    <SelectItem value="Agent">{t('Roles.agent')}</SelectItem>
+                    <SelectItem value="Manager">
+                      {t('Roles.manager')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex-1 space-y-2">
                 <Label htmlFor="status" className="text-xs">
-                  Status
+                  {t('Agents.fields.status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -203,9 +210,15 @@ export function EditAgentPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="On Leave">On Leave</SelectItem>
+                    <SelectItem value="Active">
+                      {t('Statuses.active')}
+                    </SelectItem>
+                    <SelectItem value="Inactive">
+                      {t('Statuses.inactive')}
+                    </SelectItem>
+                    <SelectItem value="On Leave">
+                      {t('Statuses.onLeave')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -215,7 +228,7 @@ export function EditAgentPopover({
           {/* Row 3: Notes (full width) */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs">
-              Notes
+              {t('Agents.fields.notes')}
             </Label>
             <Textarea
               id="notes"
@@ -223,7 +236,7 @@ export function EditAgentPopover({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange('notes', e.target.value)
               }
-              placeholder="Add notes..."
+              placeholder={t('Forms.placeholders.notes')}
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
@@ -241,7 +254,7 @@ export function EditAgentPopover({
             onClick={handleCancel}
             className="h-8 sm:h-7 text-xs order-2 sm:order-1"
           >
-            Cancel
+            {t('Buttons.cancel')}
           </Button>
           <Button
             size="sm"
@@ -249,7 +262,7 @@ export function EditAgentPopover({
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
             disabled={!isFormValid() || !hasChanges || loading}
           >
-            {loading ? 'Saving Changes...' : 'Save Changes'}
+            {loading ? t('Agents.button.updating') : t('Buttons.save')}
           </Button>
         </div>
       </div>

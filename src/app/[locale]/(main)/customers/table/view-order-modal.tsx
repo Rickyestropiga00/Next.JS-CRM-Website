@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { formatPrice } from '@/utils/formatters';
+import { useTranslations } from 'next-intl';
 
 interface ViewOrderModalProps {
   customer: Customer;
@@ -31,6 +32,7 @@ export const ViewOrderModal = ({
   open,
   onClose,
 }: ViewOrderModalProps) => {
+  const t = useTranslations();
   const [customerOrder, setCustomerOrder] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -62,17 +64,22 @@ export const ViewOrderModal = ({
     <ModalWrapper open={open} onClose={handleCancel}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Order History</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('Customers.modal.viewOrderTitle')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            View all orders placed by{' '}
-            <span className="font-bold capitalize"> {customer.name} </span>
+            {t.rich('Customers.modal.viewOrderDescription', {
+              name: () => (
+                <span className="font-bold capitalize">{customer.name}</span>
+              ),
+            })}
           </p>
         </div>
 
         <div className="space-y-4">
           {customerOrder.length === 0 ? (
             <div className="flex justify-self-center mt-10 font-bold">
-              <p>No Order Yet</p>
+              <p>{t('Customers.viewOrder.emptyState')}</p>
             </div>
           ) : (
             customerOrder.map((custOrder) => {
@@ -90,7 +97,9 @@ export const ViewOrderModal = ({
                     </CollapsibleTrigger>
                   </div>
                   <div className="flex items-center justify-between rounded-md border px-4 py-2 text-sm">
-                    <span className="font-medium">Status</span>
+                    <span className="font-medium">
+                      {t('Customers.viewOrder.order.status')}
+                    </span>
 
                     <StatusBadge status={custOrder.status} type="order" />
                   </div>
@@ -101,7 +110,9 @@ export const ViewOrderModal = ({
                         <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                           <Truck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         </div>
-                        <p className="font-medium">Address</p>
+                        <p className="font-medium">
+                          {t('Customers.viewOrder.order.address')}
+                        </p>
                       </div>
 
                       <div className="text-right">
@@ -116,7 +127,9 @@ export const ViewOrderModal = ({
                         <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                           <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <p className="font-medium">Product</p>
+                        <p className="font-medium">
+                          {t('Customers.viewOrder.order.product')}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
@@ -125,7 +138,9 @@ export const ViewOrderModal = ({
                             : custOrder.product}
                         </p>
                         <p className="text-muted-foreground text-xs">
-                          {custOrder.productType}
+                          {t(
+                            `ProductTypes.${custOrder.productType.toLowerCase()}`
+                          )}
                         </p>
                       </div>
                     </div>
@@ -135,7 +150,9 @@ export const ViewOrderModal = ({
                         <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                           <ShoppingBag className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                         </div>
-                        <p className="font-medium">Total</p>
+                        <p className="font-medium">
+                          {t('Customers.viewOrder.order.total')}
+                        </p>
                       </div>
 
                       <div className="text-right">
@@ -153,10 +170,14 @@ export const ViewOrderModal = ({
                         <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                           <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
                         </div>
-                        <p className="font-medium">Payment</p>
+                        <p className="font-medium">
+                          {t('Customers.viewOrder.order.payment')}
+                        </p>
                       </div>
 
-                      <p className="font-medium">{custOrder.payment}</p>
+                      <p className="font-medium">
+                        {t(`Payment.${custOrder.payment.toLowerCase()}`)}
+                      </p>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
@@ -171,7 +192,7 @@ export const ViewOrderModal = ({
             onClick={handleCancel}
             className="px-4 py-2 text-sm cursor-pointer"
           >
-            Close
+            {t('Buttons.close')}
           </Button>
         </div>
       </div>

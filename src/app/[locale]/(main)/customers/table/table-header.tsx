@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowUpDown } from 'lucide-react';
 import { Customer } from '@/types/interface';
 import { getId } from '@/utils/helper';
+import { useTranslations } from 'next-intl';
 
 interface TableHeaderProps {
   selected: string[];
@@ -13,39 +14,6 @@ interface TableHeaderProps {
   sortDir: 'asc' | 'desc';
   onSort: (col: keyof Customer) => void;
 }
-
-const sortableCols: {
-  key: keyof Customer;
-  label: string;
-  className?: string;
-  sortable?: boolean;
-}[] = [
-  { key: 'id', label: 'ID', className: 'pl-4 w-[60px]', sortable: true },
-  { key: 'name', label: 'Name', className: 'w-[150px]', sortable: true },
-  { key: 'email', label: 'Email', className: 'w-[200px]', sortable: true },
-  { key: 'phone', label: 'Phone', className: 'w-[120px]', sortable: false },
-  { key: 'company', label: 'Company', className: 'w-[120px]', sortable: false },
-  { key: 'status', label: 'Status', className: 'w-[100px]', sortable: false },
-  {
-    key: 'lastContacted',
-    label: 'Last Contacted',
-    className: 'w-[120px]',
-    sortable: true,
-  },
-  {
-    key: 'createdAt',
-    label: 'Created At',
-    className: 'w-[120px]',
-    sortable: true,
-  },
-  { key: 'notes', label: 'Notes', className: 'w-[180px]', sortable: false },
-  {
-    key: 'comment',
-    label: 'Comment',
-    className: 'w-[180px] text-center',
-    sortable: false,
-  },
-];
 
 function RenderSortableHead({
   col,
@@ -92,8 +60,79 @@ export function CustomersTableHeader({
   sortDir,
   onSort,
 }: TableHeaderProps) {
+  const t = useTranslations();
+  const sortableCols: {
+    key: keyof Customer;
+    label: string;
+    className?: string;
+    sortable?: boolean;
+  }[] = useMemo(
+    () => [
+      {
+        key: 'id',
+        label: t('Customers.table.columns.id'),
+        className: 'pl-4 w-[60px]',
+        sortable: true,
+      },
+      {
+        key: 'name',
+        label: t('Customers.table.columns.name'),
+        className: 'w-[150px]',
+        sortable: true,
+      },
+      {
+        key: 'email',
+        label: t('Customers.table.columns.email'),
+        className: 'w-[200px]',
+        sortable: true,
+      },
+      {
+        key: 'phone',
+        label: t('Customers.table.columns.phone'),
+        className: 'w-[120px]',
+        sortable: false,
+      },
+      {
+        key: 'company',
+        label: t('Customers.table.columns.company'),
+        className: 'w-[120px]',
+        sortable: false,
+      },
+      {
+        key: 'status',
+        label: t('Customers.table.columns.status'),
+        className: 'w-[100px]',
+        sortable: false,
+      },
+      {
+        key: 'lastContacted',
+        label: t('Customers.table.columns.lastContacted'),
+        className: 'w-[120px]',
+        sortable: true,
+      },
+      {
+        key: 'createdAt',
+        label: t('Customers.table.columns.createdAt'),
+        className: 'w-[120px]',
+        sortable: true,
+      },
+      {
+        key: 'notes',
+        label: t('Customers.table.columns.notes'),
+        className: 'w-[180px]',
+        sortable: false,
+      },
+      {
+        key: 'comment',
+        label: t('Customers.table.columns.comment'),
+        className: 'w-[180px] text-center',
+        sortable: false,
+      },
+    ],
+    [t]
+  );
   return (
-    <TableHeader>
+    <TableHeader className="whitespace-normal leading-tight">
       <TableRow className="bg-sidebar text-secondary-foreground border-b-2 border-border rounded-t-xl [&_th]:bg-sidebar [&_th]:text-secondary-foreground [&_th]:font-semibold [&_th]:border-none">
         <TableHead className="w-8">
           <Checkbox
@@ -120,7 +159,9 @@ export function CustomersTableHeader({
             sortable={col.sortable}
           />
         ))}
-        <TableHead className="w-[70px]">Actions</TableHead>
+        <TableHead className="w-[70px]">
+          {t('Customers.table.columns.actions')}
+        </TableHead>
       </TableRow>
     </TableHeader>
   );

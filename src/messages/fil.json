@@ -8,7 +8,10 @@
     "customers": "Mga Customer",
     "agents": "Mga Ahente",
     "workspace": "Workspace",
-    "client": "Pamamahala ng Kliyente"
+    "client": "Pamamahala ng Kliyente",
+    "header": {
+      "notifications": "Notipikasyon"
+    }
   },
 
   "QuickActions": {
@@ -69,7 +72,10 @@
     "addAgent": "Magdagdag ng Ahente",
     "changePhoto": "Palitan ang Larawan",
     "updatePassword": "I-update ang Password",
-    "addComment": "Magdagdag ng Komento"
+    "addComment": "Magdagdag ng Komento",
+    "adding": "Idinaragdag...",
+    "viewOrder": "Tingnan ang Order",
+    "assign": "Italaga"
   },
 
   "Forms": {
@@ -78,8 +84,10 @@
       "name": "Pangalan",
       "email": "Email",
       "phone": "Telepono",
+      "price": "Presyo",
       "company": "Kumpanya",
       "location": "Lokasyon",
+      "address": "Address ng Pagpapadala",
       "currentPassword": "Kasalukuyang Password",
       "newPassword": "Bagong Password",
       "confirmNewPassword": "Kumpirmahin ang Bagong Password",
@@ -103,10 +111,30 @@
   },
 
   "Validations": {
-    "imageTooLarge": "Ang larawan ay dapat mas mababa sa 2MB",
+    "imageTooLarge": "Ang imahe ay dapat mas mababa sa 2MB",
     "invalidJson": "Hindi nagbalik ng wastong JSON ang server",
-    "required": "Kailangan ang {field}",
-    "invalidResponse": "Hindi wastong tugon mula sa server"
+    "required": "{field} ay kinakailangan",
+    "invalidResponse": "Hindi wastong tugon mula sa server",
+    "invalidEmail": "Pakilagay ng wastong email address",
+    "invalidPhone": "Pakilagay ng wastong numero ng telepono",
+    "minLength": "{field} ay dapat may hindi bababa sa {min} na karakter",
+    "greaterThan": "{field} ay dapat mas malaki kaysa {min}",
+    "maxValue": "Hindi maaaring lumagpas ang {field} sa {max}",
+    "maxPrice": "Hindi maaaring lumagpas ang {field} sa ${max}"
+  },
+  "ApiSuccess": {
+    "DELETED_SUCCESSFULLY": "Matagumpay na nabura ang {type}.",
+    "CREATED_SUCCESSFULLY": "Matagumpay na nalikha ang {type}.",
+    "UPDATED_SUCCESSFULLY": "Matagumpay na na-update ang {type}."
+  },
+  "ApiErrors": {
+    "EMAIL_ALREADY_EXISTS": "Ang email address na ito ay ginagamit na.",
+    "PHONE_ALREADY_EXISTS": "Ang numerong ito ay nakarehistro na.",
+    "VALIDATION_ERROR": "Pakitingnan ang iyong mga input at subukang muli.",
+    "SOMETHING_WENT_WRONG": "May nangyaring mali. Pakisubukang muli.",
+    "UNAUTHORIZED": "Hindi ka awtorisado.",
+    "FORBIDDEN": "Wala kang pahintulot na gawin ito.",
+    "UNKNOWN": "May hindi inaasahang error na nangyari."
   },
 
   "Statuses": {
@@ -213,7 +241,7 @@
   },
   "TimeAgo": {
     "never": "Hindi pa nag-login",
-    "justNow": "Kakaalis lang",
+    "justNow": "Katatapos lang",
     "year": "{count, plural, other {# taon ang nakalipas}}",
     "month": "{count, plural, other {# buwan ang nakalipas}}",
     "day": "{count, plural, other {# araw ang nakalipas}}",
@@ -282,7 +310,7 @@
       "units": "yunit",
       "product": "Produkto",
       "payment": "Bayad",
-      "actions": "Mga Aksyon"
+      "actions": "Aksyon"
     },
     "buttons": {
       "adding": "Nagdadagdag ng Order...",
@@ -347,7 +375,7 @@
       "stock": "Stock",
       "price": "Presyo",
       "status": "Katayuan",
-      "actions": "Mga Aksyon"
+      "actions": "Aksyon"
     },
     "table": {
       "searchPlaceholder": "Maghanap ng mga produkto..."
@@ -360,7 +388,7 @@
 
   "Tasks": {
     "modal": {
-      "addTitle": "Magdagdag ng Gawain {column}",
+      "addTitle": "Magdagdag ng {column} na Gawain ",
       "addDescription": "Lumikha ng bagong gawain. Ang data na ito ay pansamantala at mare-reset kapag nag-reload ang pahina.",
       "editTitle": "I-edit ang Gawain",
       "editDescription": "I-update ang impormasyon ng gawain. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina."
@@ -401,7 +429,8 @@
     },
     "filters": {
       "allStatus": "Lahat ng Katayuan",
-      "allPriority": "Lahat ng Prayoridad"
+      "allPriority": "Lahat ng Prayoridad",
+      "allCategories": "Lahat ng mga Kategorya"
     },
     "header": {
       "addNewTask": "Magdagdag ng Bagong Gawain"
@@ -420,7 +449,7 @@
       "editDescription": "I-update ang impormasyong customer. Ang mga pagbabago ay pansamantala at mare-reset kapag nag-reload ang pahina.",
       "detailsTitle": "Detalye ng Customer",
       "viewOrderTitle": "Kasaysayan ng Order",
-      "viewOrderDescription": "Tingnan ang lahat ng order na ginawa ni {name}"
+      "viewOrderDescription": "Tingnan ang lahat ng order na ginawa ni <name></name>"
     },
     "fields": {
       "name": "Pangalan",
@@ -466,10 +495,10 @@
         "company": "Kumpanya",
         "status": "Katayuan",
         "lastContacted": "Huling Nakontak",
-        "createdAt": "Nilikha No",
+        "createdAt": "Nilikha noong",
         "notes": "Mga Tala",
         "comment": "Komento",
-        "actions": "Mga Aksyon"
+        "actions": "Aksyon"
       }
     },
     "viewOrder": {
@@ -550,7 +579,7 @@
     },
     "assign": {
       "title": "Naka-assign na Customer",
-      "subtitle": "Mag-assign ng Customer para kay {name}",
+      "subtitle": "Mag-assign ng Customer para kay <name></name>",
       "notAssigned": "Hindi Naka-assign",
       "assigned": "Naka-assign",
       "allSelected": "Piliin lahat",
@@ -558,6 +587,7 @@
       "noAssigned": "Wala pang naka-assign na customer"
     },
     "table": {
+      "assinged": "{count} nakatalaga",
       "emptyState": "Walang Ahente Natagpuan!",
       "columns": {
         "id": "ID",
@@ -566,12 +596,12 @@
         "phone": "Telepono",
         "role": "Tungkulin",
         "status": "Katayuan",
-        "assignedCustomers": "Mga Naka-assign na Customer",
-        "createdAt": "Nilikha No",
+        "assignedCustomers": "Naka-assign na Customer",
+        "createdAt": "Nilikha Noong",
         "lastLogin": "Huling Login",
         "notes": "Mga Tala",
         "comment": "Komento",
-        "actions": "Mga Aksyon"
+        "actions": "Aksyon"
       }
     },
     "buttons": {

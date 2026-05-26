@@ -18,6 +18,13 @@ import { usePathname } from 'next/navigation';
 import { navGroups, getAllNavItems } from '@/components/app-navigation';
 import { UserProvider } from '@/context/user-context';
 import { useTranslations } from 'next-intl';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { useNotifications } from '@/context/notification-context';
+import { Badge } from '@/components/ui/badge';
+
+const extra_pages = [
+  { title: 'Nav.header.notifications', url: '/notifications' },
+];
 
 export default function MainLayout({
   children,
@@ -27,12 +34,13 @@ export default function MainLayout({
   const t = useTranslations();
   const pathname = usePathname();
   const cleanPath = pathname.replace(/^\/(en|fil|ja)/, '') || '/';
+  const allPages = [...navGroups.flatMap((g) => g.items), ...extra_pages];
 
-  const active = navGroups
-    .flatMap((g) => g.items)
-    .find(
-      (item) => cleanPath === item.url || cleanPath.startsWith(item.url + '/')
-    );
+  const active = allPages.find(
+    (item) => cleanPath === item.url || cleanPath.startsWith(item.url + '/')
+  );
+  const { unreadCount } = useNotifications();
+
   return (
     <UserProvider>
       <SidebarProvider>
@@ -51,7 +59,28 @@ export default function MainLayout({
                     <BreadcrumbItem>
                       {active && (
                         <BreadcrumbPage className="text-xl font-bold">
-                          {t(active.title)}
+                          {active.title === 'Nav.header.notifications' ? (
+                            <div className="flex items-center gap-3">
+                              <div>
+                                {t(active.title)}
+                                <p className="text-xs text-muted-foreground">
+                                  {unreadCount > 0
+                                    ? `${unreadCount} unread`
+                                    : 'All caught up'}
+                                </p>
+                              </div>
+                              {unreadCount > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] h-5 px-1.5"
+                                >
+                                  {unreadCount}
+                                </Badge>
+                              )}
+                            </div>
+                          ) : (
+                            t(active.title)
+                          )}
                         </BreadcrumbPage>
                       )}
                     </BreadcrumbItem>
@@ -59,8 +88,9 @@ export default function MainLayout({
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            <div className="pr-4">
+            <div className="pr-4 flex gap-2">
               <DarkModeToggle />
+              <NotificationBell />
             </div>
           </header>
 

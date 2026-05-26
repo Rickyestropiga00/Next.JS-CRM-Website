@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowUpDown } from 'lucide-react';
 import { Agent } from '@/types/interface';
 import { getId } from '@/utils/helper';
+import { useTranslations } from 'next-intl';
 
 interface TableHeaderProps {
   selected: string[];
@@ -13,50 +14,6 @@ interface TableHeaderProps {
   sortDir: 'asc' | 'desc';
   onSort: (col: keyof Agent) => void;
 }
-
-const sortableCols: {
-  key: keyof Agent;
-  label: string;
-  className?: string;
-  sortable?: boolean;
-}[] = [
-  {
-    key: 'id',
-    label: 'ID',
-    className: 'pl-4 w-[70px]',
-    sortable: true,
-  },
-  { key: 'name', label: 'Name', className: 'w-[150px]', sortable: true },
-  { key: 'email', label: 'Email', className: 'w-[220px]', sortable: true },
-  { key: 'phone', label: 'Phone', className: 'w-[120px]', sortable: false },
-  { key: 'role', label: 'Role', className: 'w-[100px]', sortable: false },
-  { key: 'status', label: 'Status', className: 'w-[100px]', sortable: false },
-  {
-    key: 'assignedCustomers',
-    label: 'Assigned Customers',
-    className: 'w-[150px]',
-    sortable: false,
-  },
-  {
-    key: 'createdAt',
-    label: 'Created At',
-    className: 'w-[120px]',
-    sortable: true,
-  },
-  {
-    key: 'lastLogin',
-    label: 'Last Login',
-    className: 'w-[120px]',
-    sortable: true,
-  },
-  { key: 'notes', label: 'Notes', className: 'w-[180px]', sortable: true },
-  {
-    key: 'comment',
-    label: 'Comment',
-    className: 'w-[180px] text-center',
-    sortable: false,
-  },
-];
 
 function RenderSortableHead({
   col,
@@ -103,6 +60,83 @@ export function AgentsTableHeader({
   sortDir,
   onSort,
 }: TableHeaderProps) {
+  const t = useTranslations();
+  const sortableCols: {
+    key: keyof Agent;
+    label: string;
+    className?: string;
+    sortable?: boolean;
+  }[] = useMemo(
+    () => [
+      {
+        key: 'id',
+        label: t('Agents.table.columns.id'),
+        className: 'pl-4 w-[70px]',
+        sortable: true,
+      },
+      {
+        key: 'name',
+        label: t('Agents.table.columns.name'),
+        className: 'w-[150px]',
+        sortable: true,
+      },
+      {
+        key: 'email',
+        label: t('Agents.table.columns.email'),
+        className: 'w-[220px]',
+        sortable: true,
+      },
+      {
+        key: 'phone',
+        label: t('Agents.table.columns.phone'),
+        className: 'w-[120px]',
+        sortable: false,
+      },
+      {
+        key: 'role',
+        label: t('Agents.table.columns.role'),
+        className: 'w-[100px]',
+        sortable: false,
+      },
+      {
+        key: 'status',
+        label: t('Agents.table.columns.status'),
+        className: 'w-[100px]',
+        sortable: false,
+      },
+      {
+        key: 'assignedCustomers',
+        label: t('Agents.table.columns.assignedCustomers'),
+        className: 'w-[180px]',
+        sortable: false,
+      },
+      {
+        key: 'createdAt',
+        label: t('Agents.table.columns.createdAt'),
+        className: 'w-[120px]',
+        sortable: true,
+      },
+      {
+        key: 'lastLogin',
+        label: t('Agents.table.columns.lastLogin'),
+        className: 'w-[120px]',
+        sortable: true,
+      },
+      {
+        key: 'notes',
+        label: t('Agents.table.columns.notes'),
+        className: 'w-[180px]',
+        sortable: true,
+      },
+      {
+        key: 'comment',
+        label: t('Agents.table.columns.comment'),
+        className: 'w-[80px] text-center',
+        sortable: false,
+      },
+    ],
+    [t]
+  );
   return (
     <TableHeader>
       <TableRow className="bg-sidebar text-secondary-foreground border-b-2 border-border rounded-t-xl [&_th]:bg-sidebar [&_th]:text-secondary-foreground [&_th]:font-semibold [&_th]:border-none">
@@ -131,7 +165,9 @@ export function AgentsTableHeader({
             sortable={col.sortable}
           />
         ))}
-        <TableHead className="w-[70px]">Actions</TableHead>
+        <TableHead className="w-[80px]">
+          {t('Agents.table.columns.actions')}
+        </TableHead>
       </TableRow>
     </TableHeader>
   );

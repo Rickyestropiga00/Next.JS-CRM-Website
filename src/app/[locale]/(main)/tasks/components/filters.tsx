@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Select,
   SelectContent,
@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 interface FiltersProps {
   statusFilter: string;
@@ -29,7 +29,7 @@ export function Filters({
     <div className="flex w-full items-center justify-between gap-2 flex-wrap">
       <div className="flex gap-2 flex-wrap">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-auto">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -43,7 +43,7 @@ export function Filters({
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-auto">
             <SelectValue placeholder="All Priority" />
           </SelectTrigger>
           <SelectContent>

@@ -21,6 +21,7 @@ import {
 } from '@/lib/validations';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useTranslations } from 'next-intl';
 
 interface EditProductPopoverProps {
   product: Product;
@@ -33,7 +34,7 @@ interface ValidationErrors {
   name?: string;
   code?: string;
   price?: string;
-  stock?: string;
+  stock?: number;
 }
 
 export function EditProductPopover({
@@ -42,13 +43,14 @@ export function EditProductPopover({
   onClose,
   open,
 }: EditProductPopoverProps) {
+  const t = useTranslations();
   const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name'),
-    code: (v: string) => validateRequired(v, 'Code'),
-    price: (v: number) => validatePrice(Number(v)),
+    name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+    code: (v: string) => validateRequired(v, t('Products.fields.stock'), t),
+    price: (v: number) => validatePrice(Number(v), t),
     stock: (v: number) => {
       if (formData.productType !== 'Physical') return undefined;
-      return validateNumber(Number(v), 'Stock');
+      return validateNumber(Number(v), t('Products.fields.stock'), t);
     },
   };
   const {
@@ -116,7 +118,9 @@ export function EditProductPopover({
           image: updatedImage,
         });
 
-        toast.success('Product updated locally', { id: toastId });
+        toast.success(t('Messages.updateSuccess', { item: 'Product' }), {
+          id: toastId,
+        });
         onClose();
       }
     }
@@ -178,10 +182,11 @@ export function EditProductPopover({
       <div className="relative z-50 w-full max-w-[35rem] bg-background border rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
         <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2 sm:space-y-3">
-            <h4 className="font-medium text-sm sm:text-base">Edit Product</h4>
+            <h4 className="font-medium text-sm sm:text-base">
+              {t('Products.modal.editTitle')}
+            </h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Update product information. Changes are temporary and will reset
-              on page reload.
+              {t('Products.modal.editDescription')}
             </p>
           </div>
 
@@ -189,7 +194,7 @@ export function EditProductPopover({
             <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 sm:gap-4">
               <div className="space-y-2 flex flex-col items-center">
                 <Label htmlFor="productImage" className="text-xs">
-                  Product Image
+                  {t('Products.image.label')}
                 </Label>
 
                 <Label
@@ -218,7 +223,7 @@ export function EditProductPopover({
                     )
                   ) : (
                     <div className="flex items-center justify-center w-full h-full text-xs text-muted-foreground">
-                      Upload
+                      {t('Buttons.upload')}
                     </div>
                   )}
 
@@ -238,7 +243,7 @@ export function EditProductPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-xs">
-                  Product Name
+                  {t('Products.fields.productName')}
                 </Label>
                 <Input
                   id="name"
@@ -254,7 +259,7 @@ export function EditProductPopover({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="code" className="text-xs">
-                  Product Code
+                  {t('Products.fields.productCode')}
                 </Label>
                 <Input
                   id="code"
@@ -275,7 +280,7 @@ export function EditProductPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="type" className="text-xs">
-                  Product Type
+                  {t('Products.fields.productType')}
                 </Label>
                 <Select
                   value={formData.productType}
@@ -285,16 +290,24 @@ export function EditProductPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Physical">Physical</SelectItem>
-                    <SelectItem value="Digital">Digital</SelectItem>
-                    <SelectItem value="Service">Service</SelectItem>
-                    <SelectItem value="Subscription">Subscription</SelectItem>
+                    <SelectItem value="Physical">
+                      {t('ProductTypes.physical')}
+                    </SelectItem>
+                    <SelectItem value="Digital">
+                      {t('ProductTypes.digital')}
+                    </SelectItem>
+                    <SelectItem value="Service">
+                      {t('ProductTypes.service')}
+                    </SelectItem>
+                    <SelectItem value="Subscription">
+                      {t('ProductTypes.subscription')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-xs">
-                  Status
+                  {t('Products.fields.status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -306,8 +319,12 @@ export function EditProductPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Disabled">Disabled</SelectItem>
+                    <SelectItem value="Active">
+                      {t('Statuses.active')}
+                    </SelectItem>
+                    <SelectItem value="Disabled">
+                      {t('Statuses.disabled')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -317,7 +334,7 @@ export function EditProductPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="price" className="text-xs">
-                  Price ($)
+                  {t('Products.fields.price')} ($)
                 </Label>
                 <Input
                   id="price"
@@ -337,7 +354,7 @@ export function EditProductPopover({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stock" className="text-xs">
-                  Stock
+                  {t('Products.fields.stock')}
                 </Label>
                 <Input
                   id="stock"
@@ -356,8 +373,9 @@ export function EditProductPopover({
                 )}
                 {formData.productType !== 'Physical' && (
                   <p className="text-xs text-muted-foreground">
-                    Not applicable for {formData.productType.toLowerCase()}{' '}
-                    products
+                    {t('Products.messages.notApplicableStock', {
+                      type: formData.productType.toLowerCase(),
+                    })}
                   </p>
                 )}
               </div>
@@ -366,7 +384,7 @@ export function EditProductPopover({
             {/* Row 4: Date */}
             <div className="space-y-2">
               <Label htmlFor="date" className="text-xs">
-                Release Date
+                {t('Products.fields.releaseDate')}
               </Label>
               <Input
                 id="date"
@@ -385,7 +403,7 @@ export function EditProductPopover({
               onClick={handleCancel}
               className="h-8 sm:h-7 text-xs order-2 sm:order-1"
             >
-              Cancel
+              {t('Buttons.cancel')}
             </Button>
             <Button
               size="sm"
@@ -393,7 +411,7 @@ export function EditProductPopover({
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
               disabled={!isFormValid() || !hasChanges || loading}
             >
-              {loading ? 'Saving Changes...' : 'Save Changes'}
+              {loading ? t('Buttons.saving') : t('Buttons.save')}
             </Button>
           </div>
         </div>
