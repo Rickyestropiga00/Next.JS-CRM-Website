@@ -16,6 +16,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { useTranslations } from 'next-intl';
 
 // Dynamically import task modals to reduce initial bundle size
 const EditTaskPopover = dynamic(
@@ -43,6 +44,7 @@ const AddNewTaskPopover = dynamic(
 );
 
 export function TasksContent() {
+  const t = useTranslations();
   const { state } = useSidebar();
   const isSidebarCollapsed = state === 'collapsed';
   const {
@@ -65,27 +67,27 @@ export function TasksContent() {
   const [showAddNewTask, setShowAddNewTask] = React.useState(false);
 
   const statusOptions = [
-    { label: 'All Categories', value: 'all' },
-    { label: 'Design', value: 'DESIGN' },
-    { label: 'Development', value: 'DEVELOPMENT' },
-    { label: 'Testing', value: 'TESTING' },
-    { label: 'Content', value: 'CONTENT' },
-    { label: 'Marketing', value: 'MARKETING' },
-    { label: 'Meeting', value: 'MEETING' },
-    { label: 'Follow-up', value: 'FOLLOW-UP' },
+    { label: t('Tasks.filters.allCategories'), value: 'all' },
+    { label: t('TaskStatus.design'), value: 'DESIGN' },
+    { label: t('TaskStatus.development'), value: 'DEVELOPMENT' },
+    { label: t('TaskStatus.testing'), value: 'TESTING' },
+    { label: t('TaskStatus.content'), value: 'CONTENT' },
+    { label: t('TaskStatus.marketing'), value: 'MARKETING' },
+    { label: t('TaskStatus.meeting'), value: 'MEETING' },
+    { label: t('TaskStatus.followUp'), value: 'FOLLOW-UP' },
   ];
   const priorityOptions = [
-    { label: 'All Priority', value: 'all' },
-    { label: 'Low', value: 'LOW' },
-    { label: 'Medium', value: 'MEDIUM' },
-    { label: 'High', value: 'HIGH' },
+    { label: t('Tasks.filters.allPriority'), value: 'all' },
+    { label: t('Priority.low'), value: 'LOW' },
+    { label: t('Priority.medium'), value: 'MEDIUM' },
+    { label: t('Priority.high'), value: 'HIGH' },
   ];
 
   const columns = [
-    { key: 'todo' as const, label: 'To do' },
-    { key: 'inprogress' as const, label: 'In progress' },
-    { key: 'inreview' as const, label: 'In review' },
-    { key: 'done' as const, label: 'Done' },
+    { key: 'todo' as const, label: t('TaskColumns.todo') },
+    { key: 'inprogress' as const, label: t('TaskColumns.inprogress') },
+    { key: 'inreview' as const, label: t('TaskColumns.inreview') },
+    { key: 'done' as const, label: t('TaskColumns.done') },
   ];
 
   // Filter tasks by status and priority
@@ -161,7 +163,7 @@ export function TasksContent() {
           onClick={() => setShowAddNewTask(true)}
         >
           <Plus className="h-4 w-4" />
-          Add New Task
+          {t('Buttons.addTask')}
         </Button>
       </div>
       <DndContext
@@ -169,21 +171,46 @@ export function TasksContent() {
         sensors={sensors}
         onDragEnd={handleDragEnd}
       >
-        <ColumnsBoard
-          columns={columns}
-          filteredTasks={filteredTasks}
-          onMoveTask={handleMoveTask}
-          onDeleteTask={handleDeleteTask}
-          onEditTask={setEditTaskId}
-          onAddTask={(column) => {
-            setAddTaskColumn(column);
-            setShowAddTask(true);
-          }}
-          deleteDialogId={deleteDialogId}
-          setDeleteDialogId={setDeleteDialogId}
-          isSidebarCollapsed={isSidebarCollapsed}
-          tasksLoading={tasksLoading}
-        />
+        {taskList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4 rounded-full bg-muted p-4">
+              <Plus className="h-10 w-10 text-muted-foreground" />
+            </div>
+
+            <h2 className="text-xl font-semibold tracking-tight">
+              No tasks found
+            </h2>
+
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              You don&apos;t have any tasks yet. Start by creating your first
+              task.
+            </p>
+
+            <Button
+              className="mt-6 flex items-center gap-2"
+              onClick={() => setShowAddNewTask(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Add New Task
+            </Button>
+          </div>
+        ) : (
+          <ColumnsBoard
+            columns={columns}
+            filteredTasks={filteredTasks}
+            onMoveTask={handleMoveTask}
+            onDeleteTask={handleDeleteTask}
+            onEditTask={setEditTaskId}
+            onAddTask={(column) => {
+              setAddTaskColumn(column);
+              setShowAddTask(true);
+            }}
+            deleteDialogId={deleteDialogId}
+            setDeleteDialogId={setDeleteDialogId}
+            isSidebarCollapsed={isSidebarCollapsed}
+            tasksLoading={tasksLoading}
+          />
+        )}
       </DndContext>
 
       {/* Edit Task Modal - Rendered outside board structure */}

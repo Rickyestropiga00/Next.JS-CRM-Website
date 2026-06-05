@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Agent,
@@ -62,7 +62,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, ShoppingCart } from 'lucide-react';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
 import { useFetch } from '@/hooks/use-fetch';
@@ -71,6 +71,9 @@ import { useUser } from '@/hooks/use-user';
 import { useFilteredOrderByAgent } from '@/hooks/use-filter-orders';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
+import { useSearchParams } from 'next/navigation';
+import { useTableHighlight } from '@/hooks/use-table-highlight';
 
 export function OrdersTable() {
   const {
@@ -89,8 +92,11 @@ export function OrdersTable() {
   const { data: agents } = useFetch<Agent>('agent', false, false);
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const { filteredOrder, agentsLoading } = useFilteredOrderByAgent(ordersData);
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
   const isReady = !ordersLoading && (user?.role !== 'agent' || !agentsLoading);
+  const t = useTranslations();
   const ordersT = useTranslations('Orders');
   const tableT = useTranslations('Table');
   const statusesT = useTranslations('Statuses');
@@ -183,6 +189,17 @@ export function OrdersTable() {
     },
   });
 
+  const { isHighlighted } = useTableHighlight({
+    data: filteredOrder,
+    highlightId,
+    rowsPerPage,
+    currentPage,
+    setCurrentPage,
+    isReady,
+    paginatedData: paginated,
+    getHighlightValue: (order) => order.orderId,
+  });
+
   const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
     endpoint: '/api/bulk-delete',
     type: 'order',
@@ -197,7 +214,8 @@ export function OrdersTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Order');
+      toast.success(message);
     },
 
     onError: () => {
@@ -235,7 +253,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allTypes')} />
             </SelectTrigger>
             <SelectContent>
@@ -260,7 +278,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allStatus')} />
             </SelectTrigger>
             <SelectContent>
@@ -285,7 +303,7 @@ export function OrdersTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder={tableT('filters.allPayment')} />
             </SelectTrigger>
             <SelectContent>
@@ -344,41 +362,65 @@ export function OrdersTable() {
           {buttonsT('addOrder')}
         </Button>
       </div>
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="bg-transparent">
-            <OrdersTableHeader
-              selected={selected}
-              paginated={paginatedForHeader}
-              onSelectAll={handleSelectAll}
-              sortBy={sortBy ?? 'orderId'}
-              sortDir={sortDir}
-              onSort={handleSort}
-            />
-            <OrdersTableBody
-              paginated={paginated}
-              selected={selected}
-              onSelectRow={handleSelectRow}
-              onDelete={handleDelete}
-              deleteDialogId={deleteDialogId}
-              setDeleteDialogId={setDeleteDialogId}
-              setEditOrderId={setEditOrderId}
-              onOrderClick={setSelectedOrderId}
-              ordersLoading={!isReady}
-            />
-          </Table>
-        </div>
-      </div>
 
-      <OrdersPaginationBar
-        selectedCount={selected.length}
-        totalRows={filtered.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        setCurrentPage={setCurrentPage}
-      />
+      {filteredOrder.length > 0 ? (
+        <>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="bg-transparent">
+                <OrdersTableHeader
+                  selected={selected}
+                  paginated={paginatedForHeader}
+                  onSelectAll={handleSelectAll}
+                  sortBy={sortBy ?? 'orderId'}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <OrdersTableBody
+                  paginated={paginated}
+                  selected={selected}
+                  onSelectRow={handleSelectRow}
+                  onDelete={handleDelete}
+                  deleteDialogId={deleteDialogId}
+                  setDeleteDialogId={setDeleteDialogId}
+                  setEditOrderId={setEditOrderId}
+                  onOrderClick={setSelectedOrderId}
+                  ordersLoading={!isReady}
+                  isHighlighted={isHighlighted}
+                />
+              </Table>
+            </div>
+          </div>
+
+          <OrdersPaginationBar
+            selectedCount={selected.length}
+            totalRows={filtered.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-20 ">
+          <div className="mb-4 rounded-full bg-muted p-4 ">
+            <ShoppingCart className="h-10 w-10 text-muted-foreground" />
+          </div>
+
+          <h3 className="font-semibold">No orders yet</h3>
+
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            You don&apos;t have any orders yet. Start by creating your first
+            order.
+          </p>
+
+          <Button className="mt-4" onClick={() => setShowAddOrder(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Order
+          </Button>
+        </div>
+      )}
 
       {/* Edit Order Modal - Rendered outside table structure */}
       {editOrderId && (

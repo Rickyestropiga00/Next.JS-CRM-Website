@@ -6,10 +6,14 @@ export const getNestedValue = (obj: any, path: string) => {
   return path.split('.').reduce((acc, key) => acc?.[key], obj);
 };
 
+const authPaths = ['/login', '/register'];
+
 export const redirectWithLocale = (
   request: NextRequest,
   locale: string,
   path: string
 ) => {
-  return NextResponse.redirect(new URL(`/${locale}${path}`, request.url));
+  const isAuthPath = authPaths.some((r) => path.startsWith(r));
+  const finalPath = isAuthPath ? path : `/${locale}${path}`;
+  return NextResponse.redirect(new URL(finalPath, request.url));
 };

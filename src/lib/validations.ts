@@ -1,6 +1,10 @@
 /**
  * Shared validation utilities for form inputs
  */
+type TFunction = (
+  key: string,
+  values?: Record<string, string | number>
+) => string;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -12,10 +16,14 @@ export interface ValidationResult {
  * @param email - The email address to validate
  * @returns Validation error message or undefined if valid
  */
-export const validateEmail = (email: string): string | undefined => {
-  if (!email) return "Email is required";
+export const validateEmail = (
+  email: string,
+  t: TFunction
+): string | undefined => {
+  if (!email)
+    return t('Validations.required', { field: t('Forms.fields.email') });
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return "Please enter a valid email address";
+  if (!emailRegex.test(email)) return t('Validations.invalidEmail');
   return undefined;
 };
 
@@ -24,11 +32,15 @@ export const validateEmail = (email: string): string | undefined => {
  * @param phone - The phone number to validate
  * @returns Validation error message or undefined if valid
  */
-export const validatePhone = (phone: string): string | undefined => {
-  if (!phone) return "Phone is required";
+export const validatePhone = (
+  phone: string,
+  t: TFunction
+): string | undefined => {
+  if (!phone)
+    return t('Validations.required', { field: t('Forms.fields.phone') });
   const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ""))) {
-    return "Please enter a valid phone number";
+  if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+    return t('Validations.invalidPhone');
   }
   return undefined;
 };
@@ -43,11 +55,12 @@ export const validatePhone = (phone: string): string | undefined => {
 export const validateRequired = (
   value: string,
   fieldName: string,
-  minLength = 2,
+  t: TFunction,
+  minLength = 2
 ): string | undefined => {
-  if (!value.trim()) return `${fieldName} is required`;
+  if (!value.trim()) return t('Validations.required', { field: fieldName });
   if (value.trim().length < minLength) {
-    return `${fieldName} must be at least ${minLength} characters`;
+    return t('Validations.minLength', { field: fieldName, min: minLength });
   }
   return undefined;
 };
@@ -63,12 +76,17 @@ export const validateRequired = (
 export const validateNumber = (
   value: number,
   fieldName: string,
+  t: TFunction,
   min = 0,
-  max?: number,
+  max?: number
 ): string | undefined => {
-  if (value <= min) return `${fieldName} must be greater than ${min}`;
+  if (value <= min)
+    return t('Validations.minLength', { field: fieldName, min: min });
   if (max !== undefined && value > max) {
-    return `${fieldName} cannot exceed ${max}`;
+    return t('Validations.maxValue', {
+      field: fieldName,
+      max: max.toLocaleString(),
+    });
   }
   return undefined;
 };
@@ -83,12 +101,18 @@ export const validateNumber = (
  */
 export const validatePrice = (
   value: number,
-  fieldName = "Price",
+  t: TFunction,
+  fieldName = t('Forms.fields.price'),
   min = 0,
-  max = 999999.99,
+  max = 999999.99
 ): string | undefined => {
-  if (value <= min) return `${fieldName} must be greater than ${min}`;
-  if (value > max) return `${fieldName} cannot exceed $${max.toLocaleString()}`;
+  if (value <= min)
+    return t('Validations.greaterThan', { field: fieldName, min: min });
+  if (value > max)
+    return t('Validations.maxPrice', {
+      field: fieldName,
+      max: max.toLocaleString(),
+    });
   return undefined;
 };
 
@@ -97,6 +121,8 @@ export const validatePrice = (
  * @param errors - Object containing validation errors
  * @returns True if no errors exist
  */
-export const isFormValid = (errors: Record<string, string | undefined>): boolean => {
+export const isFormValid = (
+  errors: Record<string, string | undefined>
+): boolean => {
   return Object.values(errors).every((error) => !error);
 };

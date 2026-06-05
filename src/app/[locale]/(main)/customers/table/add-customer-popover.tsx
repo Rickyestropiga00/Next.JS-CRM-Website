@@ -21,7 +21,8 @@ import { Agent, Customer, CustomerStatus } from '@/types/interface';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useUser } from '@/hooks/use-user';
-
+import { useTranslations } from 'next-intl';
+import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
   isOpen?: boolean;
@@ -50,6 +51,7 @@ export function AddCustomerPopover({
   onClose,
   setAgents,
 }: AddCustomerPopoverProps) {
+  const t = useTranslations();
   const [internalIsOpen] = useState(false);
 
   // Use external isOpen prop if provided, otherwise use internal state
@@ -66,9 +68,9 @@ export function AddCustomerPopover({
     []
   );
   const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name'),
-    email: (v: string) => validateEmail(v),
-    phone: (v: string) => validatePhone(v),
+    name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+    email: (v: string) => validateEmail(v, t),
+    phone: (v: string) => validatePhone(v, t),
   };
 
   const {
@@ -101,6 +103,7 @@ export function AddCustomerPopover({
         notes: data.notes.trim(),
       }),
       onSuccess: (result) => {
+        console.log(result);
         onAddCustomer(result);
         if (!user) return;
         setAgents((prev) =>
@@ -120,11 +123,14 @@ export function AddCustomerPopover({
       onClose,
       setErrors,
       onError: (err) => {
-        setErrors((prev) => ({
-          ...prev,
-          general:
-            err instanceof Error ? err.message : 'Failed to save customer',
-        }));
+        const message = getApiErrorMessage(err, t);
+        const field = getApiErrorField(err);
+
+        if (field) {
+          setErrors((prev) => ({ ...prev, [field]: message }));
+        } else {
+          setErrors((prev) => ({ ...prev, general: message }));
+        }
       },
     });
 
@@ -132,10 +138,11 @@ export function AddCustomerPopover({
     <ModalWrapper open={isModalOpen} onClose={handleCancel}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Add New Customer</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('Customers.modal.addTitle')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Create a new customer. This data is temporary and will reset on page
-            reload.
+            {t('Customers.modal.addDescription')}
           </p>
         </div>
 
@@ -144,7 +151,7 @@ export function AddCustomerPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs">
-                Name
+                {t('Customers.fields.name')}
               </Label>
               <Input
                 id="name"
@@ -153,7 +160,7 @@ export function AddCustomerPopover({
                 className={`h-8 sm:h-9 text-xs ${
                   errors.name ? 'border-red-500' : ''
                 }`}
-                placeholder="Enter customer name"
+                placeholder={t('Customers.placeholders.name')}
               />
               {errors.name && (
                 <p className="text-xs text-red-500">{errors.name}</p>
@@ -161,7 +168,7 @@ export function AddCustomerPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-xs">
-                Phone
+                {t('Customers.fields.phone')}
               </Label>
               <Input
                 id="phone"
@@ -183,7 +190,7 @@ export function AddCustomerPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-xs">
-                Email
+                {t('Customers.fields.email')}
               </Label>
               <Input
                 id="email"
@@ -193,7 +200,7 @@ export function AddCustomerPopover({
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
-                placeholder="Enter email address"
+                placeholder={t('Forms.placeholders.email')}
               />
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
@@ -201,14 +208,14 @@ export function AddCustomerPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="company" className="text-xs">
-                Company
+                {t('Customers.fields.company')}
               </Label>
               <Input
                 id="company"
                 value={formData.company}
                 onChange={(e) => handleChange('company', e.target.value)}
                 className="h-8 sm:h-9 text-xs"
-                placeholder="Enter company name (optional)"
+                placeholder={t('Customers.placeholders.company')}
               />
             </div>
           </div>
@@ -216,7 +223,7 @@ export function AddCustomerPopover({
           {/* Row 3: Status */}
           <div className="space-y-2">
             <Label htmlFor="status" className="text-xs">
-              Status
+              {t('Customers.fields.status')}
             </Label>
             <Select
               value={formData.status}
@@ -228,10 +235,14 @@ export function AddCustomerPopover({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Lead">Lead</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Prospect">Prospect</SelectItem>
+                <SelectItem value="Lead">{t('Statuses.lead')}</SelectItem>
+                <SelectItem value="Active">{t('Statuses.active')}</SelectItem>
+                <SelectItem value="Inactive">
+                  {t('Statuses.inactive')}
+                </SelectItem>
+                <SelectItem value="Prospect">
+                  {t('Statuses.prospect')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -239,7 +250,7 @@ export function AddCustomerPopover({
           {/* Row 4: Notes (full width) */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs">
-              Notes
+              {t('Customers.fields.notes')}
             </Label>
             <Textarea
               id="notes"
@@ -247,7 +258,7 @@ export function AddCustomerPopover({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange('notes', e.target.value)
               }
-              placeholder="Add notes..."
+              placeholder={t('Forms.placeholders.notes')}
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
@@ -265,7 +276,7 @@ export function AddCustomerPopover({
               onClick={handleCancel}
               className="h-8 sm:h-7 text-xs order-2 sm:order-1"
             >
-              Cancel
+              {t('Buttons.cancel')}
             </Button>
             <Button
               size="sm"
@@ -273,7 +284,9 @@ export function AddCustomerPopover({
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
               disabled={!isFormValid() || loading}
             >
-              {loading ? 'Adding Customer...' : 'Add Customer'}
+              {loading
+                ? t('Customers.buttons.adding')
+                : t('Buttons.addCustomer')}
             </Button>
           </div>
         </form>

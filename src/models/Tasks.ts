@@ -20,6 +20,7 @@ export type avatarsType = Array<{
 }>;
 
 export interface ITask extends Document {
+  agentId: mongoose.Schema.Types.ObjectId;
   title: string;
   description: string;
   status: statusType;
@@ -33,6 +34,11 @@ export interface ITask extends Document {
 
 const taskSchema = new Schema<ITask>(
   {
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Agent',
+      required: false,
+    },
     title: {
       type: String,
       required: [true, 'Title is required'],
@@ -79,7 +85,7 @@ const taskSchema = new Schema<ITask>(
     ],
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 4 * 60 * 60 * 1000),
+      default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
       index: { expires: 0 },
     },
   },

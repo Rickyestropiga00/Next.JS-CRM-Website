@@ -40,18 +40,16 @@ export function middleware(request: NextRequest) {
   }
 
   const isAuthRoute = authRoutes.some((r) => cleanPath.startsWith(r));
-  if (isAuthRoute && !localeMatch) {
+
+  if (isAuthRoute) {
+    if (session) return redirectWithLocale(request, locale, '/dashboard');
     return NextResponse.next();
   }
-  if (cleanPath === '/') {
-    if (session) {
-      return redirectWithLocale(request, locale, '/dashboard');
-    }
 
-    return redirectWithLocale(request, locale, '/login');
-  }
-  if (isAuthRoute && session) {
-    return redirectWithLocale(request, locale, '/dashboard');
+  if (cleanPath === '/') {
+    return session
+      ? redirectWithLocale(request, locale, '/dashboard')
+      : redirectWithLocale(request, locale, '/login');
   }
 
   if (session) {

@@ -53,7 +53,10 @@ export const useFormSubmit = <T>() => {
             options.setErrors(() => data.errors);
             return;
           }
-          throw new Error(data.error || 'Validation Error');
+
+          const err = new Error(data.error || 'VALIDATION_ERROR');
+          (err as any).field = data.field ?? null;
+          throw err;
         default:
           throw new Error('Request failed');
       }

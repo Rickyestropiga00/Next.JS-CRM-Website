@@ -8,7 +8,10 @@
     "customers": "顧客",
     "agents": "エージェント",
     "workspace": "ワークスペース",
-    "client": "クライアント管理"
+    "client": "クライアント管理",
+    "header": {
+      "notifications": "通知"
+    }
   },
 
   "QuickActions": {
@@ -69,7 +72,10 @@
     "addAgent": "エージェントを追加",
     "changePhoto": "写真を変更",
     "updatePassword": "パスワードを更新",
-    "addComment": "コメントを追加"
+    "addComment": "コメントを追加",
+    "adding": "追加中…",
+    "viewOrder": "注文を見る",
+    "assign": "割り当て {item}"
   },
 
   "Forms": {
@@ -78,8 +84,10 @@
       "name": "名前",
       "email": "メール",
       "phone": "電話",
+      "price": "価格",
       "company": "会社",
       "location": "場所",
+      "address": "配送先住所",
       "currentPassword": "現在のパスワード",
       "newPassword": "新しいパスワード",
       "confirmNewPassword": "新しいパスワードを確認",
@@ -105,8 +113,28 @@
   "Validations": {
     "imageTooLarge": "画像は2MB未満である必要があります",
     "invalidJson": "サーバーが有効なJSONを返しませんでした",
-    "required": "{field} は必須です",
-    "invalidResponse": "サーバーからの無効な応答"
+    "required": "{field}は必須です",
+    "invalidResponse": "サーバーからの応答が無効です",
+    "invalidEmail": "有効なメールアドレスを入力してください",
+    "invalidPhone": "有効な電話番号を入力してください",
+    "minLength": "{field}は少なくとも{min}文字である必要があります",
+    "greaterThan": "{field}は{min}より大きい必要があります",
+    "maxValue": "{field}は{max}を超えることはできません",
+    "maxPrice": "{field}は${max}を超えることはできません"
+  },
+  "ApiSuccess": {
+    "DELETED_SUCCESSFULLY": "{type} が正常に削除されました。",
+    "CREATED_SUCCESSFULLY": "{type} が正常に作成されました。",
+    "UPDATED_SUCCESSFULLY": "{type} が正常に更新されました。"
+  },
+  "ApiErrors": {
+    "EMAIL_ALREADY_EXISTS": "このメールアドレスはすでに使用されています。",
+    "PHONE_ALREADY_EXISTS": "この電話番号はすでに登録されています。",
+    "VALIDATION_ERROR": "入力内容をご確認のうえ、再度お試しください。",
+    "SOMETHING_WENT_WRONG": "エラーが発生しました。もう一度お試しください。",
+    "UNAUTHORIZED": "権限がありません。",
+    "FORBIDDEN": "この操作を行う権限がありません。",
+    "UNKNOWN": "予期しないエラーが発生しました。"
   },
 
   "Statuses": {
@@ -403,7 +431,8 @@
     },
     "filters": {
       "allStatus": "すべてのステータス",
-      "allPriority": "すべての優先度"
+      "allPriority": "すべての優先度",
+      "allCategories": "すべてのカテゴリ"
     },
     "header": {
       "addNewTask": "新しいタスクを追加"
@@ -422,7 +451,7 @@
       "editDescription": "顧客情報を更新します。変更は一時的で、ページリロード時にリセットされます。",
       "detailsTitle": "顧客詳細",
       "viewOrderTitle": "注文履歴",
-      "viewOrderDescription": "{name} のすべての注文を表示"
+      "viewOrderDescription": "<name></name> のすべての注文を表示"
     },
     "fields": {
       "name": "名前",
@@ -552,7 +581,7 @@
     },
     "assign": {
       "title": "担当顧客",
-      "subtitle": "{name} の担当顧客を割り当て",
+      "subtitle": "<name></name> の担当顧客を割り当て",
       "notAssigned": "未割り当て",
       "assigned": "割り当て済み",
       "allSelected": "すべて選択",
@@ -560,6 +589,7 @@
       "noAssigned": "まだ割り当てられた顧客はありません"
     },
     "table": {
+      "assinged": "{count} 割り当てられました",
       "emptyState": "エージェントが見つかりません！",
       "columns": {
         "id": "ID",

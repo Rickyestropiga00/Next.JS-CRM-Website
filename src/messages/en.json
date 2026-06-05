@@ -8,7 +8,10 @@
     "customers": "Customers",
     "agents": "Agents",
     "workspace": "Workspace",
-    "client": "Client Management"
+    "client": "Client Management",
+    "header": {
+      "notifications": "Notifications"
+    }
   },
 
   "QuickActions": {
@@ -69,7 +72,10 @@
     "addAgent": "Add New Agent",
     "changePhoto": "Change Photo",
     "updatePassword": "Update Password",
-    "addComment": "Add Comment"
+    "addComment": "Add Comment",
+    "adding": "Adding...",
+    "viewOrder": "View Order",
+    "assign": "Assign {item}"
   },
 
   "Forms": {
@@ -78,8 +84,10 @@
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
+      "price": "Price",
       "company": "Company",
       "location": "Location",
+      "address": "Address",
       "currentPassword": "Current Password",
       "newPassword": "New Password",
       "confirmNewPassword": "Confirm New Password",
@@ -106,7 +114,28 @@
     "imageTooLarge": "Image must be less than 2MB",
     "invalidJson": "Server did not return valid JSON",
     "required": "{field} is required",
-    "invalidResponse": "Invalid response from server"
+    "invalidResponse": "Invalid response from server",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "minLength": "{field} must be at least {min} characters",
+    "greaterThan": "{field} must be greater than {min}",
+    "maxValue": "{field} cannot exceed {max}",
+    "maxPrice": "{field} cannot exceed ${max}"
+  },
+  "ApiSuccess": {
+    "DELETED_SUCCESSFULLY": "{type} deleted successfully.",
+    "CREATED_SUCCESSFULLY": "{type} created successfully.",
+    "UPDATED_SUCCESSFULLY": "{type} updated successfully."
+  },
+
+  "ApiErrors": {
+    "EMAIL_ALREADY_EXISTS": "This email address is already in use.",
+    "PHONE_ALREADY_EXISTS": "This phone number is already registered.",
+    "VALIDATION_ERROR": "Please check your inputs and try again.",
+    "SOMETHING_WENT_WRONG": "Something went wrong. Please try again.",
+    "UNAUTHORIZED": "You are not authorized.",
+    "FORBIDDEN": "You don't have permission to do this.",
+    "UNKNOWN": "An unexpected error occurred."
   },
 
   "Statuses": {
@@ -402,7 +431,8 @@
     },
     "filters": {
       "allStatus": "All Status",
-      "allPriority": "All Priority"
+      "allPriority": "All Priority",
+      "allCategories": "All Categories"
     },
     "header": {
       "addNewTask": "Add New Task"
@@ -421,7 +451,7 @@
       "editDescription": "Update customer information. Changes are temporary and will reset on page reload.",
       "detailsTitle": "Customer Details",
       "viewOrderTitle": "Order History",
-      "viewOrderDescription": "View all orders placed by {name}"
+      "viewOrderDescription": "View all orders placed by <name></name>"
     },
     "fields": {
       "name": "Name",
@@ -551,7 +581,7 @@
     },
     "assign": {
       "title": "Assigned Customer",
-      "subtitle": "Assign Customer for {name}",
+      "subtitle": " Assign Customer for <name></name>",
       "notAssigned": "Not Assigned",
       "assigned": "Assigned",
       "allSelected": "Select all",
@@ -559,6 +589,7 @@
       "noAssigned": "No assigned customers yet"
     },
     "table": {
+      "assinged": "{count} assigned",
       "emptyState": "No Agents Found!",
       "columns": {
         "id": "ID",

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { TableSkeleton } from '@/components/shared/table-skeleton';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
 
 interface TableBodyProps {
   paginated: any[];
@@ -38,6 +39,7 @@ interface TableBodyProps {
   onCustomerClick: (id: string) => void;
   setViewOrderCustomerId: (id: string | null) => void;
   customersLoading?: boolean;
+  isHighlighted: (value: string) => boolean;
 }
 
 export function CustomersTableBody({
@@ -51,7 +53,9 @@ export function CustomersTableBody({
   onCustomerClick,
   setViewOrderCustomerId,
   customersLoading,
+  isHighlighted,
 }: TableBodyProps) {
+  const t = useTranslations();
   const { user } = useUser();
 
   // Helper function to count comments
@@ -83,7 +87,7 @@ export function CustomersTableBody({
       }
     } else {
       onDelete(customer.id);
-      toast.success('Customer deleted successfully');
+      toast.success(t('Messages.deleteSuccess', { item: 'Customer' }));
       setDeleteDialogId(null);
     }
   };
@@ -92,23 +96,26 @@ export function CustomersTableBody({
   }
 
   return (
-    <TableBody className="pl-5">
+    <TableBody className="pl-5 ">
       {paginated.length === 0 ? (
         <TableRow>
           <TableCell
             colSpan={12}
             className="text-center py-6 text-muted-foreground"
           >
-            No Customer Found!
+            {t('Table.noDataFound', { item: 'Customer' })}
           </TableCell>
         </TableRow>
       ) : (
         paginated.map((c) => {
           const commentCount = countComments(c.comment);
+          const highlighted = isHighlighted(c.customerId);
           return (
             <TableRow
               key={getId(c)}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                highlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
+              } `}
               onClick={(e) => {
                 // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
                 const target = e.target as HTMLElement;
@@ -122,7 +129,12 @@ export function CustomersTableBody({
                 onCustomerClick(getId(c));
               }}
             >
-              <TableCell className="w-8">
+              <TableCell
+                className={`w-8 ${
+                  highlighted &&
+                  'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary'
+                }`}
+              >
                 <Checkbox
                   className="ml-2"
                   checked={selected.includes(getId(c))}
@@ -181,7 +193,7 @@ export function CustomersTableBody({
                       onClick={() => setEditCustomerId(getId(c))}
                     >
                       <Pencil className="h-4 w-4" />
-                      Edit
+                      {t('Buttons.edit')}
                     </DropdownMenuItem>
                     <AlertDialog
                       open={deleteDialogId === getId(c)}
@@ -198,17 +210,20 @@ export function CustomersTableBody({
                           className="text-primary focus:text-primary font-semibold"
                         >
                           <Trash className="h-4 w-4 text-primary" />
-                          Delete
+                          {t('Buttons.delete')}
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            Delete this customer?
+                            {t('ConfirmDelete.singleTitle', {
+                              item: 'Customer',
+                            })}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. Are you sure you want
-                            to delete {c.name}?
+                            {t('ConfirmDelete.singleDescription', {
+                              name: c.name,
+                            })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -216,7 +231,7 @@ export function CustomersTableBody({
                             onClick={() => setDeleteDialogId(null)}
                             className="cursor-pointer"
                           >
-                            Cancel
+                            {t('Buttons.cancel')}
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
@@ -225,7 +240,7 @@ export function CustomersTableBody({
                             }}
                             className="cursor-pointer"
                           >
-                            Delete
+                            {t('Buttons.delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -234,7 +249,7 @@ export function CustomersTableBody({
                       onClick={() => setViewOrderCustomerId(getId(c))}
                     >
                       <Eye />
-                      View Order
+                      {t('Buttons.viewOrder')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

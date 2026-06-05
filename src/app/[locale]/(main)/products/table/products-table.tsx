@@ -57,15 +57,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
+import { useTranslations } from 'next-intl';
+import { getApiSuccessMessage } from '@/lib/api-messages';
+import { useSearchParams } from 'next/navigation';
+import { useTableHighlight } from '@/hooks/use-table-highlight';
 
 export function ProductsTable() {
+  const t = useTranslations();
   const {
     data: productsData,
     setData: setProductsData,
@@ -79,15 +84,41 @@ export function ProductsTable() {
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
-  const statusOptions: ProductStatus[] = ['Active', 'Disabled'];
+  const isReady = !productsLoading;
 
-  const typeOptions: ProductTypes[] = [
-    'Physical',
-    'Digital',
-    'Service',
-    'Subscription',
+  const statusOptions: { value: ProductStatus; label: string }[] = [
+    {
+      value: 'Active',
+      label: t('Statuses.active'),
+    },
+    {
+      value: 'Disabled',
+      label: t('Statuses.disabled'),
+    },
   ];
+
+  const typeOptions: { value: ProductTypes; label: string }[] = [
+    {
+      value: 'Physical',
+      label: t('ProductTypes.physical'),
+    },
+    {
+      value: 'Digital',
+      label: t('ProductTypes.digital'),
+    },
+    {
+      value: 'Service',
+      label: t('ProductTypes.service'),
+    },
+    {
+      value: 'Subscription',
+      label: t('ProductTypes.subscription'),
+    },
+  ];
+
   const {
     filters,
     setFilters,
@@ -122,6 +153,17 @@ export function ProductsTable() {
     },
   });
 
+  const { isHighlighted } = useTableHighlight({
+    data: productsData,
+    highlightId,
+    rowsPerPage,
+    currentPage,
+    setCurrentPage,
+    isReady,
+    paginatedData: paginated,
+    getHighlightValue: (product) => product.productId,
+  });
+
   const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
     endpoint: '/api/bulk-delete',
     type: 'product',
@@ -136,7 +178,8 @@ export function ProductsTable() {
 
       setSelected([]);
       setShowConfirm(false);
-      toast.success(data.message);
+      const message = getApiSuccessMessage(data.message, t, 'Product');
+      toast.success(message);
     },
 
     onError: () => {
@@ -151,7 +194,7 @@ export function ProductsTable() {
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3">
         <div className="flex gap-2 flex-wrap items-center">
           <Input
-            placeholder="Search products..."
+            placeholder={t('Products.table.searchPlaceholder')}
             value={filters.search}
             onChange={(e) =>
               setFilters((prev) => ({
@@ -170,15 +213,17 @@ export function ProductsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allStatus')}
+                </SelectItem>
                 {statusOptions.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -193,15 +238,17 @@ export function ProductsTable() {
               }))
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">
+                  {t('Table.filters.allTypes')}
+                </SelectItem>
                 {typeOptions.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -220,21 +267,22 @@ export function ProductsTable() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete selected products?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t('ConfirmDelete.bulkTitle', { items: 'products' })}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. Are you sure you want to delete
-                  the selected products?
+                  {t('ConfirmDelete.bulkDescription', { items: 'products' })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="cursor-pointer">
-                  Cancel
+                  {t('Buttons.cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleDeleteSelected(selected)}
                   className="cursor-pointer"
                 >
-                  Delete
+                  {t('Buttons.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -248,45 +296,68 @@ export function ProductsTable() {
             onClick={() => setShowAddProduct(true)}
           >
             <Plus className="h-4 w-4" />
-            Add New Product
+            {t('Buttons.addProduct')}
           </Button>
         </Can>
       </div>
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="bg-transparent">
-            <ProductsTableHeader
-              selected={selected}
-              paginated={paginated}
-              onSelectAll={handleSelectAll}
-              sortBy={sortBy ?? 'productId'}
-              sortDir={sortDir}
-              onSort={handleSort}
-            />
-            <ProductsTableBody
-              paginated={paginated}
-              selected={selected}
-              onSelectRow={handleSelectRow}
-              onDelete={handleDelete}
-              deleteDialogId={deleteDialogId}
-              setDeleteDialogId={setDeleteDialogId}
-              setEditProductId={setEditProductId}
-              onProductClick={setSelectedProductId}
-              productsLoading={productsLoading}
-            />
-          </Table>
-        </div>
-      </div>
+      {productsData.length > 0 ? (
+        <>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="bg-transparent">
+                <ProductsTableHeader
+                  selected={selected}
+                  paginated={paginated}
+                  onSelectAll={handleSelectAll}
+                  sortBy={sortBy ?? 'productId'}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <ProductsTableBody
+                  paginated={paginated}
+                  selected={selected}
+                  onSelectRow={handleSelectRow}
+                  onDelete={handleDelete}
+                  deleteDialogId={deleteDialogId}
+                  setDeleteDialogId={setDeleteDialogId}
+                  setEditProductId={setEditProductId}
+                  onProductClick={setSelectedProductId}
+                  productsLoading={productsLoading}
+                  isHighlighted={isHighlighted}
+                />
+              </Table>
+            </div>
+          </div>
 
-      <ProductsPaginationBar
-        selectedCount={selected.length}
-        totalRows={filtered.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        setCurrentPage={setCurrentPage}
-      />
+          <ProductsPaginationBar
+            selectedCount={selected.length}
+            totalRows={filtered.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-20 ">
+          <div className="mb-4 rounded-full bg-muted p-4 ">
+            <Package className="h-10 w-10 text-muted-foreground" />
+          </div>
+
+          <h3 className="font-semibold">No products found</h3>
+
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            You don&apos;t have any products yet. Start by adding your first
+            product.
+          </p>
+
+          <Button className="mt-4" onClick={() => setShowAddProduct(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Product
+          </Button>
+        </div>
+      )}
 
       {/* Edit Product Modal - Rendered outside table structure */}
       {editProductId && (

@@ -111,7 +111,7 @@ export const ApperancePopover = ({
             ))}
           </div>
         </div>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end pt-4 border-t">
           <Button onClick={handleCancel}>{buttonsT('close')}</Button>
         </div>
       </div>

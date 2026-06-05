@@ -20,6 +20,7 @@ import {
   Boxes,
 } from 'lucide-react';
 import { getId } from '@/utils/helper';
+import { useTranslations } from 'next-intl';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -32,6 +33,7 @@ export function ProductDetailsModal({
   isOpen,
   onClose,
 }: ProductDetailsModalProps) {
+  const t = useTranslations();
   if (!product) return null;
 
   const getStatusColor = (status: string) => {
@@ -78,7 +80,7 @@ export function ProductDetailsModal({
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-bold">
-            Product Details
+            {t('Products.modal.detailsTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -120,14 +122,14 @@ export function ProductDetailsModal({
                     product.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.status}
+                  {t(`Statuses.${product.status.toLowerCase()}`)}
                 </Badge>
                 <Badge
                   className={`${getTypeColor(
                     product.productType
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.productType}
+                  {t(`ProductTypes.${product.productType.toLowerCase()}`)}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
                   ID: {product.id || product.productId}
@@ -144,18 +146,20 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                   <Tag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Product Info</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.productInfo')}
+                </h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Code
+                    {t('Products.details.labels.code')}
                   </p>
                   <p className="text-xs font-mono">{product.code}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Name
+                    {t('Products.details.labels.name')}
                   </p>
                   <p className="text-xs">{product.name}</p>
                 </div>
@@ -168,18 +172,20 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                   <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Category</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.category')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Type
+                  {t('Products.details.labels.type')}
                 </p>
                 <Badge
                   className={`${getTypeColor(
                     product.productType
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.productType}
+                  {t(`ProductTypes.${product.productType.toLowerCase()}`)}
                 </Badge>
               </div>
             </div>
@@ -190,11 +196,13 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Pricing</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.pricing')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Price
+                  {t('Products.details.labels.price')}
                 </p>
                 <p className="text-xs font-semibold">
                   {formatPrice(product.price)}
@@ -208,11 +216,13 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                   <Boxes className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Inventory</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.inventory')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Stock Level
+                  {t('Products.details.labels.stockLevel')}
                 </p>
                 <p className="text-xs">
                   {formatStock(product.stock, product.productType)}
@@ -226,18 +236,20 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                   <FileText className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Status</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.status')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Current Status
+                  {t('Products.details.labels.currentStatus')}
                 </p>
                 <Badge
                   className={`${getStatusColor(
                     product.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {product.status}
+                  {t(`Statuses.${product.status.toLowerCase()}`)}
                 </Badge>
               </div>
             </div>
@@ -248,11 +260,13 @@ export function ProductDetailsModal({
                 <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
                   <Calendar className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Timeline</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Products.details.sections.timeline')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Created Date
+                  {t('Products.details.labels.createdDate')}
                 </p>
                 <p className="text-xs">
                   {product.date || product.createdAt?.split('T')[0]}
@@ -269,7 +283,7 @@ export function ProductDetailsModal({
             onClick={onClose}
             className="px-4 py-2 text-sm cursor-pointer"
           >
-            Close
+            {t('Buttons.close')}
           </Button>
         </div>
       </DialogContent>

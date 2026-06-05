@@ -25,6 +25,7 @@ export default function AccountPage() {
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log('USER DATA', data);
         setUser(data.user);
         setInitialUser(data.user);
       })
@@ -72,7 +73,7 @@ export default function AccountPage() {
             <AccountSummaryCard user={user} />
           )}
           {/* Quick Actions */}
-          <QuickActionsCard />
+          <QuickActionsCard user={user} />
         </div>
       </div>
     </div>

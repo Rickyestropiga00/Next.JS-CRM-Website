@@ -2,6 +2,7 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { ColumnKey } from '@/types/interface';
+import { useTranslations } from 'next-intl';
 interface DroppableColumnProps {
   col: {
     key: ColumnKey;
@@ -11,6 +12,7 @@ interface DroppableColumnProps {
 }
 
 export const DroppableColumn = ({ col, children }: DroppableColumnProps) => {
+  const t = useTranslations();
   const { setNodeRef, isOver } = useDroppable({
     id: col.key,
     data: { column: col.key },
@@ -30,7 +32,7 @@ export const DroppableColumn = ({ col, children }: DroppableColumnProps) => {
           aria-hidden="true"
         >
           <div className="w-full h-full flex items-center justify-center opacity-40">
-            <span className=" text-lg">DROP HERE</span>{' '}
+            <span className=" text-lg">{t('Tasks.board.dropzone.label')}</span>{' '}
           </div>
         </div>
       )}

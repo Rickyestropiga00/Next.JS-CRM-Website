@@ -18,6 +18,7 @@ import {
   FileText,
   MessageSquare,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface CustomerDetailsModalProps {
   customer: Customer | null;
@@ -32,6 +33,7 @@ export function CustomerDetailsModal({
   onClose,
   onAddComment,
 }: CustomerDetailsModalProps) {
+  const t = useTranslations();
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -172,7 +174,7 @@ export function CustomerDetailsModal({
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-bold">
-            Customer Details
+            {t('Customers.modal.detailsTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -201,7 +203,8 @@ export function CustomerDetailsModal({
                   {customer.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
-                  ID: {customer.id || customer.customerId}
+                  {t('Customers.details.labels.id')}:{' '}
+                  {customer.id || customer.customerId}
                 </span>
               </div>
             </div>
@@ -220,13 +223,13 @@ export function CustomerDetailsModal({
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Email
+                    {t('Customers.details.labels.email')}
                   </p>
                   <p className="text-xs">{customer.email}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Phone
+                    {t('Customers.details.labels.phone')}
                   </p>
                   <p className="text-xs">{customer.phone}</p>
                 </div>
@@ -243,7 +246,7 @@ export function CustomerDetailsModal({
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Organization
+                  {t('Customers.details.labels.organization')}
                 </p>
                 <p className="text-xs">
                   {customer.company || 'No company specified'}
@@ -262,7 +265,7 @@ export function CustomerDetailsModal({
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Created
+                    {t('Customers.details.labels.created')}
                   </p>
                   <p className="text-xs">
                     {formatDate(
@@ -274,7 +277,7 @@ export function CustomerDetailsModal({
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                    Last Contacted
+                    {t('Customers.details.labels.lastContacted')}
                   </p>
                   <p className="text-xs">
                     {formatDate(customer.lastContacted ?? '')}
@@ -293,7 +296,7 @@ export function CustomerDetailsModal({
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                  Current Status
+                  {t('Customers.details.labels.status')}
                 </p>
                 <Badge
                   className={`${getStatusColor(
@@ -313,7 +316,9 @@ export function CustomerDetailsModal({
                 <div className="w-8 h-8 bg-gray-100 dark:bg-gray-900/30 rounded-lg flex items-center justify-center">
                   <FileText className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Notes</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Customers.details.labels.notes')}
+                </h3>
               </div>
               <div className="bg-muted/50 rounded-lg p-3">
                 <p className="text-xs text-foreground whitespace-pre-wrap">
@@ -351,7 +356,7 @@ export function CustomerDetailsModal({
                   {/* Add Comment Form */}
                   <div className="space-y-2 pt-2 border-t">
                     <Textarea
-                      placeholder="Add a comment about this customer..."
+                      placeholder={t('Customers.placeholders.comment')}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onKeyDown={handleKeyPress}
@@ -360,7 +365,7 @@ export function CustomerDetailsModal({
                     />
                     <div className="flex justify-between items-center">
                       <p className="text-xs text-muted-foreground">
-                        Press Ctrl+Enter to submit
+                        {t('Forms.hints.ctrlEnterSubmit')}
                       </p>
                       <Button
                         onClick={handleAddComment}
@@ -368,7 +373,9 @@ export function CustomerDetailsModal({
                         size="sm"
                         className="h-7 px-3 text-xs cursor-pointer"
                       >
-                        {isSubmitting ? 'Adding...' : 'Add Comment'}
+                        {isSubmitting
+                          ? t('Buttons.adding')
+                          : t('Buttons.addComment')}
                       </Button>
                     </div>
                   </div>
@@ -384,7 +391,7 @@ export function CustomerDetailsModal({
             onClick={onClose}
             className="px-4 py-2 text-sm cursor-pointer"
           >
-            Close
+            {t('Buttons.close')}
           </Button>
         </div>
       </DialogContent>

@@ -4,6 +4,8 @@ import { TaskCard } from './task-card';
 import { getId } from '@/utils/helper';
 import { DroppableColumn } from './droppable-column';
 import { TaskSkeleton } from './tasks-skeleton';
+import { useTranslations } from 'next-intl';
+import { useTasks } from '@/hooks/use-tasks';
 
 interface ColumnsBoardProps {
   columns: { key: ColumnKey; label: string }[];
@@ -30,6 +32,8 @@ export function ColumnsBoard({
   isSidebarCollapsed,
   tasksLoading,
 }: ColumnsBoardProps) {
+  const t = useTranslations();
+  const { updateTask } = useTasks();
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 ${
@@ -58,7 +62,10 @@ export function ColumnsBoard({
                   className="p-2 rounded-md hover:bg-muted transition cursor-pointer"
                   onClick={() => onAddTask(col.key)}
                 >
-                  <span className="sr-only">Add task</span>+
+                  <span className="sr-only">
+                    {t('Tasks.board.header.addTask')}
+                  </span>
+                  +
                 </button>
               </div>
             </div>
@@ -71,6 +78,7 @@ export function ColumnsBoard({
                   <TaskCard
                     key={getId(task)}
                     task={task}
+                    onUpdateTask={updateTask}
                     columns={columns}
                     onMove={onMoveTask}
                     onDelete={onDeleteTask}

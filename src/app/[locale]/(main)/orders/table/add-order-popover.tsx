@@ -29,6 +29,7 @@ import { useUser } from '@/hooks/use-user';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { getId } from '@/utils/helper';
 import { useTranslations } from 'next-intl';
+import { useNotifications } from '@/context/notification-context';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -68,16 +69,7 @@ export function AddOrderPopover({
   const { data: agents } = useFetch<Agent>('agent');
   const { user } = useUser();
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
-  const ordersModalT = useTranslations('Orders.modal');
-  const messagesT = useTranslations('Messages');
-  const buttonsT = useTranslations('Buttons');
-  const statusesT = useTranslations('Statuses');
-  const paymentT = useTranslations('Payment');
-  const productTypesT = useTranslations('ProductTypes');
-  const ordersSectionT = useTranslations('Orders.sections');
-  const ordersFallbackT = useTranslations('Orders.fallback');
-  const ordersPlaceholdersT = useTranslations('Orders.placeholders');
-  const ordersFieldsT = useTranslations('Orders.fields');
+  const t = useTranslations();
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
@@ -101,8 +93,9 @@ export function AddOrderPopover({
   );
 
   const validationRules = {
-    address: (v: string) => validateRequired(v, 'Address'),
-    quantity: (v: number) => validateNumber(v, 'Quantity'),
+    address: (v: string) =>
+      validateRequired(v, t('Forms.fields.address'), t, 1),
+    quantity: (v: number) => validateNumber(v, t('Orders.fields.quantity'), t),
   };
 
   const {
@@ -156,13 +149,14 @@ export function AddOrderPopover({
       onError: (err) => {
         setErrors((prev) => ({
           ...prev,
-          general: err instanceof Error ? err.message : messagesT('failedSave'),
+          general:
+            err instanceof Error ? err.message : t('Messages.failedSave'),
         }));
       },
     });
 
   const validateQuantity = (quantity: number): string | undefined => {
-    return validateNumber(quantity, 'Quantity', 0, 999);
+    return validateNumber(quantity, t('Orders.fields.quantity'), t, 0, 999);
   };
   const handleQuantityChange = (value: number) => {
     const qty = value || 0;
@@ -189,10 +183,10 @@ export function AddOrderPopover({
           <div className="space-y-2 sm:space-y-3">
             <h4 className="font-medium text-sm sm:text-base">
               {' '}
-              {ordersModalT('addTitle')}{' '}
+              {t('Orders.modal.addTitle')}{' '}
             </h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {ordersModalT('addDescription')}
+              {t('Orders.modal.addDescription')}
             </p>
           </div>
 
@@ -201,7 +195,7 @@ export function AddOrderPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="customer" className="text-xs">
-                  {ordersSectionT('customer')}
+                  {t('Orders.sections.customer')}
                 </Label>
 
                 <Combobox
@@ -218,7 +212,7 @@ export function AddOrderPopover({
                   }}
                 >
                   <ComboboxInput
-                    placeholder={ordersPlaceholdersT('selectCustomer')}
+                    placeholder={t('Orders.placeholders.selectCustomer')}
                     value={customerInputValue}
                     onChange={(e) => setCustomerInputValue(e.target.value)}
                     onBlur={() => {
@@ -233,7 +227,7 @@ export function AddOrderPopover({
                   />
                   <ComboboxContent>
                     <ComboboxEmpty>
-                      {ordersFallbackT('noCustomer')}
+                      {t('Orders.fallback.noCustomer')}
                     </ComboboxEmpty>
                     <ComboboxList>
                       {(item) => (
@@ -248,7 +242,7 @@ export function AddOrderPopover({
 
               <div className="flex-1 space-y-2">
                 <Label htmlFor="product" className="text-xs">
-                  {ordersFieldsT('productName')}
+                  {t('Orders.fields.productName')}
                 </Label>
 
                 <Combobox
@@ -273,7 +267,7 @@ export function AddOrderPopover({
                   }}
                 >
                   <ComboboxInput
-                    placeholder={ordersPlaceholdersT('selectProduct')}
+                    placeholder={t('Orders.placeholders.selectProduct')}
                     value={productInputValue}
                     onChange={(e) => setProductInputValue(e.target.value)}
                     onBlur={() => {
@@ -288,7 +282,7 @@ export function AddOrderPopover({
                   />
                   <ComboboxContent>
                     <ComboboxEmpty>
-                      {ordersFallbackT('noProduct')}
+                      {t('Orders.fallback.noProduct')}
                     </ComboboxEmpty>
                     <ComboboxList>
                       {(item) => (
@@ -306,7 +300,7 @@ export function AddOrderPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-xs">
-                  {ordersFieldsT('address')}
+                  {t('Orders.fields.address')}
                 </Label>
                 <Input
                   id="address"
@@ -315,7 +309,7 @@ export function AddOrderPopover({
                   className={`h-8 sm:h-9 text-xs ${
                     errors.address ? 'border-red-500' : ''
                   }`}
-                  placeholder={ordersPlaceholdersT('deliveryAddress')}
+                  placeholder={t('Orders.placeholders.deliveryAddress')}
                 />
                 {errors.address && (
                   <p className="text-xs text-red-500">{errors.address}</p>
@@ -323,7 +317,7 @@ export function AddOrderPopover({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="item" className="text-xs">
-                  {ordersFieldsT('itemCode')}
+                  {t('Orders.fields.itemCode')}
                 </Label>
                 <Input
                   id="item"
@@ -332,7 +326,7 @@ export function AddOrderPopover({
                   className={`h-8 sm:h-9 text-xs ${
                     errors.item ? 'border-red-500' : ''
                   }`}
-                  placeholder={ordersPlaceholdersT('itemCode')}
+                  placeholder={t('Orders.placeholders.itemCode')}
                   disabled
                 />
                 {errors.item && (
@@ -345,7 +339,7 @@ export function AddOrderPopover({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="productType" className="text-xs">
-                  {ordersFieldsT('productType')}
+                  {t('Orders.fields.productType')}
                 </Label>
                 <Select
                   value={formData.productType ?? 'Physical'}
@@ -359,23 +353,23 @@ export function AddOrderPopover({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Physical">
-                      {productTypesT('physical')}
+                      {t('ProductTypes.physical')}
                     </SelectItem>
                     <SelectItem value="Digital">
-                      {productTypesT('digital')}
+                      {t('ProductTypes.digital')}
                     </SelectItem>
                     <SelectItem value="Service">
-                      {productTypesT('service')}
+                      {t('ProductTypes.service')}
                     </SelectItem>
                     <SelectItem value="Subscription">
-                      {productTypesT('subscription')}
+                      {t('ProductTypes.subscription')}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-xs">
-                  {ordersFieldsT('orderStatus')}
+                  {t('Orders.fields.orderStatus')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -388,16 +382,16 @@ export function AddOrderPopover({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Pending">
-                      {statusesT('pending')}
+                      {t('Statuses.pending')}
                     </SelectItem>
                     <SelectItem value="In Transit">
-                      {statusesT('inTransit')}
+                      {t('Statuses.inTransit')}
                     </SelectItem>
                     <SelectItem value="Completed">
-                      {statusesT('completed')}
+                      {t('Statuses.completed')}
                     </SelectItem>
                     <SelectItem value="Canceled">
-                      {statusesT('canceled')}
+                      {t('Statuses.canceled')}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -411,7 +405,7 @@ export function AddOrderPopover({
                   htmlFor="quantity"
                   className="text-xs flex justify-between"
                 >
-                  {ordersFieldsT('quantity')}
+                  {t('Orders.fields.quantity')}
                   <span className="text-muted-foreground">
                     x {formatPrice(formData.product?.price || 0)}
                   </span>
@@ -434,7 +428,7 @@ export function AddOrderPopover({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="total" className="text-xs">
-                  {ordersFieldsT('total')}
+                  {t('Orders.fields.total')}
                 </Label>
                 <Input
                   id="total"
@@ -457,7 +451,7 @@ export function AddOrderPopover({
             {/* Row 5: Payment Status */}
             <div className="space-y-2">
               <Label htmlFor="payment" className="text-xs">
-                {ordersFieldsT('paymentStatus')}
+                {t('Orders.fields.paymentStatus')}
               </Label>
               <Select
                 value={formData.payment}
@@ -469,8 +463,8 @@ export function AddOrderPopover({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Paid">{paymentT('paid')}</SelectItem>
-                  <SelectItem value="Unpaid">{paymentT('unpaid')}</SelectItem>
+                  <SelectItem value="Paid">{t('Payment.paid')}</SelectItem>
+                  <SelectItem value="Unpaid">{t('Payment.unpaid')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -482,7 +476,7 @@ export function AddOrderPopover({
                 onClick={handleCancel}
                 className="h-8 sm:h-7 text-xs order-2 sm:order-1"
               >
-                {buttonsT('cancel')}
+                {t('Buttons.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -490,7 +484,7 @@ export function AddOrderPopover({
                 className="h-8 sm:h-7 text-xs order-1 sm:order-2"
                 disabled={!isFormValid() || loading}
               >
-                {loading ? 'Adding Order...' : buttonsT('addOrder')}
+                {loading ? t('Orders.buttons.adding') : t('Buttons.addOrder')}
               </Button>
             </div>
           </form>

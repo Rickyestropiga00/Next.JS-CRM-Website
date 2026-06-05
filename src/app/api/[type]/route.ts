@@ -8,8 +8,15 @@ import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
 import { generateCustomId } from '@/lib/generate-id';
 import { createUser, findUserByEmail, getCurrentUser } from '@/lib/auth';
-
 import { requirePermission } from '@/utils/requirePermissions';
+import { notifyTaskCreated } from '@/lib/notifications/task-notification';
+import { notifyOrderCreated } from '@/lib/notifications/order-notification';
+import { notifyCustomerCreated } from '@/lib/notifications/customer-notification';
+import { notifyAgentCreated } from '@/lib/notifications/agent-notification';
+import {
+  notifyLowStock,
+  notifyProductCreated,
+} from '@/lib/notifications/product-notification';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -128,7 +135,7 @@ export async function POST(
       const existingUser = await findUserByEmail(body.email);
       if (existingUser) {
         return NextResponse.json(
-          { error: 'Email already registered' },
+          { error: 'EMAIL_ALREADY_EXISTS' },
           { status: 400 }
         );
       }
@@ -136,12 +143,94 @@ export async function POST(
       const cleanName = body.name.replace(/\s+/g, '');
       const tempPassword = `${cleanName}123`;
 
-      const user = await createUser(body.email, tempPassword, body.name);
+      const newUser = await createUser(body.email, tempPassword, body.name);
 
-      body.userId = user.id || user._id;
+      body.userId = newUser.id || newUser._id;
+    }
+
+    if (type === 'task' && user?.role === 'agent') {
+      const agent = await Agents.findOne({ userId: user._id });
+
+      if (agent) {
+        body.agentId = agent._id;
+      }
+    }
+
+    if (type === 'order') {
+      const LOW_STOCK_THRESHOLD = 10;
+      const product = await Product.findOneAndUpdate(
+        {
+          _id: body.product,
+          stock: { $gte: body.quantity },
+        },
+        {
+          $inc: { stock: -body.quantity },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!product) {
+        return Response.json(
+          {
+            errors: {
+              quantity: 'Insufficient stock',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const currentStock = product.stock;
+      const previousStock = currentStock + body.quantity;
+
+      if (
+        previousStock > LOW_STOCK_THRESHOLD &&
+        currentStock <= LOW_STOCK_THRESHOLD
+      ) {
+        await notifyLowStock(product);
+      }
     }
 
     const created = await Model.create(body);
+
+    try {
+      if (type === 'task' && user?.role === 'agent') {
+        await notifyTaskCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+
+      if (type === 'order') {
+        await notifyOrderCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+
+      if (type === 'customer') {
+        await notifyCustomerCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+      if (type === 'product') {
+        await notifyProductCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+      if (type === 'agent') {
+        await notifyAgentCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+    } catch (err) {
+      console.error('Notification failed:', err);
+    }
 
     if (type === 'customer' && user?.role === 'agent') {
       const agent = await Agents.findOne({ userId: user._id });
@@ -160,25 +249,16 @@ export async function POST(
     console.error(error);
     if (error?.cause?.code === 11000) {
       const field = Object.keys(error.cause.keyValue)[0];
+      const code = `${field.toUpperCase()}_ALREADY_EXISTS`;
 
-      return NextResponse.json(
-        {
-          field,
-          error: `${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          } already exists`,
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ field, error: code }, { status: 400 });
     }
     if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err: any) => err.message);
-
-      return NextResponse.json({ error: errors[0] }, { status: 400 });
+      return NextResponse.json({ error: 'VALIDATION_ERROR' }, { status: 400 });
     }
 
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { error: 'SOMETHING_WENT_WRONG' },
       { status: 500 }
     );
   }

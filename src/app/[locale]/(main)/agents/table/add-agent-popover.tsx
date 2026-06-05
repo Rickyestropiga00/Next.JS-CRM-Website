@@ -20,6 +20,8 @@ import {
 import { Agent } from '@/types/interface';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useTranslations } from 'next-intl';
+import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
 
 interface AddAgentPopoverProps {
   onAddAgent: (agent: Agent) => void;
@@ -47,6 +49,7 @@ export function AddAgentPopover({
   isOpen = false,
   onClose,
 }: AddAgentPopoverProps) {
+  const t = useTranslations();
   const [internalIsOpen] = useState(false);
 
   // Use external isOpen prop if provided, otherwise use internal state
@@ -64,11 +67,14 @@ export function AddAgentPopover({
     []
   );
 
-  const validationRules = {
-    name: (v: string) => validateRequired(v, 'Name', 1),
-    email: (v: string) => validateEmail(v),
-    phone: (v: string) => validatePhone(v),
-  };
+  const validationRules = useMemo(
+    () => ({
+      name: (v: string) => validateRequired(v, t('Forms.fields.name'), t, 1),
+      email: (v: string) => validateEmail(v, t),
+      phone: (v: string) => validatePhone(v, t),
+    }),
+    [t]
+  );
 
   const {
     formData,
@@ -100,10 +106,14 @@ export function AddAgentPopover({
       onClose,
       setErrors,
       onError: (err) => {
-        setErrors((prev) => ({
-          ...prev,
-          general: err instanceof Error ? err.message : 'Failed to save agent',
-        }));
+        const message = getApiErrorMessage(err, t);
+        const field = getApiErrorField(err);
+
+        if (field) {
+          setErrors((prev) => ({ ...prev, [field]: message }));
+        } else {
+          setErrors((prev) => ({ ...prev, general: message }));
+        }
       },
     });
 
@@ -111,10 +121,11 @@ export function AddAgentPopover({
     <ModalWrapper open={isModalOpen} onClose={handleCancel}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Add New Agent</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('Agents.modal.addTitle')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Create a new agent. This data is temporary and will reset on page
-            reload.
+            {t('Agents.modal.addDescription')}
           </p>
         </div>
 
@@ -123,7 +134,7 @@ export function AddAgentPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs">
-                Name
+                {t('Agents.fields.name')}
               </Label>
               <Input
                 id="name"
@@ -132,7 +143,7 @@ export function AddAgentPopover({
                 className={`h-8 sm:h-9 text-xs ${
                   errors.name ? 'border-red-500' : ''
                 }`}
-                placeholder="Enter agent name"
+                placeholder={t('Agents.placeholders.name')}
               />
               {errors.name && (
                 <p className="text-xs text-red-500">{errors.name}</p>
@@ -140,7 +151,7 @@ export function AddAgentPopover({
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-xs">
-                Phone
+                {t('Agents.fields.phone')}
               </Label>
               <Input
                 id="phone"
@@ -162,7 +173,7 @@ export function AddAgentPopover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-xs">
-                Email
+                {t('Agents.fields.email')}
               </Label>
               <Input
                 id="email"
@@ -172,7 +183,7 @@ export function AddAgentPopover({
                 className={`h-8 sm:h-9 text-xs ${
                   errors.email ? 'border-red-500' : ''
                 }`}
-                placeholder="Enter email address"
+                placeholder={t('Forms.placeholders.email')}
               />
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
@@ -181,7 +192,7 @@ export function AddAgentPopover({
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="role" className="text-xs">
-                  Role
+                  {t('Agents.fields.role')}
                 </Label>
                 <Select
                   value={formData.role}
@@ -193,9 +204,11 @@ export function AddAgentPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Agent">Agent</SelectItem>
-                    <SelectItem value="Manager">Manager</SelectItem>
+                    <SelectItem value="Admin">{t('Roles.admin')}</SelectItem>
+                    <SelectItem value="Agent">{t('Roles.agent')}</SelectItem>
+                    <SelectItem value="Manager">
+                      {t('Roles.manager')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -213,9 +226,16 @@ export function AddAgentPopover({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="On Leave">On Leave</SelectItem>
+                    <SelectItem value="Active">
+                      {t('Statuses.active')}
+                    </SelectItem>
+                    <SelectItem value="Inactive">
+                      {t('Statuses.inactive')}
+                    </SelectItem>
+                    <SelectItem value="On Leave">
+                      {' '}
+                      {t('Statuses.onLeave')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -225,7 +245,7 @@ export function AddAgentPopover({
           {/* Row 3: Notes (full width) */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs">
-              Notes
+              {t('Agents.fields.notes')}
             </Label>
             <Textarea
               id="notes"
@@ -233,7 +253,7 @@ export function AddAgentPopover({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange('notes', e.target.value)
               }
-              placeholder="Add notes..."
+              placeholder={t('Forms.placeholders.notes')}
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>
@@ -250,7 +270,7 @@ export function AddAgentPopover({
               onClick={handleCancel}
               className="h-8 sm:h-7 text-xs order-2 sm:order-1"
             >
-              Cancel
+              {t('Buttons.cancel')}
             </Button>
             <Button
               type="submit"
@@ -258,7 +278,7 @@ export function AddAgentPopover({
               className="h-8 sm:h-7 text-xs order-1 sm:order-2"
               disabled={!isFormValid() || loading}
             >
-              {loading ? 'Adding Agent...' : 'Add Agent'}
+              {loading ? t('Agents.buttons.adding') : t('Buttons.addAgent')}
             </Button>
           </div>
         </form>
