@@ -13,6 +13,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Task, ColumnKey } from '@/types/interface';
 import { useTranslations } from 'next-intl';
+import { useNotifications } from '@/context/notification-context';
+import { useUser } from '@/hooks/use-user';
 
 interface AddNewTaskPopoverProps {
   onAddNewTask: (tasks: Task) => void;
@@ -32,6 +34,8 @@ export function AddNewTaskPopover({
 }: AddNewTaskPopoverProps) {
   const t = useTranslations();
   const [internalIsOpen] = useState(false);
+  const { addNotificationForUser, addNotification } = useNotifications();
+  const { user } = useUser();
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
@@ -159,7 +163,7 @@ export function AddNewTaskPopover({
 
       switch (response.status) {
         case 201:
-          onAddNewTask(data); // update UI
+          onAddNewTask(data);
           break; // Success
         case 400:
           throw new Error(data.error || 'Validation error');

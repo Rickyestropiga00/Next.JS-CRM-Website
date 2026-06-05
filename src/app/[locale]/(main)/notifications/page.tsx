@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useRouter } from 'next/navigation';
 
 type FilterTab =
   | 'all'
@@ -84,6 +85,14 @@ function groupByDate(
 
 function NotificationRow({ notification: n }: { notification: Notification }) {
   const { markAsRead, remove } = useNotifications();
+  const router = useRouter();
+  const handleClick = async () => {
+    await markAsRead(String(n._id));
+
+    if (n.link) {
+      router.push(n.link);
+    }
+  };
 
   return (
     <div
@@ -93,7 +102,7 @@ function NotificationRow({ notification: n }: { notification: Notification }) {
             ? 'bg-blue-50/60 border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40'
             : 'bg-background border-border hover:bg-muted/40'
         }`}
-      onClick={() => markAsRead(n.id)}
+      onClick={handleClick}
     >
       {/* Icon */}
       <div
@@ -125,7 +134,7 @@ function NotificationRow({ notification: n }: { notification: Notification }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                remove(n.id);
+                remove(String(n._id));
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
             >
@@ -248,7 +257,7 @@ export default function NotificationsPage() {
                 </p>
                 <div className="space-y-2">
                   {items.map((n) => (
-                    <NotificationRow key={n.id} notification={n} />
+                    <NotificationRow key={n._id} notification={n} />
                   ))}
                 </div>
               </div>

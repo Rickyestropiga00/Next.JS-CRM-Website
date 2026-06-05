@@ -518,7 +518,7 @@ export function EditOrderPopover({
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
             disabled={!isFormValid() || !hasChanges || loading}
           >
-            {loading ? ordersT('button.updating') : buttonsT('save')}
+            {loading ? t('Orders.buttons.updating') : buttonsT('save')}
           </Button>
         </div>
       </div>

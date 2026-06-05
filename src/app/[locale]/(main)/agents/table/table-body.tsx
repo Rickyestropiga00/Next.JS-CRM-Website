@@ -44,6 +44,7 @@ interface TableBodyProps {
   onAgentClick: (id: string) => void;
   setAssignCustomerAgentId: (id: string | null) => void;
   agentsLoading?: boolean;
+  isHighlighted: (value: string) => boolean;
 }
 
 export function AgentsTableBody({
@@ -57,6 +58,7 @@ export function AgentsTableBody({
   onAgentClick,
   setAssignCustomerAgentId,
   agentsLoading,
+  isHighlighted,
 }: TableBodyProps) {
   const t = useTranslations();
   // Helper function to count comments
@@ -109,10 +111,14 @@ export function AgentsTableBody({
       ) : (
         paginated.map((a) => {
           const commentCount = countComments(a.comment);
+          const highlighted = isHighlighted(a.agentId ?? '');
           return (
             <TableRow
+              data-highlight={highlighted ? 'true' : undefined}
               key={getId(a)}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                highlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
+              }`}
               onClick={(e) => {
                 // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
                 const target = e.target as HTMLElement;
@@ -126,7 +132,12 @@ export function AgentsTableBody({
                 onAgentClick(getId(a)!);
               }}
             >
-              <TableCell className="w-8">
+              <TableCell
+                className={`w-8 ${
+                  highlighted &&
+                  'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary'
+                }`}
+              >
                 <Checkbox
                   className="ml-2"
                   checked={selected.includes(getId(a))}

@@ -84,6 +84,7 @@ export function TaskCard({
     });
   const { data: agents } = useFetch<Agent[]>('agent', false, false);
   const [showAssignTaskPopover, setShowAssignTaskPopover] = useState(false);
+
   const style = {
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
@@ -142,29 +143,10 @@ export function TaskCard({
   };
 
   const handleMoveTask = async (newColumn: ColumnKey) => {
-    if (task._id) {
-      try {
-        const res = await fetch(`/api/task/${task._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ column: newColumn }),
-        });
+    const id = task._id || task.id;
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to update task');
-        }
-
-        // Update local state AFTER successful DB update
-        onMove(task._id, newColumn);
-        setIsDropdownOpen(false);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      onMove(task.id, newColumn);
-    }
+    await onMove(id, newColumn);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -275,16 +257,18 @@ export function TaskCard({
                     ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setIsDropdownOpen(false);
-                  setShowAssignTaskPopover(true);
-                }}
-              >
-                <UserPlus className="h-4 w-4" />
-                Assign
-              </DropdownMenuItem>
+              <Can role={user?.role} action="assign" resource="task">
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setIsDropdownOpen(false);
+                    setShowAssignTaskPopover(true);
+                  }}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Assign Task
+                </DropdownMenuItem>
+              </Can>
               <DropdownMenuItem
                 onSelect={(e) => {
                   e.preventDefault();
@@ -382,12 +366,15 @@ export function TaskCard({
           </div>
         </div>
       </div>
-      <AssignTaskPopover
-        taskId={getId(task)}
-        isOpen={showAssignTaskPopover}
-        onClose={() => setShowAssignTaskPopover(false)}
-        onAssigned={(updatedTask) => onUpdateTask(updatedTask)}
-      />
+      <Can role={user?.role} action="assign" resource="task">
+        <AssignTaskPopover
+          taskId={getId(task)}
+          assignedAgentId={task.agentId}
+          isOpen={showAssignTaskPopover}
+          onClose={() => setShowAssignTaskPopover(false)}
+          onAssigned={(updatedTask) => onUpdateTask(updatedTask)}
+        />
+      </Can>
     </>
   );
 }

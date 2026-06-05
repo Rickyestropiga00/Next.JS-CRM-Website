@@ -1,42 +1,43 @@
-"use client";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+'use client';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useActionState } from "react";
-import { loginAction } from "@/app/login/actions";
-import Link from "next/link";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useActionState } from 'react';
+import { loginAction } from '@/app/login/actions';
+import Link from 'next/link';
+import { SubmitButton } from '@/app/login/submit-button';
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
-  const [state, formAction] = useActionState(loginAction, { error: "" });
+}: React.ComponentProps<'div'>) {
+  const [state, formAction] = useActionState(loginAction, { error: '' });
   const [errorMessage, setErrorMessage] = useState<string>('');
-  
-    // Clear error message after 5 seconds
-    useEffect(() => {
-      if (state?.error) {
-        setErrorMessage(state.error);
-  
-        const timer = setTimeout(() => {
-          setErrorMessage('');
-        }, 5000);
-  
-        return () => clearTimeout(timer);
-      }
-    }, [state?.error]);
+
+  // Clear error message after 5 seconds
+  useEffect(() => {
+    if (state?.error) {
+      setErrorMessage(state.error);
+
+      const timer = setTimeout(() => {
+        setErrorMessage('');
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [state?.error]);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
@@ -74,11 +75,10 @@ export function LoginForm({
                   {errorMessage}
                 </div>
               )}
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
+
+              <SubmitButton />
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="underline underline-offset-4">
                   Sign up
                 </Link>
@@ -88,7 +88,7 @@ export function LoginForm({
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+        By clicking continue, you agree to our <a href="#">Terms of Service</a>{' '}
         and <a href="#">Privacy Policy</a>.
       </div>
     </div>

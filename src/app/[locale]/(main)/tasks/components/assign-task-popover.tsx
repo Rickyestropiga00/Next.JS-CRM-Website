@@ -8,6 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
+import { useNotifications } from '@/context/notification-context';
 import { useFetch } from '@/hooks/use-fetch';
 import { Agent, Task } from '@/types/interface';
 import React, { useState } from 'react';
@@ -15,6 +16,7 @@ import { toast } from 'sonner';
 
 interface AssignTaskPopoverProps {
   taskId: string;
+  assignedAgentId?: string;
   isOpen?: boolean;
   onClose?: () => void;
   onAssigned?: (updatedTask: Task) => void;
@@ -22,19 +24,32 @@ interface AssignTaskPopoverProps {
 
 export const AssignTaskPopover = ({
   taskId,
+  assignedAgentId,
   isOpen = false,
   onClose,
   onAssigned,
 }: AssignTaskPopoverProps) => {
-  const { data: agents } = useFetch<Agent>('agent', false, false);
+  const { addNotificationForUser, addNotification } = useNotifications();
+  const { data: agents = [] } = useFetch<Agent>('agent', false, false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const [selectedAgentName, setSelectedAgentName] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    if (!assignedAgentId || agents.length === 0) return;
+
+    const assignedAgent = agents.find(
+      (a) => String(a._id ?? a.id) === String(assignedAgentId)
+    );
+
+    if (assignedAgent) {
+      setSelectedAgentId(String(assignedAgent._id ?? assignedAgent.id));
+      setSelectedAgentName(assignedAgent.name);
+    }
+  }, [assignedAgentId, agents]);
+
   const handleCancel = () => {
     if (onClose) {
-      setSelectedAgentId('');
-      setSelectedAgentName('');
       onClose();
     }
   };
@@ -51,18 +66,15 @@ export const AssignTaskPopover = ({
       });
 
       const data = await res.json();
-      console.log('Status:', res.status);
-      console.log('Response:', data);
-
       if (!res.ok) {
         toast.error(data.error ?? 'Failed to assign task');
         return;
       }
 
-      toast.success(`Task assigned to ${selectedAgentName}`);
       onAssigned?.(data.data);
 
       handleCancel();
+      toast.success(`Task assigned to ${selectedAgentName}`);
     } catch (err) {
       console.error(err);
       toast.error('Something went wrong');
@@ -94,8 +106,11 @@ export const AssignTaskPopover = ({
             }}
           >
             <ComboboxInput placeholder="Search agent..." />
-            <ComboboxEmpty>No agent found.</ComboboxEmpty>
             <ComboboxContent>
+              {agents.length === 0 && (
+                <ComboboxEmpty>No agent found.</ComboboxEmpty>
+              )}
+
               <ComboboxList>
                 {agents.map((agent) => (
                   <ComboboxItem key={agent._id ?? agent.id} value={agent.name}>

@@ -5,6 +5,7 @@ import { Bell, Globe, Key, Palette } from 'lucide-react';
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { UserType } from '@/types/interface';
 
 const SelectLanguagePopover = dynamic(
   () =>
@@ -21,11 +22,24 @@ const ApperancePopover = dynamic(
   { ssr: false }
 );
 
-const QuickActionsCard = () => {
+const NotificationPopover = dynamic(
+  () =>
+    import('./notification-popover').then((mod) => ({
+      default: mod.NotificationPopover,
+    })),
+  { ssr: false }
+);
+interface QuickActionsCardProps {
+  user: UserType | null;
+}
+
+const QuickActionsCard = ({ user }: QuickActionsCardProps) => {
   const quickActionsT = useTranslations('QuickActions');
   const [showSelectLanguage, setShowSelectLanguage] = useState<boolean>(false);
   const [showAppearancePopover, setShowAppearancePopover] =
     useState<boolean>(false);
+  const [showNotification, setShowNotification] = useState<boolean>(false);
+
   return (
     <>
       <Card>
@@ -33,7 +47,12 @@ const QuickActionsCard = () => {
           <CardTitle>{quickActionsT('title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start" size="sm">
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => setShowNotification(true)}
+          >
             <Bell className="h-4 w-4 mr-2" />
             {quickActionsT('notifications')}
           </Button>
@@ -69,6 +88,12 @@ const QuickActionsCard = () => {
       <ApperancePopover
         isOpen={showAppearancePopover}
         onClose={() => setShowAppearancePopover(false)}
+      />
+
+      <NotificationPopover
+        user={user}
+        isOpen={showNotification}
+        onClose={() => setShowNotification(false)}
       />
     </>
   );

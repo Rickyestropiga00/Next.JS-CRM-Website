@@ -39,6 +39,28 @@ export async function DELETE(req: Request) {
 
     const Model = modelMap[type];
 
+    if (type === 'order') {
+      const orders = await Order.find({ _id: { $in: objectIds } });
+
+      for (const order of orders) {
+        const productId =
+          typeof order.product === 'object'
+            ? String(order.product._id)
+            : String(order.product);
+
+        await Product.findByIdAndUpdate(productId, {
+          $inc: { stock: order.quantity },
+        });
+      }
+
+      await Order.deleteMany({ _id: { $in: objectIds } });
+
+      return NextResponse.json(
+        { message: 'DELETED_SUCCESSFULLY' },
+        { status: 200 }
+      );
+    }
+
     if (objectIds.length > 0) {
       await Model.deleteMany({ _id: { $in: objectIds } });
     }

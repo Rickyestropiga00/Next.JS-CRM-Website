@@ -39,7 +39,7 @@ interface TableBodyProps {
   onCustomerClick: (id: string) => void;
   setViewOrderCustomerId: (id: string | null) => void;
   customersLoading?: boolean;
-  highlightId: string | null;
+  isHighlighted: (value: string) => boolean;
 }
 
 export function CustomersTableBody({
@@ -53,20 +53,10 @@ export function CustomersTableBody({
   onCustomerClick,
   setViewOrderCustomerId,
   customersLoading,
-  highlightId,
+  isHighlighted,
 }: TableBodyProps) {
   const t = useTranslations();
   const { user } = useUser();
-  const highlightedRowRef = useRef<HTMLTableRowElement | null>(null);
-
-  useEffect(() => {
-    if (highlightedRowRef.current) {
-      highlightedRowRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
-  }, [highlightId]);
 
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
@@ -119,16 +109,13 @@ export function CustomersTableBody({
       ) : (
         paginated.map((c) => {
           const commentCount = countComments(c.comment);
+          const highlighted = isHighlighted(c.customerId);
           return (
             <TableRow
-              ref={highlightId === getId(c) ? highlightedRowRef : null}
               key={getId(c)}
               className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                highlightId === getId(c)
-                  ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                  : ''
-              }
-  `}
+                highlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
+              } `}
               onClick={(e) => {
                 // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
                 const target = e.target as HTMLElement;
@@ -142,7 +129,12 @@ export function CustomersTableBody({
                 onCustomerClick(getId(c));
               }}
             >
-              <TableCell className="w-8">
+              <TableCell
+                className={`w-8 ${
+                  highlighted &&
+                  'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary'
+                }`}
+              >
                 <Checkbox
                   className="ml-2"
                   checked={selected.includes(getId(c))}

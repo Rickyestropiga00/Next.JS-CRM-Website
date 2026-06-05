@@ -70,7 +70,6 @@ export function AddOrderPopover({
   const { user } = useUser();
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const t = useTranslations();
-  const { addNotification } = useNotifications();
 
   // Use external isOpen prop if provided, otherwise use internal state
   const isModalOpen = isOpen !== undefined ? isOpen : internalIsOpen;
@@ -144,15 +143,6 @@ export function AddOrderPopover({
         onAddOrder(orderWithRelations);
         setCustomerInputValue('');
         setProductInputValue('');
-
-        addNotification({
-          type: 'order_new',
-          title: 'New Order Created',
-          message: `Order for ${formData.customer?.name ?? 'Unknown'} — ${
-            formData.item
-          } (x${formData.quantity})`,
-          link: `/orders/${result._id}`,
-        });
       },
       onClose,
       setErrors,

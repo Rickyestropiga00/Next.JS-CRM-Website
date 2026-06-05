@@ -8,8 +8,15 @@ import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
 import { generateCustomId } from '@/lib/generate-id';
 import { createUser, findUserByEmail, getCurrentUser } from '@/lib/auth';
-
 import { requirePermission } from '@/utils/requirePermissions';
+import { notifyTaskCreated } from '@/lib/notifications/task-notification';
+import { notifyOrderCreated } from '@/lib/notifications/order-notification';
+import { notifyCustomerCreated } from '@/lib/notifications/customer-notification';
+import { notifyAgentCreated } from '@/lib/notifications/agent-notification';
+import {
+  notifyLowStock,
+  notifyProductCreated,
+} from '@/lib/notifications/product-notification';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -136,12 +143,94 @@ export async function POST(
       const cleanName = body.name.replace(/\s+/g, '');
       const tempPassword = `${cleanName}123`;
 
-      const user = await createUser(body.email, tempPassword, body.name);
+      const newUser = await createUser(body.email, tempPassword, body.name);
 
-      body.userId = user.id || user._id;
+      body.userId = newUser.id || newUser._id;
+    }
+
+    if (type === 'task' && user?.role === 'agent') {
+      const agent = await Agents.findOne({ userId: user._id });
+
+      if (agent) {
+        body.agentId = agent._id;
+      }
+    }
+
+    if (type === 'order') {
+      const LOW_STOCK_THRESHOLD = 10;
+      const product = await Product.findOneAndUpdate(
+        {
+          _id: body.product,
+          stock: { $gte: body.quantity },
+        },
+        {
+          $inc: { stock: -body.quantity },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!product) {
+        return Response.json(
+          {
+            errors: {
+              quantity: 'Insufficient stock',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const currentStock = product.stock;
+      const previousStock = currentStock + body.quantity;
+
+      if (
+        previousStock > LOW_STOCK_THRESHOLD &&
+        currentStock <= LOW_STOCK_THRESHOLD
+      ) {
+        await notifyLowStock(product);
+      }
     }
 
     const created = await Model.create(body);
+
+    try {
+      if (type === 'task' && user?.role === 'agent') {
+        await notifyTaskCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+
+      if (type === 'order') {
+        await notifyOrderCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+
+      if (type === 'customer') {
+        await notifyCustomerCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+      if (type === 'product') {
+        await notifyProductCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+      if (type === 'agent') {
+        await notifyAgentCreated(created, {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        });
+      }
+    } catch (err) {
+      console.error('Notification failed:', err);
+    }
 
     if (type === 'customer' && user?.role === 'agent') {
       const agent = await Agents.findOne({ userId: user._id });

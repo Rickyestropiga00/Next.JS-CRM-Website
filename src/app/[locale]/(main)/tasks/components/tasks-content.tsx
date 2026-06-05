@@ -171,21 +171,46 @@ export function TasksContent() {
         sensors={sensors}
         onDragEnd={handleDragEnd}
       >
-        <ColumnsBoard
-          columns={columns}
-          filteredTasks={filteredTasks}
-          onMoveTask={handleMoveTask}
-          onDeleteTask={handleDeleteTask}
-          onEditTask={setEditTaskId}
-          onAddTask={(column) => {
-            setAddTaskColumn(column);
-            setShowAddTask(true);
-          }}
-          deleteDialogId={deleteDialogId}
-          setDeleteDialogId={setDeleteDialogId}
-          isSidebarCollapsed={isSidebarCollapsed}
-          tasksLoading={tasksLoading}
-        />
+        {taskList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4 rounded-full bg-muted p-4">
+              <Plus className="h-10 w-10 text-muted-foreground" />
+            </div>
+
+            <h2 className="text-xl font-semibold tracking-tight">
+              No tasks found
+            </h2>
+
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              You don&apos;t have any tasks yet. Start by creating your first
+              task.
+            </p>
+
+            <Button
+              className="mt-6 flex items-center gap-2"
+              onClick={() => setShowAddNewTask(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Add New Task
+            </Button>
+          </div>
+        ) : (
+          <ColumnsBoard
+            columns={columns}
+            filteredTasks={filteredTasks}
+            onMoveTask={handleMoveTask}
+            onDeleteTask={handleDeleteTask}
+            onEditTask={setEditTaskId}
+            onAddTask={(column) => {
+              setAddTaskColumn(column);
+              setShowAddTask(true);
+            }}
+            deleteDialogId={deleteDialogId}
+            setDeleteDialogId={setDeleteDialogId}
+            isSidebarCollapsed={isSidebarCollapsed}
+            tasksLoading={tasksLoading}
+          />
+        )}
       </DndContext>
 
       {/* Edit Task Modal - Rendered outside board structure */}

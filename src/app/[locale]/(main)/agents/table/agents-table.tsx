@@ -51,7 +51,7 @@ const AssignCustomerPopover = dynamic(
     })),
   { ssr: false }
 );
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, UserCog } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -67,6 +67,8 @@ import { useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useTranslations } from 'next-intl';
 import { getApiSuccessMessage } from '@/lib/api-messages';
+import { useSearchParams } from 'next/navigation';
+import { useTableHighlight } from '@/hooks/use-table-highlight';
 
 export function AgentsTable() {
   const t = useTranslations();
@@ -83,6 +85,11 @@ export function AgentsTable() {
     setData: setAgentData,
     loading: agentsLoading,
   } = useFetch<Agent>('agent');
+
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+
+  const isReady = !agentsLoading;
 
   const {
     filters,
@@ -116,6 +123,17 @@ export function AgentsTable() {
         { key: 'status', defaultValue: 'all' },
       ],
     },
+  });
+
+  const { isHighlighted } = useTableHighlight({
+    data: agentData,
+    highlightId,
+    rowsPerPage,
+    currentPage,
+    setCurrentPage,
+    isReady,
+    paginatedData: paginated,
+    getHighlightValue: (agent) => agent.agentId,
   });
 
   const roleOptions = ['Admin', 'Agent', 'Manager'];
@@ -280,42 +298,66 @@ export function AgentsTable() {
           {t('Buttons.addAgent')}
         </Button>
       </div>
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="bg-transparent">
-            <AgentsTableHeader
-              selected={selected}
-              paginated={paginated}
-              onSelectAll={handleSelectAll}
-              sortBy={sortBy ?? 'createdAt'}
-              sortDir={sortDir}
-              onSort={handleSort}
-            />
-            <AgentsTableBody
-              paginated={paginated}
-              selected={selected}
-              onSelectRow={handleSelectRow}
-              onDelete={handleDelete}
-              deleteDialogId={deleteDialogId}
-              setDeleteDialogId={setDeleteDialogId}
-              setEditAgentId={setEditAgentId}
-              onAgentClick={setSelectedAgentId}
-              setAssignCustomerAgentId={setAssignCustomerAgentId}
-              agentsLoading={agentsLoading}
-            />
-          </Table>
-        </div>
-      </div>
 
-      <AgentsPaginationBar
-        selectedCount={selected.length}
-        totalRows={filtered.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        setCurrentPage={setCurrentPage}
-      />
+      {agentData.length > 0 ? (
+        <>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="bg-transparent">
+                <AgentsTableHeader
+                  selected={selected}
+                  paginated={paginated}
+                  onSelectAll={handleSelectAll}
+                  sortBy={sortBy ?? 'createdAt'}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <AgentsTableBody
+                  paginated={paginated}
+                  selected={selected}
+                  onSelectRow={handleSelectRow}
+                  onDelete={handleDelete}
+                  deleteDialogId={deleteDialogId}
+                  setDeleteDialogId={setDeleteDialogId}
+                  setEditAgentId={setEditAgentId}
+                  onAgentClick={setSelectedAgentId}
+                  setAssignCustomerAgentId={setAssignCustomerAgentId}
+                  agentsLoading={agentsLoading}
+                  isHighlighted={isHighlighted}
+                />
+              </Table>
+            </div>
+          </div>
+
+          <AgentsPaginationBar
+            selectedCount={selected.length}
+            totalRows={filtered.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-20 ">
+          <div className="mb-4 rounded-full bg-muted p-4 ">
+            <UserCog className="h-10 w-10 text-muted-foreground" />
+          </div>
+
+          <h3 className="font-semibold">No agents found</h3>
+
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            You don&apos;t have any agents yet. Start by adding your first
+            agent.
+          </p>
+
+          <Button className="mt-4" onClick={() => setShowAddAgent(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Agent
+          </Button>
+        </div>
+      )}
 
       {/* Edit Agent Modal - Rendered outside table structure */}
       {editAgentId && (

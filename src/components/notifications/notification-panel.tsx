@@ -14,16 +14,9 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div
-        className="absolute right-0 top-10 z-50 w-80 bg-white dark:bg-gray-900 
-                      border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl 
-                      overflow-hidden"
-      >
+      <div className="absolute right-0 top-10 z-50 w-80 bg-white dark:bg-gray-900  border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-4 py-3 border-b 
-                        border-gray-100 dark:border-gray-800"
-        >
+        <div className="flex items-center justify-between px-4 py-3 border-b  border-gray-100 dark:border-gray-800">
           <h3 className="font-semibold text-sm">Notifications</h3>
           <div className="flex gap-2">
             <button
@@ -50,8 +43,12 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
               No notifications
             </p>
           ) : (
-            notifications.map((n) => (
-              <NotificationItem key={n.id} notification={n} />
+            notifications.map((n, index) => (
+              <NotificationItem
+                key={String(n._id ?? index)}
+                notification={n}
+                onClose={onClose}
+              />
             ))
           )}
         </div>

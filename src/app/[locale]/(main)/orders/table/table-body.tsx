@@ -37,6 +37,7 @@ interface TableBodyProps {
   setEditOrderId: (id: string | null) => void;
   onOrderClick: (id: string) => void;
   ordersLoading?: boolean;
+  isHighlighted: (value: string) => boolean;
 }
 
 export function OrdersTableBody({
@@ -49,6 +50,7 @@ export function OrdersTableBody({
   setEditOrderId,
   onOrderClick,
   ordersLoading,
+  isHighlighted,
 }: TableBodyProps) {
   const { user } = useUser();
   const t = useTranslations();
@@ -131,140 +133,153 @@ export function OrdersTableBody({
             colSpan={11}
             className="text-center py-6 text-muted-foreground"
           >
-            {tableT('noDataFound', { item: 'order' })}
+            {tableT('noDataFound', { item: 'Order' })}
           </TableCell>
         </TableRow>
       ) : (
-        paginated.map((order) => (
-          <TableRow
-            key={getId(order)}
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={(e) => {
-              // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
-              const target = e.target as HTMLElement;
-              if (
-                target.closest('input[type="checkbox"]') ||
-                target.closest('[role="menuitem"]') ||
-                target.closest('button')
-              ) {
-                return;
-              }
-              onOrderClick(getId(order));
-            }}
-          >
-            <TableCell className="w-8">
-              <Checkbox
-                className="ml-2"
-                checked={selected.includes(getId(order))}
-                onCheckedChange={(checked) => onSelectRow(order, !!checked)}
-                aria-label={`Select row for ${order.id}`}
-              />
-            </TableCell>
-            <TableCell className="pl-4 w-[120px] font-mono text-sm">
-              {order.id || order.orderId}
-            </TableCell>
-            <TableCell className="w-[120px]">
-              {order.date && !isNaN(new Date(order.date).getTime())
-                ? new Date(order.date).toLocaleDateString()
-                : new Date(order.createdAt?.split('T')[0]).toLocaleDateString()}
-            </TableCell>
-            <TableCell className="w-[150px] font-medium">
-              {order.customer?.name ?? order.customer}
-            </TableCell>
-            <TableCell className="w-[200px] text-sm text-muted-foreground">
-              {formatAddress(order.address)}
-            </TableCell>
-            <TableCell className="w-[180px]">
-              <div className="flex flex-col">
-                <span>{order.product?.name ?? order.product}</span>
-                <span className="text-xs text-muted-foreground">
-                  {translateProductType(
-                    order.product?.productType ?? order.productType
-                  )}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell className="w-[100px] font-medium">
-              {order.quantity}
-            </TableCell>
-            <TableCell className="w-[100px] font-semibold">
-              {formatPrice(order.total)}
-            </TableCell>
-            <TableCell className="w-[100px]">
-              <StatusBadge status={order.payment} type="payment" />
-            </TableCell>
-            <TableCell className="w-[120px]">
-              <StatusBadge status={order.status} type="order" />
-            </TableCell>
-            <TableCell className="w-[70px]">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="h-8 w-8 p-0 flex items-center justify-center"
-                    aria-label="Actions"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => setEditOrderId(getId(order))}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    {buttonsT('edit')}
-                  </DropdownMenuItem>
-                  <AlertDialog
-                    open={deleteDialogId === getId(order)}
-                    onOpenChange={(open) =>
-                      setDeleteDialogId(open ? getId(order) : null)
-                    }
-                  >
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          setDeleteDialogId(getId(order));
-                        }}
-                        className="text-primary focus:text-primary font-semibold"
-                      >
-                        <Trash className="h-4 w-4 text-primary" />
-                        {buttonsT('delete')}
-                      </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          {confirmDeleteT('singleTitle', { item: 'order' })}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {confirmDeleteT('singleDescription', {
-                            name: order.name,
-                          })}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel
-                          onClick={() => setDeleteDialogId(null)}
-                          className="cursor-pointer"
-                        >
-                          {buttonsT('cancel')}
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            handleDelete(order);
+        paginated.map((order) => {
+          const highlighted = isHighlighted(order.orderId);
+          return (
+            <TableRow
+              data-highlight={highlighted ? 'true' : undefined}
+              key={getId(order)}
+              className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                highlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
+              }`}
+              onClick={(e) => {
+                // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
+                const target = e.target as HTMLElement;
+                if (
+                  target.closest('input[type="checkbox"]') ||
+                  target.closest('[role="menuitem"]') ||
+                  target.closest('button')
+                ) {
+                  return;
+                }
+                onOrderClick(getId(order));
+              }}
+            >
+              <TableCell
+                className={`w-8 ${
+                  highlighted &&
+                  'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary'
+                }`}
+              >
+                <Checkbox
+                  className="ml-2"
+                  checked={selected.includes(getId(order))}
+                  onCheckedChange={(checked) => onSelectRow(order, !!checked)}
+                  aria-label={`Select row for ${order.id}`}
+                />
+              </TableCell>
+              <TableCell className="pl-4 w-[120px] font-mono text-sm">
+                {order.id || order.orderId}
+              </TableCell>
+              <TableCell className="w-[120px]">
+                {order.date && !isNaN(new Date(order.date).getTime())
+                  ? new Date(order.date).toLocaleDateString()
+                  : new Date(
+                      order.createdAt?.split('T')[0]
+                    ).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="w-[150px] font-medium">
+                {order.customer?.name ?? order.customer}
+              </TableCell>
+              <TableCell className="w-[200px] text-sm text-muted-foreground">
+                {formatAddress(order.address)}
+              </TableCell>
+              <TableCell className="w-[180px]">
+                <div className="flex flex-col">
+                  <span>{order.product?.name ?? order.product}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {translateProductType(
+                      order.product?.productType ?? order.productType
+                    )}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell className="w-[100px] font-medium">
+                {order.quantity}
+              </TableCell>
+              <TableCell className="w-[100px] font-semibold">
+                {formatPrice(order.total)}
+              </TableCell>
+              <TableCell className="w-[100px]">
+                <StatusBadge status={order.payment} type="payment" />
+              </TableCell>
+              <TableCell className="w-[120px]">
+                <StatusBadge status={order.status} type="order" />
+              </TableCell>
+              <TableCell className="w-[70px]">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="h-8 w-8 p-0 flex items-center justify-center"
+                      aria-label="Actions"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => setEditOrderId(getId(order))}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      {buttonsT('edit')}
+                    </DropdownMenuItem>
+                    <AlertDialog
+                      open={deleteDialogId === getId(order)}
+                      onOpenChange={(open) =>
+                        setDeleteDialogId(open ? getId(order) : null)
+                      }
+                    >
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setDeleteDialogId(getId(order));
                           }}
-                          className="cursor-pointer"
+                          className="text-primary focus:text-primary font-semibold"
                         >
+                          <Trash className="h-4 w-4 text-primary" />
                           {buttonsT('delete')}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
-          </TableRow>
-        ))
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {confirmDeleteT('singleTitle', { item: 'order' })}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {confirmDeleteT('singleDescription', {
+                              name: order.name,
+                            })}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={() => setDeleteDialogId(null)}
+                            className="cursor-pointer"
+                          >
+                            {buttonsT('cancel')}
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              handleDelete(order);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            {buttonsT('delete')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          );
+        })
       )}
     </TableBody>
   );

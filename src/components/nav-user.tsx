@@ -1,10 +1,10 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 
-import { ChevronsUpDown, LogOut, CircleUserRound } from "lucide-react";
-import Link from "next/link";
+import { ChevronsUpDown, LogOut, CircleUserRound, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,47 +13,66 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { logoutAction } from "@/app/logout/actions";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/sidebar';
+import { logoutAction } from '@/app/logout/actions';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
-export function NavUser(){
-
+export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar: string;
+  } | null>(null);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/api/me");
+        const res = await fetch('/api/me');
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
         }
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error('Error fetching user:', error);
       }
     }
     fetchUser();
   }, []);
 
   async function handleLogout() {
-    await logoutAction();
-    setUser(null);
-    router.push("/login");
+    try {
+      setLoading(true);
+      await logoutAction();
+      setUser(null);
+      router.replace('/login');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu
+          open={open}
+          onOpenChange={(nextOpen) => {
+            if (loading) return;
+            setOpen(nextOpen);
+          }}
+        >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
@@ -72,7 +91,7 @@ export function NavUser(){
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
@@ -99,8 +118,17 @@ export function NavUser(){
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
-              Log out
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Logging out...
+                </>
+              ) : (
+                <>
+                  <LogOut />
+                  Log out
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

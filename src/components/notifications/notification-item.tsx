@@ -8,16 +8,19 @@ import { useRouter } from 'next/navigation';
 
 export function NotificationItem({
   notification: n,
+  onClose,
 }: {
   notification: Notification;
+  onClose?: () => void;
 }) {
   const { markAsRead, remove } = useNotifications();
   const router = useRouter();
   const handleClick = () => {
-    markAsRead(n.id);
+    markAsRead(String(n._id));
     if (n.link) {
       router.push(n.link);
     }
+    onClose?.();
   };
 
   return (
@@ -26,7 +29,7 @@ export function NotificationItem({
                      transition cursor-pointer ${
                        !n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
                      }`}
-      onClick={() => markAsRead(n.id)}
+      onClick={handleClick}
     >
       {/* Icon */}
       <div className="flex-shrink-0 mt-0.5">{getNotificationIcon(n.type)}</div>

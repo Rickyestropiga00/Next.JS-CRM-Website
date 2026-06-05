@@ -35,10 +35,8 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <NotificationProvider>
-            {children as React.ReactNode}
-            <Toaster richColors position="top-right" />
-          </NotificationProvider>
+          {children as React.ReactNode}
+          <Toaster richColors position="top-right" />
         </NextThemesProvider>
       </body>
     </html>

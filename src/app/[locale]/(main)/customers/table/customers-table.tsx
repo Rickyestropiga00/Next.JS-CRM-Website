@@ -65,7 +65,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, Users, UserPlus, UserRoundPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { useFetch } from '@/hooks/use-fetch';
@@ -75,6 +75,7 @@ import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
 import { getApiSuccessMessage } from '@/lib/api-messages';
 import { useSearchParams } from 'next/navigation';
+import { useTableHighlight } from '@/hooks/use-table-highlight';
 
 export function CustomersTable() {
   const t = useTranslations();
@@ -90,10 +91,12 @@ export function CustomersTable() {
     null
   );
 
-  const { data: agents, setData: setAgents } = useFetch<Agent>('agent');
+  const {
+    data: agents,
+    setData: setAgents,
+    loading: agentsLoading,
+  } = useFetch<Agent>('agent');
   const { user } = useUser();
-  const searchParams = useSearchParams();
-  const highlightId = searchParams.get('highlight');
 
   const {
     data: customersData,
@@ -101,6 +104,12 @@ export function CustomersTable() {
     loading: customersLoading,
   } = useFetch<Customer>('customer');
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
+
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+
+  const isReady =
+    !customersLoading && (user?.role !== 'agent' || !agentsLoading);
 
   const statusOptions: { value: CustomerStatus; label: string }[] = [
     {
@@ -150,6 +159,17 @@ export function CustomersTable() {
       searchKeys: ['name', 'email'],
       filterKeys: [{ key: 'status', defaultValue: 'all' }],
     },
+  });
+
+  const { isHighlighted } = useTableHighlight({
+    data: filteredCustomers,
+    highlightId,
+    rowsPerPage,
+    currentPage,
+    setCurrentPage,
+    isReady,
+    paginatedData: paginated,
+    getHighlightValue: (customer) => customer.customerId,
   });
 
   function handleAddComment(customerId: string, comment: string) {
@@ -317,43 +337,67 @@ export function CustomersTable() {
           {t('Buttons.addCustomer')}
         </Button>
       </div>
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="bg-transparent">
-            <CustomersTableHeader
-              selected={selected}
-              paginated={paginated}
-              onSelectAll={handleSelectAll}
-              sortBy={sortBy ?? 'createdAt'}
-              sortDir={sortDir}
-              onSort={handleSort}
-            />
-            <CustomersTableBody
-              paginated={paginated}
-              selected={selected}
-              onSelectRow={handleSelectRow}
-              onDelete={handleDeleteCustomer}
-              deleteDialogId={deleteDialogId}
-              setDeleteDialogId={setDeleteDialogId}
-              setEditCustomerId={setEditCustomerId}
-              onCustomerClick={setSelectedCustomerId}
-              setViewOrderCustomerId={setViewOrderCustomerId}
-              customersLoading={customersLoading}
-              highlightId={highlightId}
-            />
-          </Table>
+
+      {filteredCustomers.length > 0 ? (
+        <>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="bg-transparent">
+                <CustomersTableHeader
+                  selected={selected}
+                  paginated={paginated}
+                  onSelectAll={handleSelectAll}
+                  sortBy={sortBy ?? 'createdAt'}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+
+                <CustomersTableBody
+                  paginated={paginated}
+                  selected={selected}
+                  onSelectRow={handleSelectRow}
+                  onDelete={handleDeleteCustomer}
+                  deleteDialogId={deleteDialogId}
+                  setDeleteDialogId={setDeleteDialogId}
+                  setEditCustomerId={setEditCustomerId}
+                  onCustomerClick={setSelectedCustomerId}
+                  setViewOrderCustomerId={setViewOrderCustomerId}
+                  customersLoading={customersLoading}
+                  isHighlighted={isHighlighted}
+                />
+              </Table>
+            </div>
+          </div>
+          <CustomersPaginationBar
+            selectedCount={selected.length}
+            totalRows={filtered.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+            // Remove onDeleteSelected and disableDelete props
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-20 ">
+          <div className="mb-4 rounded-full bg-muted p-4 ">
+            <UserRoundPlus className="h-10 w-10 text-muted-foreground" />
+          </div>
+
+          <h3 className="font-semibold">No customers found</h3>
+
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            You don&apos;t have any customers yet. Start by adding your first
+            customer.
+          </p>
+
+          <Button className="mt-4" onClick={() => setShowAddCustomer(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Customer
+          </Button>
         </div>
-      </div>
-      <CustomersPaginationBar
-        selectedCount={selected.length}
-        totalRows={filtered.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        setCurrentPage={setCurrentPage}
-        // Remove onDeleteSelected and disableDelete props
-      />
+      )}
 
       {/* Edit Customer Modal - Rendered outside table structure */}
       {editCustomerId && (

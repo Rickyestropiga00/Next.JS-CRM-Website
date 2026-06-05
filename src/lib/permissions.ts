@@ -1,12 +1,12 @@
 import { Role } from '@/types/interface';
 export type Resource = 'order' | 'product' | 'task' | 'agent' | 'customer';
-export type Action = 'create' | 'read' | 'update' | 'delete';
+export type Action = 'create' | 'read' | 'update' | 'delete' | 'assign';
 
 export const permissions: Record<Role, Record<Resource, Action[]>> = {
   admin: {
     order: ['create', 'read', 'update', 'delete'],
     product: ['create', 'read', 'update', 'delete'],
-    task: ['create', 'read', 'update', 'delete'],
+    task: ['create', 'read', 'update', 'delete', 'assign'],
     agent: ['create', 'read', 'update', 'delete'],
     customer: ['create', 'read', 'update', 'delete'],
   },
@@ -18,7 +18,7 @@ export const permissions: Record<Role, Record<Resource, Action[]>> = {
     customer: ['create', 'read', 'update'],
   },
   agent: {
-    order: ['create', 'read'],
+    order: ['create', 'read', 'update'],
     product: ['read'],
     task: ['create', 'read', 'update'],
     agent: [],

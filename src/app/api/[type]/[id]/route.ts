@@ -10,6 +10,13 @@ import mongoose from 'mongoose';
 import { deleteAgentById } from '@/lib/agent-service';
 import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/utils/requirePermissions';
+import {
+  notifyTaskAssign,
+  notifyTaskStatusChanged,
+} from '@/lib/notifications/task-notification';
+import { notifyCustomerAssign } from '@/lib/notifications/customer-notification';
+import { notifyShipmentUpdate } from '@/lib/notifications/order-notification';
+import { notifyLowStock } from '@/lib/notifications/product-notification';
 
 const modelMap: Record<string, mongoose.Model<any>> = {
   customer: Customer,
@@ -60,6 +67,43 @@ export async function PUT(
     const body = await req.json();
     const Model = modelMap[type];
 
+    if (type === 'task') {
+      const existingTask = await Tasks.findById(id);
+
+      if (!existingTask) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
+
+      const oldColumn = existingTask.column;
+
+      const updatedTask = await Tasks.findByIdAndUpdate(
+        id,
+        { $set: body },
+        { new: true }
+      );
+
+      if (!updatedTask) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
+
+      // Status change notification
+      await notifyTaskStatusChanged({
+        taskId: String(updatedTask._id),
+        taskTitle: updatedTask.title,
+        oldColumn,
+        newColumn: body.column,
+        changedByUserId: String(user._id),
+      });
+
+      return NextResponse.json(
+        {
+          message: 'Task updated successfully',
+          data: updatedTask,
+        },
+        { status: 200 }
+      );
+    }
+
     if (type === 'agent') {
       const { assign = [], unassign = [], ...rest } = body;
       const existingAgent = await Agents.findById(id);
@@ -98,6 +142,14 @@ export async function PUT(
       const updatedAgent = await Agents.findByIdAndUpdate(id, update, {
         new: true,
       });
+
+      if (assign.length > 0) {
+        await notifyCustomerAssign({
+          agentId: id,
+          customerIds: assign,
+          assignedByUserId: String(user._id),
+        });
+      }
       if (updatedAgent.userId) {
         await User.findByIdAndUpdate(updatedAgent.userId, {
           name: rest.name,
@@ -112,6 +164,113 @@ export async function PUT(
         message: `${capitalize(type)} updated successfully`,
         data: updatedAgent,
       });
+    }
+
+    if (type === 'order') {
+      const existingOrder = await Order.findById(id);
+
+      if (!existingOrder) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+
+      const oldProductId =
+        typeof existingOrder.product === 'object'
+          ? String(existingOrder.product._id)
+          : String(existingOrder.product);
+
+      const newProductId =
+        typeof body.product === 'object'
+          ? String(body.product._id)
+          : String(body.product);
+
+      const oldQty = existingOrder.quantity;
+      const newQty = body.quantity;
+
+      const LOW_STOCK_THRESHOLD = 10;
+
+      if (oldProductId === newProductId) {
+        const diff = newQty - oldQty;
+
+        if (diff > 0) {
+          const product = await Product.findOneAndUpdate(
+            {
+              _id: newProductId,
+              stock: { $gte: diff },
+            },
+            { $inc: { stock: -diff } },
+            { new: true }
+          );
+
+          if (!product) {
+            return NextResponse.json(
+              { errors: { quantity: 'Insufficient stock' } },
+              { status: 400 }
+            );
+          }
+
+          const previousStock = product.stock + diff;
+          const currentStock = product.stock;
+
+          if (
+            previousStock > LOW_STOCK_THRESHOLD &&
+            currentStock <= LOW_STOCK_THRESHOLD
+          ) {
+            await notifyLowStock(product);
+          }
+        }
+
+        if (diff < 0) {
+          await Product.findByIdAndUpdate(newProductId, {
+            $inc: { stock: Math.abs(diff) },
+          });
+        }
+      } else {
+        await Product.findByIdAndUpdate(oldProductId, {
+          $inc: { stock: oldQty },
+        });
+
+        const newProduct = await Product.findOneAndUpdate(
+          {
+            _id: newProductId,
+            stock: { $gte: newQty },
+          },
+          { $inc: { stock: -newQty } },
+          { new: true }
+        );
+
+        if (!newProduct) {
+          return NextResponse.json(
+            { errors: { quantity: 'Insufficient stock' } },
+            { status: 400 }
+          );
+        }
+
+        const previousStock = newProduct.stock + newQty;
+        const currentStock = newProduct.stock;
+
+        if (
+          previousStock > LOW_STOCK_THRESHOLD &&
+          currentStock <= LOW_STOCK_THRESHOLD
+        ) {
+          await notifyLowStock(newProduct);
+        }
+      }
+
+      const updated = await Order.findByIdAndUpdate(id, body, { new: true });
+
+      const statusChanged = body.status && body.status !== existingOrder.status;
+      if (statusChanged && updated) {
+        await notifyShipmentUpdate({
+          order: updated,
+          newStatus: updated.status,
+          changedByUserId: String(user._id),
+        });
+      }
+
+      return NextResponse.json(
+        { message: 'Order updated successfully', data: updated },
+        { status: 200 }
+      );
     }
 
     const updated = await Model.findByIdAndUpdate(id, body, { new: true });
@@ -196,6 +355,22 @@ export async function DELETE(
         success: true,
       });
     }
+    if (type === 'order') {
+      const order = await Order.findById(id);
+
+      if (order) {
+        const productId =
+          typeof order.product === 'object'
+            ? String(order.product._id)
+            : String(order.product);
+
+        const quantity = order.quantity;
+
+        await Product.findByIdAndUpdate(productId, {
+          $inc: { stock: quantity },
+        });
+      }
+    }
 
     const deleted = await Model.findByIdAndDelete(id);
 
@@ -225,6 +400,20 @@ export async function PATCH(
   const body = await req.json();
   const { id, type } = await params;
   if (type === 'task') {
+    await dbConnect();
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const existingTask = await Tasks.findById(id);
+
+    if (!existingTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
     const updatedTask = await Tasks.findByIdAndUpdate(
       id,
       { $set: body },
@@ -233,6 +422,19 @@ export async function PATCH(
 
     if (!updatedTask) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    if (body.agentId) {
+      await notifyTaskAssign({
+        taskId: updatedTask._id,
+        taskTitle: updatedTask.title,
+        agentId: body.agentId,
+        assignedByUserId: String(user._id),
+        user: {
+          _id: user._id as mongoose.Types.ObjectId,
+          name: user.name,
+        },
+      });
     }
 
     return NextResponse.json({

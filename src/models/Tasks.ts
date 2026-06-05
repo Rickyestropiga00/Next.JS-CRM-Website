@@ -85,7 +85,7 @@ const taskSchema = new Schema<ITask>(
     ],
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 4 * 60 * 60 * 1000),
+      default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
       index: { expires: 0 },
     },
   },

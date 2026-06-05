@@ -23,8 +23,6 @@ import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
 import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
-import { useNotifications } from '@/context/notification-context';
-
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
   isOpen?: boolean;
@@ -54,7 +52,6 @@ export function AddCustomerPopover({
   setAgents,
 }: AddCustomerPopoverProps) {
   const t = useTranslations();
-  const { addNotification } = useNotifications();
   const [internalIsOpen] = useState(false);
 
   // Use external isOpen prop if provided, otherwise use internal state
@@ -122,13 +119,6 @@ export function AddCustomerPopover({
               : agent
           )
         );
-
-        addNotification({
-          type: 'customer_new',
-          title: 'New Customer Created',
-          message: `Customer ${formData.name} created`,
-          link: `/customers/${result._id}`,
-        });
       },
       onClose,
       setErrors,

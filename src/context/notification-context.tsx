@@ -7,11 +7,17 @@ import {
   useEffect,
 } from 'react';
 import { Notification } from '@/types/notification';
+import { useUser } from '@/hooks/use-user';
 
 interface NotificationContextValue {
   notifications: Notification[];
   unreadCount: number;
   addNotification: (n: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
+  addNotificationForUser: (
+    userId: string,
+    n: Omit<Notification, 'id' | 'read' | 'createdAt'>
+  ) => void;
+  fetchNotifications: () => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   remove: (id: string) => void;
@@ -27,47 +33,100 @@ export function NotificationProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('crm_notifications');
-    if (saved) setNotifications(JSON.parse(saved));
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      const data = await res.json();
+
+      setNotifications(Array.isArray(data) ? data.filter((n) => n?._id) : []);
+    } catch (error) {
+      console.error(error);
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('crm_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+    if (!user?._id) return;
+    fetchNotifications();
+
+    const interval = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications, user?._id]);
 
   const addNotification = useCallback(
-    (n: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
-      setNotifications((prev) => [
-        {
-          ...n,
-          id: crypto.randomUUID(),
-          read: false,
-          createdAt: new Date(),
-        },
-        ...prev,
-      ]);
+    async (n: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
+      try {
+        await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...n,
+            userId: user?._id,
+            read: false,
+          }),
+        });
+
+        await fetchNotifications();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [user?._id, fetchNotifications]
+  );
+  const addNotificationForUser = useCallback(
+    async (
+      userId: string,
+      n: Omit<Notification, 'id' | 'read' | 'createdAt'>
+    ) => {
+      try {
+        await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...n,
+            userId,
+            read: false,
+          }),
+        });
+      } catch (error) {
+        console.error(error);
+      }
     },
     []
   );
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  }, []);
+  const markAsRead = useCallback(
+    async (id: string) => {
+      await fetch(`/api/notifications/${id}`, { method: 'PATCH' });
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, []);
+      await fetchNotifications();
+    },
+    [fetchNotifications]
+  );
 
-  const remove = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
+  const markAllAsRead = useCallback(async () => {
+    await fetch('/api/notifications', { method: 'PATCH' });
+    await fetchNotifications();
+  }, [fetchNotifications]);
 
-  const clearAll = useCallback(() => setNotifications([]), []);
+  const remove = useCallback(
+    async (id: string) => {
+      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      await fetchNotifications();
+    },
+    [fetchNotifications]
+  );
+
+  const clearAll = useCallback(async () => {
+    await fetch('/api/notifications', { method: 'DELETE' });
+    await fetchNotifications();
+  }, [fetchNotifications]);
 
   return (
     <NotificationContext.Provider
@@ -75,6 +134,8 @@ export function NotificationProvider({
         notifications,
         unreadCount: notifications.filter((n) => !n.read).length,
         addNotification,
+        addNotificationForUser,
+        fetchNotifications,
         markAsRead,
         markAllAsRead,
         remove,

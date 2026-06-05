@@ -57,7 +57,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { useFetch } from '@/hooks/use-fetch';
@@ -66,6 +66,8 @@ import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
 import { getApiSuccessMessage } from '@/lib/api-messages';
+import { useSearchParams } from 'next/navigation';
+import { useTableHighlight } from '@/hooks/use-table-highlight';
 
 export function ProductsTable() {
   const t = useTranslations();
@@ -82,6 +84,10 @@ export function ProductsTable() {
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+
+  const isReady = !productsLoading;
 
   const statusOptions: { value: ProductStatus; label: string }[] = [
     {
@@ -145,6 +151,17 @@ export function ProductsTable() {
         { key: 'productType', defaultValue: 'all' },
       ],
     },
+  });
+
+  const { isHighlighted } = useTableHighlight({
+    data: productsData,
+    highlightId,
+    rowsPerPage,
+    currentPage,
+    setCurrentPage,
+    isReady,
+    paginatedData: paginated,
+    getHighlightValue: (product) => product.productId,
   });
 
   const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
@@ -283,41 +300,64 @@ export function ProductsTable() {
           </Button>
         </Can>
       </div>
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="bg-transparent">
-            <ProductsTableHeader
-              selected={selected}
-              paginated={paginated}
-              onSelectAll={handleSelectAll}
-              sortBy={sortBy ?? 'productId'}
-              sortDir={sortDir}
-              onSort={handleSort}
-            />
-            <ProductsTableBody
-              paginated={paginated}
-              selected={selected}
-              onSelectRow={handleSelectRow}
-              onDelete={handleDelete}
-              deleteDialogId={deleteDialogId}
-              setDeleteDialogId={setDeleteDialogId}
-              setEditProductId={setEditProductId}
-              onProductClick={setSelectedProductId}
-              productsLoading={productsLoading}
-            />
-          </Table>
-        </div>
-      </div>
+      {productsData.length > 0 ? (
+        <>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="bg-transparent">
+                <ProductsTableHeader
+                  selected={selected}
+                  paginated={paginated}
+                  onSelectAll={handleSelectAll}
+                  sortBy={sortBy ?? 'productId'}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <ProductsTableBody
+                  paginated={paginated}
+                  selected={selected}
+                  onSelectRow={handleSelectRow}
+                  onDelete={handleDelete}
+                  deleteDialogId={deleteDialogId}
+                  setDeleteDialogId={setDeleteDialogId}
+                  setEditProductId={setEditProductId}
+                  onProductClick={setSelectedProductId}
+                  productsLoading={productsLoading}
+                  isHighlighted={isHighlighted}
+                />
+              </Table>
+            </div>
+          </div>
 
-      <ProductsPaginationBar
-        selectedCount={selected.length}
-        totalRows={filtered.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        setCurrentPage={setCurrentPage}
-      />
+          <ProductsPaginationBar
+            selectedCount={selected.length}
+            totalRows={filtered.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-20 ">
+          <div className="mb-4 rounded-full bg-muted p-4 ">
+            <Package className="h-10 w-10 text-muted-foreground" />
+          </div>
+
+          <h3 className="font-semibold">No products found</h3>
+
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            You don&apos;t have any products yet. Start by adding your first
+            product.
+          </p>
+
+          <Button className="mt-4" onClick={() => setShowAddProduct(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Product
+          </Button>
+        </div>
+      )}
 
       {/* Edit Product Modal - Rendered outside table structure */}
       {editProductId && (
