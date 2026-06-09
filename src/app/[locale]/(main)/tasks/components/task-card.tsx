@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -31,7 +31,6 @@ import { useTranslations } from 'next-intl';
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
 import dynamic from 'next/dynamic';
 import { useFetch } from '@/hooks/use-fetch';
-import { flushAllTraces } from 'next/dist/trace';
 
 const AssignTaskPopover = dynamic(
   () =>
@@ -60,6 +59,7 @@ interface TaskCardProps {
   onUpdateTask: (task: Task) => void;
   deleteDialogId: string | null;
   setDeleteDialogId: (id: string | null) => void;
+  isHighlighted?: boolean;
 }
 
 export function TaskCard({
@@ -71,6 +71,7 @@ export function TaskCard({
   onUpdateTask,
   deleteDialogId,
   setDeleteDialogId,
+  isHighlighted,
 }: TaskCardProps) {
   const t = useTranslations();
   const { user } = useUser();
@@ -82,8 +83,25 @@ export function TaskCard({
       id: getId(task),
       data: { task },
     });
-  const { data: agents } = useFetch<Agent[]>('agent', false, false);
+  const { data: agents } = useFetch<Agent[]>('agents', false, false);
   const [showAssignTaskPopover, setShowAssignTaskPopover] = useState(false);
+
+  useEffect(() => {
+    if (!isHighlighted) return;
+
+    const timer = setTimeout(() => {
+      const el = document.querySelector('[data-highlight="true"]');
+
+      if (el) {
+        el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [isHighlighted]);
 
   const style = {
     transform: transform
@@ -95,7 +113,7 @@ export function TaskCard({
   const handleDelete = async (task: Task) => {
     if (task._id) {
       try {
-        const res = await fetch(`/api/task/${task._id}`, {
+        const res = await fetch(`/api/tasks/${task._id}`, {
           method: 'DELETE',
         });
         const data = await res.json();
@@ -118,7 +136,7 @@ export function TaskCard({
   const handleMarkAsDone = async () => {
     if (task._id) {
       try {
-        const res = await fetch(`/api/task/${task._id}`, {
+        const res = await fetch(`/api/tasks/${task._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -154,7 +172,12 @@ export function TaskCard({
       <div
         style={style}
         ref={setNodeRef}
-        className="flex flex-col items-center justify-between cursor-pointer bg-background rounded-3xl shadow p-7  mt-4 gap-4"
+        data-highlight={isHighlighted ? 'true' : undefined}
+        className={`flex flex-col items-center justify-between cursor-pointer bg-background rounded-3xl shadow p-7  mt-4 gap-4  ${
+          isHighlighted
+            ? 'border-2 border-primary'
+            : 'border-2 border-transparent'
+        }`}
       >
         <div className="flex-1 w-full ">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

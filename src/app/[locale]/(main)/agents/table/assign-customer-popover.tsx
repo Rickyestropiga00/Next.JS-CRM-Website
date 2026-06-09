@@ -49,7 +49,7 @@ export const AssignCustomerPopover = ({
     const fetchCustomers = async () => {
       if (agent._id) {
         try {
-          const res = await fetch(`/api/customer?agentId=${agent._id}`);
+          const res = await fetch(`/api/customers?agentId=${agent._id}`);
           const data = await res.json();
           setAssignedCustomers(data.assigned || []);
           setUnassignedCustomers(data.unAssigned || []);
@@ -88,7 +88,7 @@ export const AssignCustomerPopover = ({
     toast.loading(t('Messages.saving'), { id: toastId });
     if (agent._id) {
       try {
-        const res = await fetch(`/api/agent/${agent._id}`, {
+        const res = await fetch(`/api/agents/${agent._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

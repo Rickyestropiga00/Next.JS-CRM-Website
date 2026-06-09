@@ -84,7 +84,7 @@ export function AgentsTable() {
     data: agentData,
     setData: setAgentData,
     loading: agentsLoading,
-  } = useFetch<Agent>('agent');
+  } = useFetch<Agent>('agents');
 
   const searchParams = useSearchParams();
   const highlightId = searchParams.get('highlight');

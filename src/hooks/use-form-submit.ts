@@ -39,7 +39,7 @@ export const useFormSubmit = <T>() => {
       try {
         data = await response.json();
       } catch {
-        throw new Error('Invalid response from server');
+        throw new Error('INVALID_RESPONSE');
       }
 
       switch (response.status) {
@@ -58,7 +58,7 @@ export const useFormSubmit = <T>() => {
           (err as any).field = data.field ?? null;
           throw err;
         default:
-          throw new Error('Request failed');
+          throw new Error('REQUEST_FAILED');
       }
     } catch (error) {
       console.error('Submit error', error);

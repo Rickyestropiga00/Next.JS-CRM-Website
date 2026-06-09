@@ -103,7 +103,7 @@ export function AddProductPopover({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
-      url: '/api/product',
+      url: '/api/products',
       formData: true,
 
       buildBody: () => {

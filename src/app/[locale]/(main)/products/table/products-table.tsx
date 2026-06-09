@@ -75,7 +75,7 @@ export function ProductsTable() {
     data: productsData,
     setData: setProductsData,
     loading: productsLoading,
-  } = useFetch<Product>('product');
+  } = useFetch<Product>('products');
   const { user, loading: userLoading } = useUser();
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);

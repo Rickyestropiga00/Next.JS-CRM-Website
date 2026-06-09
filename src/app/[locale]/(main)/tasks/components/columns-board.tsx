@@ -18,6 +18,7 @@ interface ColumnsBoardProps {
   setDeleteDialogId: (id: string | null) => void;
   isSidebarCollapsed: boolean;
   tasksLoading?: boolean;
+  highlightId?: string | null;
 }
 
 export function ColumnsBoard({
@@ -31,9 +32,11 @@ export function ColumnsBoard({
   setDeleteDialogId,
   isSidebarCollapsed,
   tasksLoading,
+  highlightId,
 }: ColumnsBoardProps) {
   const t = useTranslations();
   const { updateTask } = useTasks();
+
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 ${
@@ -85,6 +88,7 @@ export function ColumnsBoard({
                     onEdit={onEditTask}
                     deleteDialogId={deleteDialogId}
                     setDeleteDialogId={setDeleteDialogId}
+                    isHighlighted={highlightId === task._id}
                   />
                 ))}
           </DroppableColumn>

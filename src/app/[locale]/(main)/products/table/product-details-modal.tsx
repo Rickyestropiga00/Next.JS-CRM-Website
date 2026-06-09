@@ -92,7 +92,7 @@ export function ProductDetailsModal({
                 <Image
                   src={
                     product._id && product._id.length === 24
-                      ? `/api/product/image/${getId(product)}?t=${new Date(
+                      ? `/api/products/image/${getId(product)}?t=${new Date(
                           product.updatedAt || Date.now()
                         ).getTime()}`
                       : product.image

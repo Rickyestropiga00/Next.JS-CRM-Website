@@ -30,6 +30,7 @@ import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { getId } from '@/utils/helper';
 import { useTranslations } from 'next-intl';
 import { useNotifications } from '@/context/notification-context';
+import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
 
 interface AddOrderPopoverProps {
   onAddOrder: (order: Order) => void;
@@ -64,9 +65,9 @@ export function AddOrderPopover({
 }: AddOrderPopoverProps) {
   const [internalIsOpen] = useState(false);
 
-  const { data: customersData } = useFetch<Customer>('customer', false, false);
-  const { data: productsData } = useFetch<Product>('product', false, false);
-  const { data: agents } = useFetch<Agent>('agent');
+  const { data: customersData } = useFetch<Customer>('customers', false, false);
+  const { data: productsData } = useFetch<Product>('products', false, false);
+  const { data: agents } = useFetch<Agent>('agents');
   const { user } = useUser();
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const t = useTranslations();
@@ -121,7 +122,7 @@ export function AddOrderPopover({
   const { handleSubmit, loading } = useFormSubmit<OrderForm>();
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
-      url: '/api/order',
+      url: '/api/orders',
       buildBody: (data) => ({
         customer: data.customer?._id,
         address: data.address.trim(),
@@ -147,11 +148,14 @@ export function AddOrderPopover({
       onClose,
       setErrors,
       onError: (err) => {
-        setErrors((prev) => ({
-          ...prev,
-          general:
-            err instanceof Error ? err.message : t('Messages.failedSave'),
-        }));
+        const message = getApiErrorMessage(err, t);
+        const field = getApiErrorField(err);
+
+        if (field) {
+          setErrors((prev) => ({ ...prev, [field]: message }));
+        } else {
+          setErrors((prev) => ({ ...prev, general: message }));
+        }
       },
     });
 

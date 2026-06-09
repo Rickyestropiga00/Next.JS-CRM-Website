@@ -66,7 +66,9 @@ export async function notifyCustomerAssign({
       message: `${assignedBy.name} assigned ${
         customers.length
       } customer(s) to you${customerNames ? `: ${customerNames}` : ''}`,
-      link: '/customers',
+      link: `/customers?highlight=${customers
+        .map((c) => c.customerId)
+        .join(',')}`,
     });
   }
 
@@ -86,7 +88,7 @@ export async function notifyCustomerAssign({
         type: 'customer_assigned',
         title: 'Customer Assigned',
         message: `${assignedBy.name} assigned ${customers.length} customer(s) to ${agent.name}`,
-        link: '/agent',
+        link: '/agents',
       });
     })
   );

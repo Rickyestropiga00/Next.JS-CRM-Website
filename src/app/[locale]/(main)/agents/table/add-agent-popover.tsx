@@ -90,7 +90,7 @@ export function AddAgentPopover({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
-      url: '/api/agent',
+      url: '/api/agents',
       buildBody: (data) => ({
         name: data.name.trim(),
         email: data.email.trim(),

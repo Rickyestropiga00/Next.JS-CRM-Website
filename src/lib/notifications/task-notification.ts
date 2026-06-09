@@ -19,6 +19,7 @@ type NotifyTaskAssignParams = {
 
 type TaskType = {
   title: string;
+  _id: string;
 };
 
 export async function notifyTaskCreated(task: TaskType, user: UserType) {
@@ -31,7 +32,7 @@ export async function notifyTaskCreated(task: TaskType, user: UserType) {
         type: 'task_new',
         title: 'New Task Created',
         message: `${user.name} created task: ${task.title}`,
-        link: '/tasks',
+        link: `/tasks?highlight=${task._id}`,
       })
     )
   );
@@ -59,7 +60,7 @@ export async function notifyTaskAssign({
       type: 'task_assigned',
       title: 'New Task Assigned',
       message: `You have been assigned: "${taskTitle}"`,
-      link: `/tasks/${taskId}`,
+      link: `/tasks`,
     });
   }
 

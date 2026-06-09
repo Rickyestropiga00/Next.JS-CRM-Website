@@ -21,7 +21,7 @@ export async function notifyAgentCreated(agent: AgentType, user: UserType) {
         type: 'agent_new',
         title: 'New Agent Created',
         message: `${user.name} created customer: ${agent.name}`,
-        link: '/agent',
+        link: '/agents',
       })
     )
   );

@@ -18,14 +18,16 @@ function dispatchTasksUpdate() {
 
 export function useTasks() {
   const { user } = useUser();
-  const { data: agents } = useFetch<Agent>('agent');
+  const { data: agents } = useFetch<Agent>('agents');
   const {
     data: tasksData,
     setData: setTasksData,
     loading: tasksLoading,
-  } = useFetch<Task>('task');
+  } = useFetch<Task>('tasks');
 
-  const currentAgent = agents.find((a) => a.userId === user?._id);
+  const currentAgent = agents.find(
+    (a) => String(a.userId) === String(user?._id)
+  );
 
   // Load tasks on mount
   useEffect(() => {
@@ -92,7 +94,7 @@ export function useTasks() {
 
       if (task?._id) {
         try {
-          await fetch(`/api/task/${taskId}`, {
+          await fetch(`/api/tasks/${taskId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ column: newColumn }),

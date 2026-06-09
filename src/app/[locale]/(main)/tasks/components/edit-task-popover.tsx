@@ -79,7 +79,7 @@ export function EditTaskPopover({
     toast.loading('Saving changes...', { id: toastId });
     if (task._id) {
       handleSubmit(e, formData, validateForm, {
-        url: `/api/task/${formData._id}`,
+        url: `/api/tasks/${formData._id}`,
         method: 'PUT',
         buildBody: (data) => ({
           title: data.title.trim(),
