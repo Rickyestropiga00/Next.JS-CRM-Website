@@ -41,8 +41,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export const CustomersAgentsChart = memo(function CustomersAgentsChart() {
-  const { data: customers } = useFetch<Customer>('customer');
-  const { data: agents } = useFetch<Agent>('agent');
+  const { data: customers } = useFetch<Customer>('customers');
+  const { data: agents } = useFetch<Agent>('agents');
   const customersAgentsChartT = useTranslations(
     'Dashboard.customersAgentsChart'
   );

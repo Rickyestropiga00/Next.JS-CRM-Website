@@ -69,7 +69,7 @@ export function EditCustomerPopover({
     toast.loading(t('Messages.saving'), { id: toastId });
     if (customer._id) {
       handleSubmit(e, formData, validateForm, {
-        url: `/api/customer/${customer._id}`,
+        url: `/api/customers/${customer._id}`,
         method: 'PUT',
         buildBody: (data) => ({
           name: data.name.trim(),

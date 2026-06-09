@@ -138,7 +138,7 @@ export function AddNewTaskPopover({
     };
 
     try {
-      const response = await fetch('/api/task', {
+      const response = await fetch('/api/tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

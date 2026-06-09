@@ -73,7 +73,7 @@ export function EditProductPopover({
     toast.loading('Saving changes...', { id: toastId });
     if (product._id) {
       handleSubmit(e, formData, validateForm, {
-        url: `/api/product/${formData._id}`,
+        url: `/api/products/${formData._id}`,
         method: 'PUT',
         buildBody: (data) => ({
           name: data.name.trim(),
@@ -89,7 +89,7 @@ export function EditProductPopover({
             const formDataImg = new FormData();
             formDataImg.append('image', imageFile);
 
-            await fetch(`/api/product/image/${formData._id}`, {
+            await fetch(`/api/products/image/${formData._id}`, {
               method: 'PUT',
               body: formDataImg,
             });
@@ -167,7 +167,7 @@ export function EditProductPopover({
     }
 
     if (formData._id) {
-      return `/api/product/image/${formData._id}`;
+      return `/api/products/image/${formData._id}`;
     }
 
     return '/products/product-1.webp';

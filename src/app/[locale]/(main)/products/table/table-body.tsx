@@ -73,7 +73,7 @@ export function ProductsTableBody({
   const handleDelete = async (product: Product) => {
     if (product._id) {
       try {
-        const res = await fetch(`/api/product/${product._id}`, {
+        const res = await fetch(`/api/products/${product._id}`, {
           method: 'DELETE',
         });
         const data = await res.json();
@@ -160,7 +160,7 @@ export function ProductsTableBody({
                     <Image
                       src={
                         p._id && p._id.length === 24
-                          ? `/api/product/image/${getId(p)}?t=${new Date(
+                          ? `/api/products/image/${getId(p)}?t=${new Date(
                               p.updatedAt || Date.now()
                             ).getTime()}`
                           : p.image || '/product/product-1.webp'

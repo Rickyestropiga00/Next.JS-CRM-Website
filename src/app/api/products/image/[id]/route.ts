@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
-import Customer from '@/models/Customer';
-import Order from '@/models/Orders';
-import Agents from '@/models/Agents';
-import Tasks from '@/models/Tasks';
 import mongoose from 'mongoose';
-
-const modelMap: Record<string, mongoose.Model<any>> = {
-  customer: Customer,
-  product: Product,
-  order: Order,
-  agent: Agents,
-  task: Tasks,
-};
 
 export async function GET(
   req: Request,
@@ -48,18 +36,15 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string; type: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
 
-    const { id, type } = await params;
+    const { id } = await params;
 
-    if (!id || !type || !modelMap[type]) {
-      return NextResponse.json(
-        { error: 'Invalid type or ID' },
-        { status: 400 }
-      );
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
     const formData = await req.formData();
@@ -71,9 +56,7 @@ export async function PUT(
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const Model = modelMap[type];
-
-    const updated = await Model.findByIdAndUpdate(
+    const updated = await Product.findByIdAndUpdate(
       id,
       {
         image: buffer,

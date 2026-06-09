@@ -93,7 +93,7 @@ export function AddCustomerPopover({
   const { handleSubmit, loading } = useFormSubmit<CustomerForm>();
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
-      url: '/api/customer',
+      url: '/api/customers',
       buildBody: (data) => ({
         name: data.name.trim(),
         email: data.email.trim(),

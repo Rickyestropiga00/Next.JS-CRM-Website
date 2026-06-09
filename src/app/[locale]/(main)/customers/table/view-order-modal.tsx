@@ -38,7 +38,7 @@ export const ViewOrderModal = ({
   useEffect(() => {
     const getOrder = async () => {
       try {
-        const res = await fetch(`/api/order?customerId=${customer._id}`);
+        const res = await fetch(`/api/orders?customerId=${customer._id}`);
         const data = await res.json();
         if (data.success) {
           console.log('Orders from API:', data.data);

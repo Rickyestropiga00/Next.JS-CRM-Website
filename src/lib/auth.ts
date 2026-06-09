@@ -36,18 +36,26 @@ export async function verifyPassword(
 export async function createUser(
   email: string,
   password: string,
-  name: string
-): Promise<IUser> {
+  name: string,
+  session?: mongoose.ClientSession
+) {
   await dbConnect();
+
   const hashedPassword = await hashPassword(password);
-  const user = await User.create({
-    email: email.toLowerCase(),
-    password: hashedPassword,
-    name,
-  });
+
+  const [user] = await User.create(
+    [
+      {
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        name,
+      },
+    ],
+    session ? { session } : undefined
+  );
+
   return user;
 }
-
 // Check if user is authenticated
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();

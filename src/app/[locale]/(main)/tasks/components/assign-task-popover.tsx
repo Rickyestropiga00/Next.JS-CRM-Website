@@ -29,8 +29,7 @@ export const AssignTaskPopover = ({
   onClose,
   onAssigned,
 }: AssignTaskPopoverProps) => {
-  const { addNotificationForUser, addNotification } = useNotifications();
-  const { data: agents = [] } = useFetch<Agent>('agent', false, false);
+  const { data: agents = [] } = useFetch<Agent>('agents', false, false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const [selectedAgentName, setSelectedAgentName] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -59,7 +58,7 @@ export const AssignTaskPopover = ({
     console.log(`taskId: ${taskId}`);
 
     try {
-      const res = await fetch(`/api/task/${taskId}`, {
+      const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId: selectedAgentId }),

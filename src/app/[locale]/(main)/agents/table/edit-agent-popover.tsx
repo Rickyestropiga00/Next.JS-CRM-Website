@@ -65,7 +65,7 @@ export function EditAgentPopover({
     toast.loading(t('Messages.saving'), { id: toastId });
     if (agent._id) {
       handleSubmit(e, formData, validateForm, {
-        url: `/api/agent/${formData._id}`,
+        url: `/api/agents/${formData._id}`,
         method: 'PUT',
 
         buildBody: (data) => ({
@@ -262,7 +262,7 @@ export function EditAgentPopover({
             className="h-8 sm:h-7 text-xs order-1 sm:order-2"
             disabled={!isFormValid() || !hasChanges || loading}
           >
-            {loading ? t('Agents.button.updating') : t('Buttons.save')}
+            {loading ? t('Buttons.saving') : t('Buttons.save')}
           </Button>
         </div>
       </div>

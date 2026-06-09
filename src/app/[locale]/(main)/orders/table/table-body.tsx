@@ -76,7 +76,7 @@ export function OrdersTableBody({
   const handleDelete = async (order: Order) => {
     if (order._id) {
       try {
-        const res = await fetch(`/api/order/${order._id}`, {
+        const res = await fetch(`/api/orders/${order._id}`, {
           method: 'DELETE',
         });
 

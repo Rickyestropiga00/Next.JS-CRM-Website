@@ -127,7 +127,7 @@ export function AddTaskPopover({
   };
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, formData, validateForm, {
-      url: '/api/task',
+      url: '/api/tasks',
       buildBody: (data) => ({
         title: data.title.trim(),
         description: data.description.trim(),

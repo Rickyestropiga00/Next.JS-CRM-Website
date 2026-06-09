@@ -135,7 +135,10 @@
     "SOMETHING_WENT_WRONG": "Something went wrong. Please try again.",
     "UNAUTHORIZED": "You are not authorized.",
     "FORBIDDEN": "You don't have permission to do this.",
-    "UNKNOWN": "An unexpected error occurred."
+    "UNKNOWN": "An unexpected error occurred.",
+    "INVALID_RESPONSE": "Invalid response from the server",
+    "REQUEST_FAILED": "Request failed",
+    "INSUFFICIENT_STOCK": "Insufficient stock"
   },
 
   "Statuses": {

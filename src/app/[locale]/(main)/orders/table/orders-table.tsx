@@ -80,7 +80,7 @@ export function OrdersTable() {
     data: ordersData,
     setData: setOrdersData,
     loading: ordersLoading,
-  } = useFetch<Order>('order');
+  } = useFetch<Order>('orders');
 
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [editOrderId, setEditOrderId] = useState<string | null>(null);
@@ -88,8 +88,8 @@ export function OrdersTable() {
   const [showAddOrder, setShowAddOrder] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { user } = useUser();
-  const { data: customersData } = useFetch<Customer>('customer', false, false);
-  const { data: agents } = useFetch<Agent>('agent', false, false);
+  const { data: customersData } = useFetch<Customer>('customers', false, false);
+  const { data: agents } = useFetch<Agent>('agents', false, false);
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const { filteredOrder, agentsLoading } = useFilteredOrderByAgent(ordersData);
   const searchParams = useSearchParams();

@@ -70,8 +70,8 @@ export function EditOrderPopover({
     handleCancel,
     hasChanges,
   } = useFormHandler<Order>(order, open, validationRules, () => onClose());
-  const { data: customersData } = useFetch<Customer>('customer', false, false); // false, false to get database data only
-  const { data: productsData } = useFetch<Product>('product', false, false);
+  const { data: customersData } = useFetch<Customer>('customers', false, false); // false, false to get database data only
+  const { data: productsData } = useFetch<Product>('products', false, false);
   const [inputValue, setInputValue] = useState('');
   const [productInputValue, setProductInputValue] = useState('');
   const ordersT = useTranslations('Orders');
@@ -103,7 +103,7 @@ export function EditOrderPopover({
 
     if (order._id) {
       handleSubmit(e, formData, validateForm, {
-        url: `/api/order/${order._id}`,
+        url: `/api/orders/${order._id}`,
         method: 'PUT',
         buildBody: (data) => ({
           ...data,

@@ -134,7 +134,10 @@
     "SOMETHING_WENT_WRONG": "May nangyaring mali. Pakisubukang muli.",
     "UNAUTHORIZED": "Hindi ka awtorisado.",
     "FORBIDDEN": "Wala kang pahintulot na gawin ito.",
-    "UNKNOWN": "May hindi inaasahang error na nangyari."
+    "UNKNOWN": "May hindi inaasahang error na nangyari.",
+    "INVALID_RESPONSE": "Hindi wastong tugon mula sa server",
+    "REQUEST_FAILED": "Nabigong kahilingan",
+    "INSUFFICIENT_STOCK": "Hindi sapat ang stock"
   },
 
   "Statuses": {

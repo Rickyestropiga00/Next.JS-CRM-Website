@@ -17,6 +17,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 
 // Dynamically import task modals to reduce initial bundle size
 const EditTaskPopover = dynamic(
@@ -65,6 +66,8 @@ export function TasksContent() {
   const [showAddTask, setShowAddTask] = React.useState(false);
   const [addTaskColumn, setAddTaskColumn] = React.useState<ColumnKey>('todo');
   const [showAddNewTask, setShowAddNewTask] = React.useState(false);
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
   const statusOptions = [
     { label: t('Tasks.filters.allCategories'), value: 'all' },
@@ -89,6 +92,8 @@ export function TasksContent() {
     { key: 'inreview' as const, label: t('TaskColumns.inreview') },
     { key: 'done' as const, label: t('TaskColumns.done') },
   ];
+
+  console.log('Tasklist', taskList);
 
   // Filter tasks by status and priority
   const filteredTasks = taskList.filter(
@@ -209,6 +214,7 @@ export function TasksContent() {
             setDeleteDialogId={setDeleteDialogId}
             isSidebarCollapsed={isSidebarCollapsed}
             tasksLoading={tasksLoading}
+            highlightId={highlightId}
           />
         )}
       </DndContext>

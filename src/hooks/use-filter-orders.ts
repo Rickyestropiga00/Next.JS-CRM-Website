@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 export function useFilteredOrderByAgent(ordersData: Order[]) {
   const { user } = useUser();
-  const { data: agents, loading: agentsLoading } = useFetch<Agent>('agent');
+  const { data: agents, loading: agentsLoading } = useFetch<Agent>('agents');
   const role = user?.role.toLowerCase();
 
   const isAgent = role === 'agent';

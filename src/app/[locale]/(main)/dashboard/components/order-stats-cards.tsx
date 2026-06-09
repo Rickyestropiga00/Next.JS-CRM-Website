@@ -33,7 +33,7 @@ const calculateOrderStats = (orders: Order[]) => {
 };
 
 export const OrderStatsCards = memo(function OrderStatsCards() {
-  const { data: ordersData } = useFetch<Order>('order', false, false); // false, false to get database data only
+  const { data: ordersData } = useFetch<Order>('orders', false, false); // false, false to get database data only
   const { filteredOrder } = useFilteredOrderByAgent(ordersData);
   const { user } = useUser();
   const role = user?.role.toLowerCase();

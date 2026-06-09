@@ -110,8 +110,8 @@ const calculateTopSellingProducts = (orders: Order[], products: Product[]) => {
 };
 
 export const TopSellingProducts = memo(function TopSellingProducts() {
-  const { data: productsData } = useFetch<Product>('product');
-  const { data: ordersData } = useFetch<Order>('order');
+  const { data: productsData } = useFetch<Product>('products');
+  const { data: ordersData } = useFetch<Order>('orders');
   const [selectedTopProductId, setSelectedTopProductId] = useState<
     string | null
   >(null);

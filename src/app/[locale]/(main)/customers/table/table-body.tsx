@@ -69,7 +69,7 @@ export function CustomersTableBody({
   const handleDelete = async (customer: Customer) => {
     if (customer._id) {
       try {
-        const res = await fetch(`/api/customer/${customer._id}`, {
+        const res = await fetch(`/api/customers/${customer._id}`, {
           method: 'DELETE',
         });
         const data = await res.json();
@@ -109,12 +109,14 @@ export function CustomersTableBody({
       ) : (
         paginated.map((c) => {
           const commentCount = countComments(c.comment);
-          const highlighted = isHighlighted(c.customerId);
+          const params = new URLSearchParams(window.location.search);
+          const highlightedIds = params.get('highlight')?.split(',') ?? [];
+          const isHighlighted = highlightedIds.includes(c.customerId);
           return (
             <TableRow
               key={getId(c)}
               className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                highlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
+                isHighlighted ? 'relative bg-primary/10 dark:bg-primary/10' : ''
               } `}
               onClick={(e) => {
                 // Don't trigger row click if clicking on checkbox, dropdown, or other interactive elements
@@ -131,7 +133,7 @@ export function CustomersTableBody({
             >
               <TableCell
                 className={`w-8 ${
-                  highlighted &&
+                  isHighlighted &&
                   'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary'
                 }`}
               >

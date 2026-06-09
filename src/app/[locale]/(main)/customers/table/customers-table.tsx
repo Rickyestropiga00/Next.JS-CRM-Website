@@ -95,14 +95,14 @@ export function CustomersTable() {
     data: agents,
     setData: setAgents,
     loading: agentsLoading,
-  } = useFetch<Agent>('agent');
+  } = useFetch<Agent>('agents');
   const { user } = useUser();
 
   const {
     data: customersData,
     setData: setCustomersData,
     loading: customersLoading,
-  } = useFetch<Customer>('customer');
+  } = useFetch<Customer>('customers');
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
 
   const searchParams = useSearchParams();
@@ -239,7 +239,7 @@ export function CustomersTable() {
 
     await Promise.all(
       affectedAgents.map((agent) =>
-        fetch(`/api/agent/${agent._id}`, {
+        fetch(`/api/agents/${agent._id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

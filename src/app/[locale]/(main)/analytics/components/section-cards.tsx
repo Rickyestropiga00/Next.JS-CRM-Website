@@ -23,7 +23,7 @@ import { useTranslations } from 'next-intl';
 
 export function SectionCards() {
   const { data: orders, loading: ordersLoading } = useFetch<Order>(
-    'order',
+    'orders',
     false,
     false
   );
