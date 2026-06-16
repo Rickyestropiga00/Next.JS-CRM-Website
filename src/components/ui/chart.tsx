@@ -1,6 +1,6 @@
-import React from "react";
-import type { ReactNode, ReactElement } from "react";
-import { Legend, Tooltip, ResponsiveContainer } from "recharts";
+import React from 'react';
+import type { ReactNode, ReactElement } from 'react';
+import { Legend, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ChartConfig type for legend/color mapping
 export type ChartConfig = Record<

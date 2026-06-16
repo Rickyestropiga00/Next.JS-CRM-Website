@@ -736,6 +736,89 @@
       "description": "Showing total visitors for the last 6 months",
       "trend": "Trending up by 5.2% this month",
       "footer": "Showing total visitors for the last 6 months"
+    },
+
+    "kpiCards": {
+      "revenue": {
+        "description": "Total earnings from completed orders",
+        "loading": "Loading...",
+        "footer": {
+          "title": "Revenue Uptrend",
+          "description": "Average order value"
+        }
+      },
+      "totalOrder": {
+        "description": "Total number of orders placed",
+        "loading": "Loading...",
+        "footer": {
+          "title": "Order volume",
+          "description": "Conversion rate"
+        }
+      },
+      "totalCustomer": {
+        "description": "Registered customers in the platform",
+        "loading": "Loading...",
+        "footer": {
+          "title": " Retention growth",
+          "description": "Active vs total customer"
+        }
+      },
+      "cancelledOrder": {
+        "description": "Cancelled Orders",
+        "loading": "Loading...",
+        "footer": {
+          "title": "Cancellation Rate",
+          "description": "Order failures percent"
+        }
+      }
+    },
+    "revenueAreaChart": {
+      "title": "Monthly Revenue Trend",
+      "description": "Monthly revenue trends with current vs previous period comparison",
+      "footer": {
+        "growth": "{growth}% growth",
+        "previous": "Previous",
+        "current": "Current"
+      }
+    },
+    "revenueBarChart": {
+      "title": "Top Products by Revenue",
+      "description": "Top products ranked by revenue performance with monthly comparison insights",
+      "footer": {
+        "bestSeller": "Best seller",
+        "growth": "{growth}% growth",
+        "previous": "Previous",
+        "current": "Current"
+      }
+    },
+    "customerPieChart": {
+      "title": "Customer Status Distribution",
+      "description": " Breakdown of customers by lifecycle stage (Lead, Active, Prospect, Inactive)",
+      "footer": {
+        "rate": "Active customer rate: {rate}%",
+        "active": "{activeCustomers} active out of {totalCustomers} customers"
+      }
+    },
+    "agentLeaderboard": {
+      "sectionTitle": "Agent Leaderboard",
+      "customerTitle": "Total Customer per Agent",
+      "revenueTitle": "Total Revenue per Agent",
+      "orderTitle": "Total Order per Agent",
+      "customerDescription": " {total} agents • {totalItem} total customer",
+      "revenueDescription": " {total} agents • {totalItem} total revenue",
+      "orderDescription": " {total} agents • {totalItem} total orders",
+      "footer": {
+        "totalCustomer": "{total} customers",
+        "totalOrder": "{total} orders",
+        "top": "Top Agent: ",
+        "avg": "Average per agent: "
+      }
+    },
+    "customTooltip": {
+      "revenue": "Revenue",
+      "quantitySold": "Quantity Sold",
+      "orders": "Orders",
+      "customers": "Customers"
     }
   }
 }

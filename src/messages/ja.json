@@ -733,6 +733,89 @@
       "description": "過去6か月の総訪問者数を表示",
       "trend": "今月5.2%上昇中",
       "footer": "過去6か月の総訪問者数を表示"
+    },
+
+    "kpiCards": {
+      "revenue": {
+        "description": "完了した注文からの総収益",
+        "loading": "読み込み中...",
+        "footer": {
+          "title": "売上の上昇トレンド",
+          "description": "平均注文金額"
+        }
+      },
+      "totalOrder": {
+        "description": "総注文数",
+        "loading": "読み込み中...",
+        "footer": {
+          "title": "注文数",
+          "description": "コンバージョン率"
+        }
+      },
+      "totalCustomer": {
+        "description": "プラットフォームに登録された顧客",
+        "loading": "読み込み中...",
+        "footer": {
+          "title": " リテンションの成長",
+          "description": "アクティブ顧客対全体顧客"
+        }
+      },
+      "cancelledOrder": {
+        "description": "キャンセルされた注文",
+        "loading": "読み込み中...",
+        "footer": {
+          "title": "キャンセル率",
+          "description": "失敗した注文の割合"
+        }
+      }
+    },
+    "revenueAreaChart": {
+      "title": "月間売上トレンド",
+      "description": "現在と過去の期間を比較した月間売上トレンド",
+      "footer": {
+        "growth": "{growth}% の成長",
+        "previous": "過去",
+        "current": "現在"
+      }
+    },
+    "revenueBarChart": {
+      "title": "売上上位製品",
+      "description": "売上実績に基づく製品の上位ランキング（月次比較）",
+      "footer": {
+        "bestSeller": "ベストセラー製品",
+        "growth": "{growth}% の成長",
+        "previous": "過去",
+        "current": "現在"
+      }
+    },
+    "customerPieChart": {
+      "title": "顧客ステータス分布",
+      "description": " ライフサイクル段階（リード、アクティブ、見込み、非アクティブ）別の顧客分割",
+      "footer": {
+        "rate": "アクティブ顧客率: {rate}%",
+        "active": "{totalCustomers} 顧客中 {activeCustomers} がアクティブ"
+      }
+    },
+    "agentLeaderboard": {
+      "sectionTitle": "エージェントリーダーボード",
+      "customerTitle": "エージェントあたりの総顧客数",
+      "revenueTitle": "エージェントあたりの総収益",
+      "orderTitle": "エージェントあたりの総注文数",
+      "customerDescription": " {total} エージェント • {totalItem} 総顧客",
+      "revenueDescription": " {total} エージェント • {totalItem} 総収益",
+      "orderDescription": " {total} エージェント • {totalItem} 総注文数",
+      "footer": {
+        "totalCustomer": "{total} 顧客",
+        "totalOrder": "{total} 注文",
+        "top": "トップエージェント: ",
+        "avg": "エージェントあたりの平均: "
+      }
+    },
+    "customTooltip": {
+      "revenue": "収益",
+      "quantitySold": "販売数量",
+      "orders": "注文",
+      "customers": "顧客"
     }
   }
 }

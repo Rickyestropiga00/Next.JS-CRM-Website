@@ -734,6 +734,89 @@
       "description": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan",
       "trend": "Tumaas ng 5.2% ngayong buwan",
       "footer": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan"
+    },
+
+    "kpiCards": {
+      "revenue": {
+        "description": "Kabuuang kinita mula sa mga natapos na order",
+        "loading": "Naglo-load...",
+        "footer": {
+          "title": "Pataas na Trend ng Kita",
+          "description": "Karaniwang halaga ng order"
+        }
+      },
+      "totalOrder": {
+        "description": "Kabuuang bilang ng mga inilagay na order",
+        "loading": "Naglo-load...",
+        "footer": {
+          "title": "Dami ng order",
+          "description": "Rate ng konbersyon"
+        }
+      },
+      "totalCustomer": {
+        "description": "Mga rehistradong customer sa plataporma",
+        "loading": "Naglo-load...",
+        "footer": {
+          "title": " Paglago ng pagpapanatili",
+          "description": "Aktibo kumpara sa kabuuang customer"
+        }
+      },
+      "cancelledOrder": {
+        "description": "Mga Kinanselang Order",
+        "loading": "Naglo-load...",
+        "footer": {
+          "title": "Rate ng Pagkakansela",
+          "description": "Porsyento ng mga nabigong order"
+        }
+      }
+    },
+    "revenueAreaChart": {
+      "title": "Buwanang Trend ng Kita",
+      "description": "Buwanang trend ng kita na may paghahambing ng kasalukuyan laban sa nakaraang panahon",
+      "footer": {
+        "growth": "{growth}% na paglago",
+        "previous": "Nakaraan",
+        "current": "Kasalukuyan"
+      }
+    },
+    "revenueBarChart": {
+      "title": "Pinakamahusay na Produkto ayon sa Kita",
+      "description": "Pinakamataas na ranggo ng mga produkto batay sa performance ng kita na may buwanang paghahambing",
+      "footer": {
+        "bestSeller": "Pinakamabentang produkto",
+        "growth": "{growth}% na paglago",
+        "previous": "Nakaraan",
+        "current": "Kasalukuyan"
+      }
+    },
+    "customerPieChart": {
+      "title": "Pamamahagi ng Katayuan ng Customer",
+      "description": " Paghahati ng mga customer ayon sa yugto ng lifecycle (Lead, Active, Prospect, Inactive)",
+      "footer": {
+        "rate": "Rate ng aktibong customer: {rate}%",
+        "active": "{activeCustomers} aktibo mula sa {totalCustomers} na mga customer"
+      }
+    },
+    "agentLeaderboard": {
+      "sectionTitle": "Leaderboard ng Ahente",
+      "customerTitle": "Kabuuang Customer Bawat Ahente",
+      "revenueTitle": "Kabuuang Kita Bawat Ahente",
+      "orderTitle": "Kabuuang Order Bawat Ahente",
+      "customerDescription": " {total} ahente • {totalItem} kabuuang customer",
+      "revenueDescription": " {total} ahente • {totalItem} kabuuang kita",
+      "orderDescription": " {total} ahente • {totalItem} kabuuang order",
+      "footer": {
+        "totalCustomer": "{total} mga customer",
+        "totalOrder": "{total} mga order",
+        "top": "Pinakamahusay na Ahente: ",
+        "avg": "Average bawat ahente: "
+      }
+    },
+    "customTooltip": {
+      "revenue": "Kita",
+      "quantitySold": "Dami ng Nabenta",
+      "orders": "Mga Order",
+      "customers": "Mga Customer"
     }
   }
 }
