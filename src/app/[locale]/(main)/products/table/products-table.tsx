@@ -202,7 +202,7 @@ export function ProductsTable() {
                 search: e.target.value,
               }))
             }
-            className="w-full md:w-64"
+            className="w-full lg:w-64"
           />
           <Select
             value={filters.status || 'all'}
@@ -254,6 +254,7 @@ export function ProductsTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
+
           <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
             <AlertDialogTrigger asChild>
               <Button
@@ -287,11 +288,22 @@ export function ProductsTable() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
 
+          {/* Mobile Add */}
+          <Can role={user?.role} action="create" resource="product">
+            <Button
+              className="flex items-center gap-2 cursor-pointer lg:hidden"
+              type="button"
+              onClick={() => setShowAddProduct(true)}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </Can>
+        </div>
+        {/* Desktop Add */}
         <Can role={user?.role} action="create" resource="product">
           <Button
-            className="flex items-center gap-2 cursor-pointer"
+            className="hidden lg:flex items-center gap-2 cursor-pointer "
             type="button"
             onClick={() => setShowAddProduct(true)}
           >
@@ -345,16 +357,15 @@ export function ProductsTable() {
             <Package className="h-10 w-10 text-muted-foreground" />
           </div>
 
-          <h3 className="font-semibold">No products found</h3>
+          <h3 className="font-semibold">{t('EmptyState.product.title')}</h3>
 
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You don&apos;t have any products yet. Start by adding your first
-            product.
+            {t('EmptyState.product.description')}
           </p>
 
           <Button className="mt-4" onClick={() => setShowAddProduct(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add New Product
+            {t('EmptyState.product.addNewProduct')}
           </Button>
         </div>
       )}

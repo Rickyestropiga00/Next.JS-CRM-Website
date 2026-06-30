@@ -69,16 +69,20 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     await dbConnect();
+    const user = await getCurrentUser();
+    if (!user)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const findRes = await Tasks.find();
+    const query: any = {};
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: findRes,
-      },
-      { status: 200 }
-    );
+    if (user.role === 'agent') {
+      const agent = await Agents.findOne({ userId: user._id });
+      if (!agent) return NextResponse.json({ success: true, data: [] });
+      query.agentId = agent._id;
+    }
+
+    const findRes = await Tasks.find(query);
+    return NextResponse.json({ success: true, data: findRes }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

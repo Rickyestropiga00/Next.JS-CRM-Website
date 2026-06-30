@@ -28,6 +28,7 @@ import { TableSkeleton } from '@/components/shared/table-skeleton';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
+import { ProductImage } from './product-image';
 
 interface TableBodyProps {
   paginated: any[];
@@ -157,7 +158,7 @@ export function ProductsTableBody({
               <TableCell className="w-[200px]">
                 <div className="flex items-center gap-3">
                   <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-sm overflow-hidden bg-muted shrink-0">
-                    <Image
+                    <ProductImage
                       src={
                         p._id && p._id.length === 24
                           ? `/api/products/image/${getId(p)}?t=${new Date(
@@ -166,10 +167,6 @@ export function ProductsTableBody({
                           : p.image || '/product/product-1.webp'
                       }
                       alt={p.name}
-                      className="object-cover bg-muted"
-                      fill
-                      unoptimized
-                      sizes="64px"
                     />
                   </div>
                   <span className="font-medium truncate">{p.name}</span>

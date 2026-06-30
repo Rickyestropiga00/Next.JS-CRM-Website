@@ -9,11 +9,13 @@ import {
   CheckSquare,
   UserCheck,
   AlertTriangle,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModalWrapper } from '@/components/shared/modal-wrapper';
 import { Switch } from '@/components/ui/switch';
 import { UserType } from '@/types/interface';
+import { useTranslations } from 'next-intl';
 
 interface NotificationPopoverProps {
   user: UserType | null;
@@ -43,69 +45,82 @@ const iconSize = 'h-3.5 w-3.5';
 const configs: Record<Role, NotifSection[]> = {
   admin: [
     {
-      section: 'Products',
+      section: 'Notification.sections.products',
       items: [
         {
-          id: 'product_low_stock',
+          id: 'system_product_low_stock',
           icon: <AlertTriangle className={iconSize} />,
           colorClass: 'bg-red-50 text-red-700',
-          label: 'Low stock alert',
-          sub: 'When product inventory is running low',
+          label: 'Notification.items.systemProductLowStock.label',
+          sub: 'Notification.items.systemProductLowStock.sub',
           defaultOn: true,
         },
       ],
     },
     {
-      section: 'Customers',
+      section: 'Notification.sections.customers',
       items: [
         {
           id: 'customer_new',
           icon: <UserPlus className={iconSize} />,
           colorClass: 'bg-blue-50 text-blue-700',
-          label: 'New customer added',
-          sub: 'When a customer or lead is created',
+          label: 'Notification.items.customerNew.label',
+          sub: 'Notification.items.customerNew.sub',
           defaultOn: true,
         },
         {
           id: 'customer_assigned',
           icon: <UserCheck className={iconSize} />,
           colorClass: 'bg-indigo-50 text-indigo-700',
-          label: 'Customer assigned to me',
-          sub: 'When a customer or lead is assigned',
+          label: 'Notification.items.customerAssigned.label',
+          sub: 'Notification.items.customerAssigned.sub',
           defaultOn: true,
         },
       ],
     },
     {
-      section: 'Orders',
+      section: 'Notification.sections.orders',
       items: [
         {
           id: 'order_new',
           icon: <ShoppingCart className={iconSize} />,
           colorClass: 'bg-amber-50 text-amber-700',
-          label: 'New order placed',
-          sub: 'Order created for any customer',
+          label: 'Notification.items.orderNew.label',
+          sub: 'Notification.items.orderNew.sub',
           defaultOn: true,
         },
         {
-          id: 'shipment_update',
+          id: 'order_shipment_update',
           icon: <Truck className={iconSize} />,
           colorClass: 'bg-orange-50 text-orange-700',
-          label: 'Shipment update',
-          sub: 'In transit or delivered',
+          label: 'Notification.items.orderShipmentUpdate.label',
+          sub: 'Notification.items.orderShipmentUpdate.sub',
           defaultOn: true,
         },
       ],
     },
     {
-      section: 'Tasks',
+      section: 'Notification.sections.tasks',
       items: [
         {
           id: 'task_assigned',
           icon: <CheckSquare className={iconSize} />,
           colorClass: 'bg-teal-50 text-teal-700',
-          label: 'Task assigned to me',
-          sub: "When you're set as assignee",
+          label: 'Notification.items.taskAssigned.label',
+          sub: 'Notification.items.taskAssigned.sub',
+          defaultOn: true,
+        },
+      ],
+    },
+    {
+      section: 'Notification.sections.comment',
+      items: [
+        {
+          id: 'comment',
+          icon: <MessageSquare className={iconSize} />,
+          colorClass: 'bg-blue-50 text-blue-700',
+          label: 'Notification.items.comment.label',
+          sub: 'Notification.items.comment.sub',
           defaultOn: true,
         },
       ],
@@ -114,48 +129,61 @@ const configs: Record<Role, NotifSection[]> = {
 
   agent: [
     {
-      section: 'Customers',
+      section: 'Notification.sections.customers',
       items: [
         {
           id: 'customer_assigned',
           icon: <UserCheck className={iconSize} />,
           colorClass: 'bg-indigo-50 text-indigo-700',
-          label: 'Customer assigned to me',
-          sub: 'When a customer or lead is assigned',
+          label: 'Notification.items.customerAssigned.label',
+          sub: 'Notification.items.customerAssigned.sub',
           defaultOn: true,
         },
       ],
     },
     {
-      section: 'Orders',
+      section: 'Notification.sections.orders',
       items: [
         {
           id: 'order_new',
           icon: <ShoppingCart className={iconSize} />,
           colorClass: 'bg-amber-50 text-amber-700',
-          label: 'New order placed',
-          sub: 'Order created for any customer',
+          label: 'Notification.items.orderNew.label',
+          sub: 'Notification.items.orderNew.sub',
           defaultOn: true,
         },
         {
-          id: 'shipment_update',
+          id: 'order_shipment_update',
           icon: <Truck className={iconSize} />,
           colorClass: 'bg-orange-50 text-orange-700',
-          label: 'Shipment update',
-          sub: 'In transit or delivered',
+          label: 'Notification.items.orderShipmentUpdate.label',
+          sub: 'Notification.items.orderShipmentUpdate.sub',
           defaultOn: true,
         },
       ],
     },
     {
-      section: 'Tasks',
+      section: 'Notification.sections.tasks',
       items: [
         {
           id: 'task_assigned_to_agent',
           icon: <CheckSquare className={iconSize} />,
           colorClass: 'bg-teal-50 text-teal-700',
-          label: 'Task assigned to me',
-          sub: "When you're set as assignee",
+          label: 'Notification.items.taskAssignedToAgent.label',
+          sub: 'Notification.items.taskAssignedToAgent.sub',
+          defaultOn: true,
+        },
+      ],
+    },
+    {
+      section: 'Notification.sections.comment',
+      items: [
+        {
+          id: 'comment',
+          icon: <MessageSquare className={iconSize} />,
+          colorClass: 'bg-blue-50 text-blue-700',
+          label: 'Notification.items.comment.label',
+          sub: 'Notification.items.comment.sub',
           defaultOn: true,
         },
       ],
@@ -194,6 +222,7 @@ export const NotificationPopover = ({
   isOpen = false,
   onClose,
 }: NotificationPopoverProps) => {
+  const t = useTranslations();
   const role = (user?.role ?? 'agent') as Role;
   const sections = configs[role] ?? configs['agent'];
   const [states, setStates] = useState<Record<string, boolean>>(() =>
@@ -252,10 +281,10 @@ export const NotificationPopover = ({
           </div>
           <div>
             <p className="text-sm font-medium leading-none">
-              Notification settings
+              {t('Notification.modal.title')}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Manage how you receive alerts
+              {t('Notification.modal.description')}
             </p>
           </div>
         </div>
@@ -265,7 +294,7 @@ export const NotificationPopover = ({
         {sections.map(({ section, items }) => (
           <div key={section}>
             <p className="px-4 pt-3 pb-1 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              {section}
+              {t(section)}
             </p>
             {items.map((item) => (
               <div
@@ -280,10 +309,12 @@ export const NotificationPopover = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm leading-none">{item.label}</span>
+                      <span className="text-sm leading-none">
+                        {t(item.label)}
+                      </span>
                       {item.badge && (
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                          {item.badge}
+                          {t(item.badge)}
                         </span>
                       )}
                     </div>
@@ -306,10 +337,10 @@ export const NotificationPopover = ({
       {/* Footer */}
       <div className="flex items-center justify-end pt-4 border-t gap-2">
         <Button variant="outline" onClick={handleCancel}>
-          Cancel
+          {t('Buttons.cancel')}
         </Button>
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? t('Buttons.saving') : t('Buttons.save')}
         </Button>
       </div>
     </ModalWrapper>

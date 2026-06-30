@@ -12,7 +12,6 @@ export interface IAgents extends Document {
   assignedCustomers?: string[];
   expiresAt: Date;
   notes?: string;
-  comment?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,9 +59,7 @@ const agentsSchema = new Schema<IAgents>(
     notes: {
       type: String,
     },
-    comment: {
-      type: String,
-    },
+
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),

@@ -88,8 +88,8 @@ export function OrdersTable() {
   const [showAddOrder, setShowAddOrder] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { user } = useUser();
-  const { data: customersData } = useFetch<Customer>('customers', false, false);
-  const { data: agents } = useFetch<Agent>('agents', false, false);
+  const { data: customersData } = useFetch<Customer>('customers');
+  const { data: agents } = useFetch<Agent>('agents');
   const filteredCustomers = useFilteredCustomers(customersData, agents, user);
   const { filteredOrder, agentsLoading } = useFilteredOrderByAgent(ordersData);
   const searchParams = useSearchParams();
@@ -242,7 +242,7 @@ export function OrdersTable() {
                 search: e.target.value,
               }))
             }
-            className="w-full md:w-64"
+            className="w-full lg:w-64"
           />
           <Select
             value={filters.productType || 'all'}
@@ -352,9 +352,20 @@ export function OrdersTable() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Mobile Add */}
+          <Button
+            className="flex lg:hidden items-center gap-2 cursor-pointer"
+            type="button"
+            onClick={() => setShowAddOrder(true)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
+
+        {/* Desktop Add */}
         <Button
-          className="flex items-center gap-2 cursor-pointer"
+          className="hidden lg:flex items-center gap-2 cursor-pointer"
           type="button"
           onClick={() => setShowAddOrder(true)}
         >
@@ -408,16 +419,15 @@ export function OrdersTable() {
             <ShoppingCart className="h-10 w-10 text-muted-foreground" />
           </div>
 
-          <h3 className="font-semibold">No orders yet</h3>
+          <h3 className="font-semibold">{t('EmptyState.order.title')}</h3>
 
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You don&apos;t have any orders yet. Start by creating your first
-            order.
+            {t('EmptyState.order.description')}
           </p>
 
           <Button className="mt-4" onClick={() => setShowAddOrder(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add New Order
+            {t('EmptyState.order.addNewOrder')}
           </Button>
         </div>
       )}

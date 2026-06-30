@@ -129,7 +129,7 @@ export function AgentsTableHeader({
         sortable: true,
       },
       {
-        key: 'comment',
+        key: 'comments',
         label: t('Agents.table.columns.comment'),
         className: 'w-[80px] text-center',
         sortable: false,

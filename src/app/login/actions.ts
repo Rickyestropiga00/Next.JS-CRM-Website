@@ -30,13 +30,13 @@ export async function loginAction(
     const user = await findUserByEmail(result.data.email);
 
     if (!user) {
-      return { error: 'Invalid email or password' };
+      return { error: 'Invalid email or password', timestamp: Date.now() };
     }
     // Verify password
     const isValid = await verifyPassword(result.data.password, user.password);
 
     if (!isValid) {
-      return { error: 'Invalid email or password' };
+      return { error: 'Invalid email or password', timestamp: Date.now() };
     }
     // Create session (store user ID in cookie)
     const cookieStore = await cookies();

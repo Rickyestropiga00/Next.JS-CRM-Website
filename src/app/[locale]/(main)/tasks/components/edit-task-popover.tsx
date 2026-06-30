@@ -18,6 +18,7 @@ import { validateRequired } from '@/lib/validations';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface EditTaskPopoverProps {
   task: Task;
@@ -89,6 +90,7 @@ export function EditTaskPopover({
           column: data.column,
         }),
         onSuccess: (result) => {
+          invalidateCache('tasks');
           onSave(result.data);
           toast.success(result.message, { id: toastId });
         },

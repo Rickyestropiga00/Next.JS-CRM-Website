@@ -5,7 +5,13 @@ interface CreateNotificationParams {
   type: string;
   title: string;
   message: string;
-  link?: string;
+  link?: string | null;
+  meta?: {
+    agentId?: string;
+    commentId?: string;
+    userId?: string;
+    [key: string]: any;
+  };
 }
 
 export async function createNotification({
@@ -14,6 +20,7 @@ export async function createNotification({
   title,
   message,
   link,
+  meta,
 }: CreateNotificationParams) {
   return await Notification.create({
     userId,
@@ -21,6 +28,7 @@ export async function createNotification({
     title,
     message,
     link: link || '',
+    meta: meta || '',
     read: false,
   });
 }

@@ -10,11 +10,12 @@ export interface Customer {
   company?: string;
   status: CustomerStatus;
   lastContacted?: string;
-  expiresAt?: Date;
+  expiresAt?: string;
   notes?: string;
-  comment?: string;
-  createdAt: Date | string;
-  updatedAt?: Date;
+  comments?: CustomerCommentType[];
+  commentsCount?: number;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export type OrderStatus = 'Pending' | 'In Transit' | 'Completed' | 'Canceled';
@@ -33,9 +34,9 @@ export interface Order {
   total: number;
   payment: PaymentStatus;
   status: OrderStatus;
-  createdAt: Date | string;
-  expiresAt?: Date | string;
-  updatedAt?: Date | string;
+  createdAt: string;
+  expiresAt?: string;
+  updatedAt?: string;
 }
 
 export type ProductStatus = 'Active' | 'Disabled';
@@ -66,7 +67,12 @@ export type Agent = {
   _id?: string; // For MongoDB documents
   id: string;
   agentId?: string;
-  userId?: string;
+  userId?: {
+    _id: string;
+    lastLogin: string;
+    avatar?: Buffer | string | null;
+    avatarType?: string | null;
+  };
   name: string;
   email: string;
   phone: string;
@@ -76,7 +82,8 @@ export type Agent = {
   createdAt: string;
   lastLogin: string;
   notes?: string;
-  comment?: string;
+  comments?: AgentCommentType[];
+  commentsCount?: number;
 };
 
 export type ColumnKey = 'todo' | 'inprogress' | 'inreview' | 'done';
@@ -118,4 +125,26 @@ export type UserType = {
   avatarType?: string | null;
   createdAt: string;
   lastLogin: string;
+};
+
+export type CustomerCommentType = {
+  _id: string;
+  customerId: {
+    _id: string;
+  };
+  content: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentCommentType = {
+  _id: string;
+  agentId: {
+    _id: string;
+  };
+  content: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
 };

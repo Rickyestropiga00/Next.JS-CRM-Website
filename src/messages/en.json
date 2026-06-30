@@ -75,7 +75,8 @@
     "addComment": "Add Comment",
     "adding": "Adding...",
     "viewOrder": "View Order",
-    "assign": "Assign {item}"
+    "assign": "Assign {item}",
+    "assignTask": "Assign Task"
   },
 
   "Forms": {
@@ -486,7 +487,8 @@
         "lastContacted": "Last Contacted"
       },
       "comments": {
-        "empty": "No comments yet"
+        "empty": "No comments yet",
+        "alertDescription": " This will permanently delete this comment.This action cannot be undone."
       }
     },
     "table": {
@@ -579,7 +581,8 @@
         "empty": "No notes available"
       },
       "comments": {
-        "empty": "-"
+        "empty": "No comments yet",
+        "alertDescription": " This will permanently delete this comment.This action cannot be undone."
       }
     },
     "assign": {
@@ -672,6 +675,7 @@
 
     "customersAgentsChart": {
       "title": "Customers vs Agents",
+      "agentsTitle": "Customers",
       "description": "Current distribution",
       "total": "Total: {count} records",
       "breakdown": "{customers} customers and {agents} agents"
@@ -736,6 +740,108 @@
       "description": "Showing total visitors for the last 6 months",
       "trend": "Trending up by 5.2% this month",
       "footer": "Showing total visitors for the last 6 months"
+    }
+  },
+  "AssignTask": {
+    "title": "Assign Task",
+    "description": "Select an agent to assign this task.",
+    "combobox": {
+      "empty": "No agent found.",
+      "placeholder": "Search agent..."
+    },
+    "buttons": {
+      "assigning": "Assigning",
+      "assign": "Assign"
+    }
+  },
+
+  "Notification": {
+    "modal": {
+      "title": "Notification settings",
+      "description": "Manage how you receive alerts"
+    },
+    "footer": {
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    },
+    "sections": {
+      "products": "Products",
+      "customers": "Customers",
+      "orders": "Orders",
+      "tasks": "Tasks",
+      "comment": "Comment"
+    },
+    "items": {
+      "systemProductLowStock": {
+        "label": "Low stock alert",
+        "sub": "When product inventory is running low"
+      },
+      "customerNew": {
+        "label": "New customer added",
+        "sub": "When a customer or lead is created"
+      },
+      "customerAssigned": {
+        "label": "Customer assigned to me",
+        "sub": "When a customer or lead is assigned"
+      },
+      "orderNew": {
+        "label": "New order placed",
+        "sub": "Order created for any customer"
+      },
+      "orderShipmentUpdate": {
+        "label": "Shipment update",
+        "sub": "In transit or delivered"
+      },
+      "taskAssigned": {
+        "label": "Task assigned to me",
+        "sub": "When you're set as assignee"
+      },
+      "taskAssignedToAgent": {
+        "label": "Task assigned to me",
+        "sub": "When you're set as assignee"
+      },
+      "comment": {
+        "label": "New comment",
+        "sub": "When someone adds a comment"
+      }
+    }
+  },
+
+  "AppearancePopover": {
+    "title": "Appearance",
+    "description": "Customize your CRM appearance.",
+    "themeMode": "Theme Mode",
+    "accentColor": "Accent Color",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "EmptyState": {
+    "agent": {
+      "title": "No agents found",
+      "description": "You don't have any agents yet. Start by adding your first agent.",
+      "addNewAgent": "Add New Agent"
+    },
+    "customer": {
+      "title": "No customers found",
+      "description": "You don't have any customers yet. Start by adding your first customer.",
+      "addNewCustomer": "Add New Customer"
+    },
+    "product": {
+      "title": "No products found",
+      "description": "You don't have any products yet. Start by adding your first product.",
+      "addNewProduct": "Add New Product"
+    },
+    "order": {
+      "title": "No orders yet",
+      "description": "You don't have any orders yet. Start by creating your first order.",
+      "addNewOrder": "Add New Order"
+    },
+    "task": {
+      "title": "No tasks found",
+      "description": "You don't have any tasks yet. Start by creating your first task.",
+      "addNewTask": "Add New Task"
     }
   }
 }

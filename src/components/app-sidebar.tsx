@@ -16,16 +16,18 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
+import { useLocale } from 'next-intl';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
+  const locale = useLocale();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="#">
+              <Link href={`/${locale}/dashboard`}>
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <GalleryVerticalEnd className="size-4" />
                 </div>

@@ -23,6 +23,7 @@ import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
 import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
+import { invalidateCache } from '@/hooks/use-fetch';
 interface AddCustomerPopoverProps {
   onAddCustomer: (customer: Customer) => void;
   isOpen?: boolean;
@@ -104,11 +105,12 @@ export function AddCustomerPopover({
       }),
       onSuccess: (result) => {
         console.log(result);
+        invalidateCache('customers');
         onAddCustomer(result);
         if (!user) return;
         setAgents((prev) =>
           prev.map((agent) =>
-            agent.userId === user._id
+            agent.userId?._id === user._id
               ? {
                   ...agent,
                   assignedCustomers: [

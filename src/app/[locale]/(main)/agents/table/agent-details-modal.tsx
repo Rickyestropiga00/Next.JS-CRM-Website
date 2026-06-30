@@ -19,14 +19,29 @@ import {
   FileText,
   MessageSquare,
   Users,
+  Loader2,
+  Trash2,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { getInitials, timeAgo } from '@/utils/formatters';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface AgentDetailsModalProps {
   agent: Agent | null;
   isOpen: boolean;
   onClose: () => void;
   onAddComment?: (agentId: string, comment: string) => void;
+  onDeleteComment?: (agentId: string, commentId: string) => void;
 }
 
 export function AgentDetailsModal({
@@ -34,12 +49,20 @@ export function AgentDetailsModal({
   isOpen,
   onClose,
   onAddComment,
+  onDeleteComment,
 }: AgentDetailsModalProps) {
   const t = useTranslations();
+  const timeAgoT = useTranslations('TimeAgo');
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null
+  );
 
   if (!agent) return null;
+  const agentIdentifier = agent._id || agent.id;
+
+  const comments = agent.comments ?? [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -88,15 +111,36 @@ export function AgentDetailsModal({
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !onAddComment) return;
+    if (!agentIdentifier) {
+      console.error('Failed to add comment: agent has no id');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await onAddComment(agent.id, newComment.trim());
+      await onAddComment(agent._id!, newComment.trim());
       setNewComment('');
     } catch (error) {
       console.error('Failed to add comment:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!onDeleteComment || !agentIdentifier) return;
+    console.log({
+      agentIdentifier,
+      commentId,
+    });
+
+    setDeletingCommentId(commentId);
+    try {
+      await onDeleteComment(agentIdentifier, commentId);
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -150,43 +194,6 @@ export function AgentDetailsModal({
             <p className="text-xs text-foreground whitespace-pre-wrap">
               {note}
             </p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderComments = (
-    comments: Array<{
-      author: string;
-      date: string;
-      content: string;
-    }>
-  ) => {
-    if (comments.length === 0) return null;
-
-    return (
-      <div className="space-y-3">
-        {comments.map((comment, index) => (
-          <div
-            key={index}
-            className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-blue-800 dark:text-blue-300">
-                  {comment.author}
-                </span>
-              </div>
-              <span className="text-xs text-blue-600 dark:text-blue-400 font-mono">
-                {comment.date}
-              </span>
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 rounded-md p-3 border-l-4 border-blue-300 dark:border-blue-600">
-              <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                {comment.content}
-              </p>
-            </div>
           </div>
         ))}
       </div>
@@ -372,57 +379,161 @@ export function AgentDetailsModal({
           )}
 
           {/* Comments Section */}
-          {onAddComment &&
-            (() => {
-              const { comments } = parseNotesAndComments(agent.comment || '');
-              return (
-                <div className="bg-card border rounded-lg p-4 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold">
-                      {t('Agents.details.sections.comments')}
-                    </h3>
-                    {comments.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {comments.length}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Existing Comments */}
-                  {comments.length > 0 && (
-                    <div className="space-y-3">{renderComments(comments)}</div>
-                  )}
-
-                  {/* Add Comment Form */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <Textarea
-                      placeholder="Add a comment about this agent..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      className="min-h-[80px] text-xs resize-none"
-                      disabled={isSubmitting}
-                    />
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-muted-foreground">
-                        {t('Forms.hints.ctrlEnterSubmit')}
-                      </p>
-                      <Button
-                        onClick={handleAddComment}
-                        disabled={!newComment.trim() || isSubmitting}
-                        size="sm"
-                        className="h-7 px-3 text-xs cursor-pointer"
-                      >
-                        {isSubmitting ? 'Adding...' : 'Add Comment'}
-                      </Button>
-                    </div>
-                  </div>
+          {onAddComment && (
+            <div className="bg-card border rounded-lg p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-              );
-            })()}
+
+                <h3 className="text-sm font-semibold">
+                  {t('Agents.details.sections.comments')}
+                </h3>
+
+                {comments.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {comments.length}
+                  </Badge>
+                )}
+              </div>
+
+              {comments.length > 0 && (
+                <div className="space-y-0">
+                  {comments.map((comment, idx) => {
+                    const isLast = idx === comments.length - 1;
+                    const isDeleting = deletingCommentId === comment._id;
+
+                    return (
+                      <div
+                        key={comment._id}
+                        className="group relative flex gap-3 pb-4 last:pb-0"
+                      >
+                        {!isLast && (
+                          <span
+                            aria-hidden
+                            className="absolute left-[15px] top-8 bottom-0 w-px bg-border"
+                          />
+                        )}
+
+                        <div
+                          className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white bg-primary`}
+                        >
+                          {getInitials(comment.author)}
+                        </div>
+
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex min-w-0 items-baseline gap-2">
+                              <span className="truncate text-xs font-semibold text-foreground">
+                                {comment.author}
+                              </span>
+                              <span
+                                className="shrink-0 text-[11px] text-muted-foreground"
+                                title={new Date(
+                                  comment.createdAt
+                                ).toLocaleString()}
+                              >
+                                {/* {formatRelativeTime(comment.createdAt)} */}
+                                {timeAgo(comment.createdAt, timeAgoT)}
+                              </span>
+                            </div>
+
+                            {onDeleteComment && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button
+                                    type="button"
+                                    disabled={isDeleting}
+                                    aria-label="Delete comment"
+                                    className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-primary/10 hover:text-primary focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
+                                  >
+                                    {isDeleting ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    )}
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      {t('ConfirmDelete.singleTitle', {
+                                        item: 'Comment',
+                                      })}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      {t(
+                                        'Agents.details.comments.alertDescription'
+                                      )}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel className="cursor-pointer">
+                                      {t('Buttons.cancel')}
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleDeleteComment(comment._id)
+                                      }
+                                      className="cursor-pointer"
+                                    >
+                                      {t('Buttons.delete')}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+
+                          <div className="mt-1 rounded-lg rounded-tl-sm bg-muted/60 px-3 py-2">
+                            <p className="whitespace-pre-wrap break-all text-sm text-foreground leading-5">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {comments.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t('Agents.details.comments.empty')}
+                </p>
+              )}
+
+              {/* Add Comment Form */}
+              <div className="space-y-2 pt-2 border-t">
+                <Textarea
+                  placeholder={t('Customers.placeholders.comment')}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="min-h-[80px] text-xs resize-none"
+                  disabled={isSubmitting}
+                />
+
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    {t('Forms.hints.ctrlEnterSubmit')}
+                  </p>
+
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim() || isSubmitting}
+                    size="sm"
+                    className="h-7 px-3 text-xs cursor-pointer"
+                  >
+                    {isSubmitting
+                      ? t('Buttons.adding')
+                      : t('Buttons.addComment')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}

@@ -24,7 +24,7 @@ const protectedRoutes = [
   '/account',
 ];
 
-const authRoutes = ['/login', '/register'];
+const authRoutes = ['/login', '/register', '/forgot-password'];
 
 export function middleware(request: NextRequest) {
   const session = request.cookies.get(SESSION_KEY)?.value;

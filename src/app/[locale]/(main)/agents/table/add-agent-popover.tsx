@@ -22,6 +22,7 @@ import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useTranslations } from 'next-intl';
 import { getApiErrorField, getApiErrorMessage } from '@/lib/api-messages';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface AddAgentPopoverProps {
   onAddAgent: (agent: Agent) => void;
@@ -101,6 +102,7 @@ export function AddAgentPopover({
         notes: data.notes?.trim() || '',
       }),
       onSuccess: (result: Agent) => {
+        invalidateCache('agents');
         onAddAgent(result);
       },
       onClose,

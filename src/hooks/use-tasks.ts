@@ -19,19 +19,22 @@ function dispatchTasksUpdate() {
 export function useTasks() {
   const { user } = useUser();
   const { data: agents } = useFetch<Agent>('agents');
+
   const {
     data: tasksData,
     setData: setTasksData,
     loading: tasksLoading,
   } = useFetch<Task>('tasks');
 
-  const currentAgent = agents.find(
-    (a) => String(a.userId) === String(user?._id)
+  const currentAgent = agents?.find(
+    (a) =>
+      String(
+        typeof a.userId === 'object' ? (a.userId as any)._id : a.userId
+      ) === String(user?._id)
   );
-
   // Load tasks on mount
   useEffect(() => {
-    if (tasksData && tasksData.length > 0 && sharedTasks.length === 0) {
+    if (tasksData && tasksData.length > 0) {
       sharedTasks = tasksData;
     }
   }, [tasksData]);

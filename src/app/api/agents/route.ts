@@ -7,6 +7,48 @@ import { createUser, findUserByEmail, getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/utils/requirePermissions';
 import { notifyAgentCreated } from '@/lib/notifications/agent-notification';
 
+const WITH_COMMENTS_COUNT = [
+  {
+    $lookup: {
+      from: 'agentcomments',
+      localField: '_id',
+      foreignField: 'agentId',
+      as: '_comments',
+    },
+  },
+  {
+    $lookup: {
+      from: 'users',
+      localField: 'userId',
+      foreignField: '_id',
+      as: 'user',
+    },
+  },
+  {
+    $unwind: {
+      path: '$user',
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $addFields: {
+      commentsCount: { $size: '$_comments' },
+      id: { $toString: '$agentId' },
+      userId: {
+        _id: '$user._id',
+        lastLogin: '$user.lastLogin',
+        avatar: '$user.avatar',
+        avatarType: '$user.avatarType',
+      },
+    },
+  },
+  {
+    $project: {
+      _comments: 0,
+      user: 0,
+    },
+  },
+];
 export async function POST(req: Request) {
   await dbConnect();
 
@@ -62,8 +104,6 @@ export async function POST(req: Request) {
 
     await session.commitTransaction();
 
-    await session.commitTransaction();
-
     try {
       await notifyAgentCreated(created, {
         _id: user._id as mongoose.Types.ObjectId,
@@ -101,7 +141,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findRes = await Agents.find();
+    const findRes = await Agents.aggregate(WITH_COMMENTS_COUNT);
 
     return NextResponse.json(
       {

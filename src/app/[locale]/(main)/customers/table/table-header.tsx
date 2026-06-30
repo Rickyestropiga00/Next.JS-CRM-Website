@@ -123,7 +123,7 @@ export function CustomersTableHeader({
         sortable: false,
       },
       {
-        key: 'comment',
+        key: 'comments',
         label: t('Customers.table.columns.comment'),
         className: 'w-[180px] text-center',
         sortable: false,

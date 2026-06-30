@@ -19,7 +19,6 @@ import {
   Customer,
   CustomerStatus,
   DeleteResponse,
-  UserType,
 } from '@/types/interface';
 import { useTableActions } from '@/hooks/use-table-actions';
 
@@ -65,10 +64,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
-import { Trash, Plus, Users, UserPlus, UserRoundPlus } from 'lucide-react';
+import { Trash, Plus, UserRoundPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
-import { useFetch } from '@/hooks/use-fetch';
+import { invalidateCache, useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
 import { useUser } from '@/hooks/use-user';
@@ -172,31 +171,76 @@ export function CustomersTable() {
     getHighlightValue: (customer) => customer.customerId,
   });
 
-  function handleAddComment(customerId: string, comment: string) {
-    const formattedDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  async function handleAddComment(customerId: string, comment: string) {
+    const res = await fetch(`/api/customers/${customerId}/comments`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        content: comment,
+        author: 'Anonymous',
+      }),
     });
-    const formattedTime = new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
+
+    if (!res.ok) {
+      throw new Error('Failed to add comment');
+    }
+
+    const savedComment = await res.json();
 
     setCustomersData((prev) =>
       prev.map((customer) =>
-        customer.id === customerId
+        customer._id === customerId
           ? {
               ...customer,
-              comment: customer.comment
-                ? `${customer.comment}\n\n${commentWithTimestamp}`
-                : commentWithTimestamp,
+              comments: [savedComment, ...(customer.comments ?? [])],
+            }
+          : customer
+      )
+    );
+
+    return savedComment;
+  }
+
+  async function handleDeleteComment(customerId: string, commentId: string) {
+    const res = await fetch(
+      `/api/customers/${customerId}/comments/${commentId}`,
+      { method: 'DELETE' }
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to delete comment');
+    }
+
+    setCustomersData((prev) =>
+      prev.map((customer) =>
+        customer._id === customerId
+          ? {
+              ...customer,
+              comments: (customer.comments ?? []).filter(
+                (c) => c._id !== commentId
+              ),
             }
           : customer
       )
     );
   }
+
+  useEffect(() => {
+    if (!selectedCustomerId) return;
+
+    const fetchComments = async () => {
+      const res = await fetch(`/api/customers/${selectedCustomerId}/comments`);
+      const data = await res.json();
+
+      setCustomersData((prev) =>
+        prev.map((c) =>
+          c._id === selectedCustomerId ? { ...c, comments: data } : c
+        )
+      );
+    };
+
+    fetchComments();
+  }, [selectedCustomerId, setCustomersData]);
 
   const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
     endpoint: '/api/bulk-delete',
@@ -209,6 +253,7 @@ export function CustomersTable() {
             !(c._id && ids.includes(c._id)) && !(c.id && ids.includes(c.id))
         )
       );
+      invalidateCache('customers');
 
       setSelected([]);
       setShowConfirm(false);
@@ -326,10 +371,20 @@ export function CustomersTable() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Mobile Add */}
+          <Button
+            className="flex lg:hidden items-center gap-2 cursor-pointer"
+            type="button"
+            onClick={() => setShowAddCustomer(true)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
 
+        {/* Desktop Add */}
         <Button
-          className="flex items-center gap-2 cursor-pointer"
+          className="hidden lg:flex  items-center gap-2 cursor-pointer"
           type="button"
           onClick={() => setShowAddCustomer(true)}
         >
@@ -376,7 +431,6 @@ export function CustomersTable() {
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             setCurrentPage={setCurrentPage}
-            // Remove onDeleteSelected and disableDelete props
           />
         </>
       ) : (
@@ -385,16 +439,15 @@ export function CustomersTable() {
             <UserRoundPlus className="h-10 w-10 text-muted-foreground" />
           </div>
 
-          <h3 className="font-semibold">No customers found</h3>
+          <h3 className="font-semibold">{t('EmptyState.customer.title')}</h3>
 
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You don&apos;t have any customers yet. Start by adding your first
-            customer.
+            {t('EmptyState.customer.description')}
           </p>
 
           <Button className="mt-4" onClick={() => setShowAddCustomer(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add New Customer
+            {t('EmptyState.customer.addNewCustomer')}
           </Button>
         </div>
       )}
@@ -434,6 +487,7 @@ export function CustomersTable() {
         isOpen={!!selectedCustomerId}
         onClose={() => setSelectedCustomerId(null)}
         onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
       />
       {viewOrderCustomerId && (
         <ViewOrderModal

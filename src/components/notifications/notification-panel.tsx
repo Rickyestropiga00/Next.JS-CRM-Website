@@ -4,19 +4,43 @@ import { useNotifications } from '@/context/notification-context';
 import { CheckCheck, Trash2 } from 'lucide-react';
 import { NotificationItem } from './notification-item';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { Agent } from '@/types/interface';
+
+const CommentPopover = dynamic(
+  () =>
+    import(
+      '@/app/[locale]/(main)/notifications/components/comment-popover'
+    ).then((mod) => ({
+      default: mod.CommentPopover,
+    })),
+  { ssr: false }
+);
 
 export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const { notifications, markAllAsRead, clearAll } = useNotifications();
+  const [openCommentPopover, setOpenCommentPopover] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [activeCommentId, setActiveCommentId] = useState<string | undefined>(
+    undefined
+  );
 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => {
+          if (openCommentPopover) return;
+          onClose();
+        }}
+      />
 
       {/* Panel */}
-      <div className="absolute right-0 top-10 z-50 w-80 bg-white dark:bg-gray-900  border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
+      <div className="absolute right-0 top-10 z-50 w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b  border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <h3 className="font-semibold text-sm">Notifications</h3>
           <div className="flex gap-2">
             <button
@@ -48,6 +72,14 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
                 key={String(n._id ?? index)}
                 notification={n}
                 onClose={onClose}
+                onOpenComment={(
+                  agent: Agent,
+                  commentId: string | undefined
+                ) => {
+                  setSelectedAgent(agent);
+                  setActiveCommentId(commentId);
+                  setOpenCommentPopover(true);
+                }}
               />
             ))
           )}
@@ -66,6 +98,17 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
           </div>
         )}
       </div>
+
+      <CommentPopover
+        isOpen={openCommentPopover}
+        agent={selectedAgent}
+        activeCommentId={activeCommentId}
+        onClose={() => {
+          setOpenCommentPopover(false);
+          setSelectedAgent(null);
+          setActiveCommentId(undefined);
+        }}
+      />
     </>
   );
 }

@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface EditAgentPopoverProps {
   agent: Agent;
@@ -80,7 +81,7 @@ export function EditAgentPopover({
 
         onSuccess: (result) => {
           toast.success(result.message, { id: toastId });
-
+          invalidateCache('agents');
           onSave(result.data);
         },
 

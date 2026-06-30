@@ -8,6 +8,28 @@ import { requirePermission } from '@/utils/requirePermissions';
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 
+const WITH_COMMENTS_COUNT = [
+  {
+    $lookup: {
+      from: 'customercomments',
+      localField: '_id',
+      foreignField: 'customerId',
+      as: '_comments',
+    },
+  },
+  {
+    $addFields: {
+      commentsCount: { $size: '$_comments' },
+      id: { $toString: '$customerId' },
+    },
+  },
+  {
+    $project: {
+      _comments: 0,
+    },
+  },
+];
+
 export async function POST(req: Request) {
   try {
     await dbConnect();
@@ -103,7 +125,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const findRes = await Customer.find();
+    const findRes = await Customer.aggregate(WITH_COMMENTS_COUNT);
 
     return NextResponse.json(
       {

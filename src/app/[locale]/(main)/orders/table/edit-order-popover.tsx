@@ -25,7 +25,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { formatPrice } from '@/utils/formatters';
-import { useFetch } from '@/hooks/use-fetch';
+import { invalidateCache, useFetch } from '@/hooks/use-fetch';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useFilteredCustomers } from '@/hooks/use-filtered-customers';
@@ -123,6 +123,7 @@ export function EditOrderPopover({
             product:
               productsData.find((p) => p._id === result.data.product) || null,
           };
+          invalidateCache('orders');
           onSave(savedOrder);
           toast.success(result.message, { id: toastId });
         },

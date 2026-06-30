@@ -23,6 +23,12 @@ export async function notifyOrderCreated(created: OrderType, user: UserType) {
   }).populate('userId');
 
   if (agent?.userId) {
+    console.log({
+      customer: created.customer,
+      agentId: agent?._id,
+      userId: agent?.userId?._id,
+      userName: agent?.userId?.name,
+    });
     await createNotification({
       userId: String(agent.userId._id),
       type: 'order_new',
@@ -82,11 +88,14 @@ export async function notifyShipmentUpdate({
 
   await Promise.all(
     admins.map(async (admin) => {
-      const enabled = await isNotificationEnabled(admin._id, 'shipment_update');
+      const enabled = await isNotificationEnabled(
+        admin._id,
+        'order_shipment_update'
+      );
       if (!enabled) return;
       return createNotification({
         userId: String(admin._id),
-        type: 'shipment_update',
+        type: 'order_shipment_update',
         title: 'Order Status Update',
         message,
         link: `/orders?highlight=${order.orderId}`,

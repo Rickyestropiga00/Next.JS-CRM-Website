@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface EditCustomerPopoverProps {
   customer: Customer;
@@ -80,6 +81,7 @@ export function EditCustomerPopover({
           notes: data.notes?.trim() ? data.notes.trim() : undefined,
         }),
         onSuccess: (result) => {
+          invalidateCache('customers');
           onSave(result.data);
           toast.success(result.message, { id: toastId });
         },
@@ -224,7 +226,7 @@ export function EditCustomerPopover({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 handleChange('notes', e.target.value)
               }
-              placeholder={t('Forms.placeholders.addNotes')}
+              placeholder={t('Forms.placeholders.notes')}
               className="h-16 sm:h-20 text-xs resize-none"
             />
           </div>

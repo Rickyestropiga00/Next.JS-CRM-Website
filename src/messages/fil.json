@@ -75,7 +75,8 @@
     "addComment": "Magdagdag ng Komento",
     "adding": "Idinaragdag...",
     "viewOrder": "Tingnan ang Order",
-    "assign": "Italaga {item}"
+    "assign": "Italaga {item}",
+    "assignTask": "Magtalaga ng Gawain"
   },
 
   "Forms": {
@@ -484,7 +485,8 @@
         "lastContacted": "Huling Nakontak"
       },
       "comments": {
-        "empty": "Wala pang komento"
+        "empty": "Wala pang komento",
+        "alertDescription": "Permanente nitong buburahin ang komentong ito. Hindi na ito maaaring maibalik."
       }
     },
     "table": {
@@ -577,7 +579,8 @@
         "empty": "Walang magagamit na mga tala"
       },
       "comments": {
-        "empty": "-"
+        "empty": "Wala pang komento",
+        "alertDescription": "Permanente nitong buburahin ang komentong ito. Hindi na ito maaaring maibalik."
       }
     },
     "assign": {
@@ -670,6 +673,7 @@
 
     "customersAgentsChart": {
       "title": "Customer vs Ahente",
+      "agentsTitle": "Mga Customer",
       "description": "Kasalukuyang distribusyon",
       "total": "Kabuuan: {count} rekord",
       "breakdown": "{customers} customer at {agents} ahente"
@@ -734,6 +738,106 @@
       "description": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan",
       "trend": "Tumaas ng 5.2% ngayong buwan",
       "footer": "Ipinapakita ang kabuuang bisita sa huling 6 na buwan"
+    }
+  },
+  "AssignTask": {
+    "title": "Magtalaga ng Gawain",
+    "description": "Pumili ng ahente na pagtatalagahan ng gawaing ito.",
+    "combobox": {
+      "empty": "Walang nahanap na ahente.",
+      "placeholder": "Maghanap ng ahente..."
+    },
+    "buttons": {
+      "assigning": "Nagtatalaga",
+      "assign": "Italaga"
+    }
+  },
+  "Notification": {
+    "modal": {
+      "title": "Mga Setting ng Notification",
+      "description": "Pamahalaan kung paano ka makakatanggap ng mga abiso"
+    },
+    "footer": {
+      "cancel": "Kanselahin",
+      "save": "I-save ang mga Pagbabago",
+      "saving": "Sine-save..."
+    },
+    "sections": {
+      "products": "Mga Produkto",
+      "customers": "Mga Customer",
+      "orders": "Mga Order",
+      "tasks": "Mga Gawain",
+      "comment": "Mga Komento"
+    },
+    "items": {
+      "systemProductLowStock": {
+        "label": "Abiso sa mababang stock",
+        "sub": "Kapag paubos na ang imbentaryo ng produkto"
+      },
+      "customerNew": {
+        "label": "May bagong customer",
+        "sub": "Kapag may bagong customer o lead na nalikha"
+      },
+      "customerAssigned": {
+        "label": "May customer na itinalaga sa akin",
+        "sub": "Kapag may customer o lead na itinalaga sa iyo"
+      },
+      "orderNew": {
+        "label": "May bagong order",
+        "sub": "Kapag may order na nalikha para sa isang customer"
+      },
+      "orderShipmentUpdate": {
+        "label": "Update sa pagpapadala",
+        "sub": "Kapag nasa biyahe na o naihatid na"
+      },
+      "taskAssigned": {
+        "label": "May gawaing itinalaga sa akin",
+        "sub": "Kapag ikaw ang itinalagang responsable"
+      },
+      "taskAssignedToAgent": {
+        "label": "May gawaing itinalaga sa akin",
+        "sub": "Kapag ikaw ang itinalagang responsable"
+      },
+      "comment": {
+        "label": "May bagong komento",
+        "sub": "Kapag may nagdagdag ng komento"
+      }
+    }
+  },
+  "AppearancePopover": {
+    "title": "Hitsura",
+    "description": "I-customize ang itsura ng iyong CRM.",
+    "themeMode": "Mode ng Tema",
+    "accentColor": "Kulay ng Accent",
+    "light": "Maliwanag",
+    "dark": "Madilim",
+    "system": "Sistema"
+  },
+  "EmptyState": {
+    "agent": {
+      "title": "Walang natagpuang mga ahente",
+      "description": "Wala ka pang mga ahente. Magsimula sa pagdagdag ng iyong unang ahente.",
+      "addNewAgent": "Magdagdag ng Bagong Ahente"
+    },
+    "customer": {
+      "title": "Walang natagpuang mga customer",
+      "description": "Wala ka pang mga customer. Magsimula sa pagdagdag ng iyong unang customer.",
+      "addNewCustomer": "Magdagdag ng Bagong Customer"
+    },
+    "product": {
+      "title": "Walang natagpuang mga produkto",
+      "description": "Wala ka pang mga produkto. Magsimula sa pagdagdag ng iyong unang produkto.",
+      "addNewProduct": "Magdagdag ng Bagong Produkto"
+    },
+    "order": {
+      "title": "Wala pang mga order",
+      "description": "Wala ka pang mga order. Magsimula sa paggawa ng iyong unang order.",
+      "addNewOrder": "Magdagdag ng Bagong Order"
+    },
+    "task": {
+      "title": "Walang natagpuang mga gawain",
+      "description": "Wala ka pang mga gawain. Magsimula sa paggawa ng iyong unang gawain.",
+      "addNewTask": "Magdagdag ng Bagong Gawain"
     }
   }
 }

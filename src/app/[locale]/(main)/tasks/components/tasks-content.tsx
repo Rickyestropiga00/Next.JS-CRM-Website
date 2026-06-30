@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 // Dynamically import task modals to reduce initial bundle size
 const EditTaskPopover = dynamic(
@@ -109,19 +110,23 @@ export function TasksContent() {
   function handleMoveTask(id: string, newColumn: Task['column']) {
     const task = taskList.find((t) => getId(t) === id);
     if (!task || task.column === newColumn) return;
+    invalidateCache('tasks');
     moveTask(id, newColumn);
   }
 
   function handleAddNewTask(newTask: Task) {
+    invalidateCache('tasks');
     addTask(newTask);
     setShowAddNewTask(false);
   }
 
   function handleEditTask(updatedTask: Task) {
+    invalidateCache('tasks');
     updateTask(updatedTask);
   }
 
   function handleAddTask(newTask: Task) {
+    invalidateCache('tasks');
     addTask(newTask);
   }
 
@@ -151,7 +156,7 @@ export function TasksContent() {
   return (
     <>
       <div className="flex w-full items-center justify-between gap-2 flex-wrap mb-2 mt-3 px-4">
-        <div className="flex flex-wrap gap-2 ">
+        <div className="flex flex-wrap gap-2">
           <Filters
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
@@ -168,7 +173,7 @@ export function TasksContent() {
           onClick={() => setShowAddNewTask(true)}
         >
           <Plus className="h-4 w-4" />
-          {t('Buttons.addTask')}
+          <span className="hidden lg:flex">{t('Buttons.addTask')}</span>
         </Button>
       </div>
       <DndContext
@@ -183,12 +188,11 @@ export function TasksContent() {
             </div>
 
             <h2 className="text-xl font-semibold tracking-tight">
-              No tasks found
+              {t('EmptyState.task.title')}
             </h2>
 
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              You don&apos;t have any tasks yet. Start by creating your first
-              task.
+              {t('EmptyState.task.description')}
             </p>
 
             <Button
@@ -196,7 +200,7 @@ export function TasksContent() {
               onClick={() => setShowAddNewTask(true)}
             >
               <Plus className="h-4 w-4" />
-              Add New Task
+              {t('EmptyState.task.addNewTask')}
             </Button>
           </div>
         ) : (
