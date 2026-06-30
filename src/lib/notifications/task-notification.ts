@@ -60,7 +60,7 @@ export async function notifyTaskAssign({
       type: 'task_assigned',
       title: 'New Task Assigned',
       message: `You have been assigned: "${taskTitle}"`,
-      link: `/tasks`,
+      link: `/tasks?highlight=${taskId}`,
     });
   }
 
@@ -71,7 +71,7 @@ export async function notifyTaskAssign({
         type: 'task_assigned',
         title: 'Task Assigned',
         message: `${user.name} assigned task to ${assignedAgent.name}`,
-        link: `/tasks`,
+        link: `/tasks?highlight=${taskId}`,
       });
     })
   );
@@ -139,7 +139,7 @@ export async function notifyTaskStatusChanged({
         type: 'task_status_changed',
         title,
         message,
-        link: '/tasks',
+        link: `/tasks?highlight=${taskId}`,
       })
     )
   );

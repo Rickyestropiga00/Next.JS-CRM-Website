@@ -41,12 +41,12 @@ export async function notifyLowStock(product: ProductType) {
     admins.map(async (admin) => {
       const enable = await isNotificationEnabled(
         admin._id,
-        'product_low_stock'
+        'system_product_low_stock'
       );
       if (!enable) return;
       return await createNotification({
         userId: admin._id,
-        type: 'product_low_stock',
+        type: 'system_product_low_stock',
         title: 'Low Stock Alert',
         message: `${product.name} is running low (${product.stock} remaining)`,
         link: `/products?highlight=${product.productId}`,

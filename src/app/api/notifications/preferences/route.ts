@@ -8,15 +8,17 @@ const ALLOWED_FIELDS: Record<string, string[]> = {
     'customer_new',
     'customer_assigned',
     'order_new',
-    'shipment_update',
+    'order_shipment_update',
     'task_assigned_to_agent',
-    'product_low_stock',
+    'system_product_low_stock',
+    'comment',
   ],
   agent: [
     'customer_assigned',
     'order_new',
-    'shipment_update',
+    'order_shipment_update',
     'task_assigned_to_agent',
+    'comment',
   ],
 };
 
@@ -24,9 +26,10 @@ const DEFAULTS: Record<string, boolean> = {
   customer_new: true,
   customer_assigned: true,
   order_new: true,
-  shipment_update: true,
+  order_shipment_update: true,
   task_assigned_to_agent: true,
-  product_low_stock: true,
+  system_product_low_stock: true,
+  comment: true,
 };
 
 export async function GET() {

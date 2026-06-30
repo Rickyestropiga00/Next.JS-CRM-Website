@@ -7,6 +7,7 @@ export interface INotification extends Document {
   title: string;
   message: string;
   link?: string;
+  meta?: Record<string, any>;
   read: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -33,7 +34,13 @@ const notificationSchema = new Schema<INotification>(
     },
     link: {
       type: String,
+      default: null,
     },
+    meta: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+
     read: {
       type: Boolean,
       default: false,

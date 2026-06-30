@@ -39,6 +39,7 @@ export const ApperancePopover = ({
 }: ApperancePopoverProps) => {
   const { theme, changeTheme } = useAccentTheme();
   const { theme: mode, setTheme } = useTheme();
+  const t = useTranslations();
   const buttonsT = useTranslations('Buttons');
   const handleCancel = () => {
     if (onClose) {
@@ -50,35 +51,39 @@ export const ApperancePopover = ({
     <ModalWrapper open={isOpen} onClose={handleCancel}>
       <div className="space-y-6 p-4">
         <div>
-          <h2 className="text-lg font-semibold">Appearance</h2>
+          <h2 className="text-lg font-semibold">
+            {t('AppearancePopover.title')}
+          </h2>
 
           <p className="text-sm text-muted-foreground">
-            Customize your CRM appearance.
+            {t('AppearancePopover.description')}
           </p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Theme Mode</h3>
+          <h3 className="text-sm font-medium">
+            {t('AppearancePopover.themeMode')}
+          </h3>
 
           <div className="flex gap-2">
             <Button
               variant={mode === 'light' ? 'default' : 'outline'}
               onClick={() => setTheme('light')}
             >
-              Light
+              {t('AppearancePopover.light')}
             </Button>
 
             <Button
               variant={mode === 'dark' ? 'default' : 'outline'}
               onClick={() => setTheme('dark')}
             >
-              Dark
+              {t('AppearancePopover.dark')}
             </Button>
 
             <Button
               variant={mode === 'system' ? 'default' : 'outline'}
               onClick={() => setTheme('system')}
             >
-              System
+              {t('AppearancePopover.system')}
             </Button>
           </div>
         </div>
@@ -86,7 +91,9 @@ export const ApperancePopover = ({
         <Separator />
 
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Accent Color</h3>
+          <h3 className="text-sm font-medium">
+            {t('AppearancePopover.accentColor')}
+          </h3>
 
           <div className="flex gap-3">
             {themes.map((item) => (

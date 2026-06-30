@@ -1,6 +1,6 @@
 export type NotificationType =
   | 'order_new'
-  | 'order_status'
+  | 'order_shipment_update'
   | 'customer_new'
   | 'customer_update'
   | 'customer_assigned'
@@ -10,7 +10,8 @@ export type NotificationType =
   | 'task_status_changed'
   | 'task_complete'
   | 'agent_new'
-  | 'product_low_stock'
+  | 'system_product_low_stock'
+  | 'comment'
   | 'system';
 
 export interface Notification {
@@ -21,7 +22,12 @@ export interface Notification {
   read: boolean;
   createdAt: Date;
   link?: string;
-  entityId?: string;
+  meta?: {
+    agentId?: string;
+    commentId?: string;
+    userId?: string;
+    [key: string]: any;
+  };
   targetUserId?: string;
   actor?: {
     name: string;

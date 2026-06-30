@@ -87,8 +87,8 @@ export function MainLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="pr-4 flex gap-2">
-            <DarkModeToggle />
             <NotificationBell />
+            <DarkModeToggle />
           </div>
         </header>
 

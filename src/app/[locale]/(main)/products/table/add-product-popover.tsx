@@ -23,6 +23,7 @@ import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface AddProductPopoverProps {
   onAddProduct: (product: Product) => void;
@@ -124,6 +125,7 @@ export function AddProductPopover({
       },
 
       onSuccess: (result: Product) => {
+        invalidateCache('products');
         onAddProduct(result);
         setImagePreview(null);
         setImageFile(null);

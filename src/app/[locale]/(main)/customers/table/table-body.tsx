@@ -27,6 +27,7 @@ import { getId } from '@/utils/helper';
 import { TableSkeleton } from '@/components/shared/table-skeleton';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
 
 interface TableBodyProps {
   paginated: any[];
@@ -108,7 +109,6 @@ export function CustomersTableBody({
         </TableRow>
       ) : (
         paginated.map((c) => {
-          const commentCount = countComments(c.comment);
           const params = new URLSearchParams(window.location.search);
           const highlightedIds = params.get('highlight')?.split(',') ?? [];
           const isHighlighted = highlightedIds.includes(c.customerId);
@@ -146,7 +146,7 @@ export function CustomersTableBody({
                 />
               </TableCell>
               <TableCell className="pl-4 w-[60px] font-mono">
-                {c.id || c.customerId}
+                {c.customerId || c.id}
               </TableCell>
               <TableCell className="w-[150px]">{c.name}</TableCell>
               <TableCell className="w-[200px]">{c.email}</TableCell>
@@ -170,13 +170,21 @@ export function CustomersTableBody({
               </TableCell>
               <TableCell className="w-[180px] max-w-[180px]">
                 <div className="text-center">
-                  {commentCount > 0 ? (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold">
-                      {commentCount}
-                    </span>
-                  ) : (
-                    '-'
-                  )}
+                  {(() => {
+                    const count = c.comments
+                      ? c.comments.length
+                      : c.commentsCount ?? 0;
+                    return count > 0 ? (
+                      <Badge
+                        variant="secondary"
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-semibold"
+                      >
+                        {count}
+                      </Badge>
+                    ) : (
+                      '-'
+                    );
+                  })()}
                 </div>
               </TableCell>
               <TableCell className="w-[70px]">

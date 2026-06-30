@@ -17,14 +17,29 @@ import {
   Calendar,
   FileText,
   MessageSquare,
+  Loader2,
+  Trash2,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { timeAgo } from '@/utils/formatters';
 
 interface CustomerDetailsModalProps {
   customer: Customer | null;
   isOpen: boolean;
   onClose: () => void;
   onAddComment?: (customerId: string, comment: string) => void;
+  onDeleteComment?: (customerId: string, commentId: string) => void;
 }
 
 export function CustomerDetailsModal({
@@ -32,12 +47,19 @@ export function CustomerDetailsModal({
   isOpen,
   onClose,
   onAddComment,
+  onDeleteComment,
 }: CustomerDetailsModalProps) {
   const t = useTranslations();
+  const timeAgoT = useTranslations('TimeAgo');
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null
+  );
   if (!customer) return null;
+  const customerIdentifier = customer._id || customer.id;
+
+  const comments = customer.comments ?? [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -46,6 +68,17 @@ export function CustomerDetailsModal({
       day: 'numeric',
     });
   };
+  function getInitials(name: string) {
+    return (
+      name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || '?'
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,15 +97,35 @@ export function CustomerDetailsModal({
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !onAddComment) return;
+    if (!customerIdentifier) {
+      console.error('Failed to add comment: customer has no id');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await onAddComment(customer.id!, newComment.trim());
+      await onAddComment(customer._id!, newComment.trim());
       setNewComment('');
     } catch (error) {
       console.error('Failed to add comment:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  const handleDeleteComment = async (commentId: string) => {
+    if (!onDeleteComment || !customerIdentifier) return;
+    console.log({
+      customerIdentifier,
+      commentId,
+    });
+
+    setDeletingCommentId(commentId);
+    try {
+      await onDeleteComment(customerIdentifier, commentId);
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -81,92 +134,6 @@ export function CustomerDetailsModal({
       e.preventDefault();
       handleAddComment();
     }
-  };
-
-  const parseNotesAndComments = (notes: string) => {
-    if (!notes) return { regularNotes: [], comments: [] };
-
-    const sections = notes.split('---').filter((section) => section.trim());
-    const regularNotes: string[] = [];
-    const comments: Array<{
-      author: string;
-      date: string;
-      content: string;
-    }> = [];
-
-    sections.forEach((section) => {
-      const lines = section.trim().split('\n');
-      const commentLine = lines.find((line) => line.includes('📝 Comment by'));
-      const dateLine = lines.find((line) => line.includes('📅'));
-
-      if (commentLine && dateLine) {
-        // This is a comment
-        const content = lines.slice(3).join('\n').trim(); // Skip header lines
-        comments.push({
-          author: commentLine.replace('📝 Comment by ', ''),
-          date: dateLine.replace('📅 ', ''),
-          content: content,
-        });
-      } else {
-        // This is regular notes
-        regularNotes.push(section.trim());
-      }
-    });
-
-    return { regularNotes, comments };
-  };
-
-  const renderRegularNotes = (notes: string[]) => {
-    if (notes.length === 0) return null;
-
-    return (
-      <div className="space-y-3">
-        {notes.map((note, index) => (
-          <div key={index} className="bg-muted/50 rounded-lg p-3">
-            <p className="text-xs text-foreground whitespace-pre-wrap">
-              {note}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderComments = (
-    comments: Array<{
-      author: string;
-      date: string;
-      content: string;
-    }>
-  ) => {
-    if (comments.length === 0) return null;
-
-    return (
-      <div className="space-y-3">
-        {comments.map((comment, index) => (
-          <div
-            key={index}
-            className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-blue-800 dark:text-blue-300">
-                  {comment.author}
-                </span>
-              </div>
-              <span className="text-xs text-blue-600 dark:text-blue-400 font-mono">
-                {comment.date}
-              </span>
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 rounded-md p-3 border-l-4 border-blue-300 dark:border-blue-600">
-              <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                {comment.content}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -200,7 +167,7 @@ export function CustomerDetailsModal({
                     customer.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {customer.status}
+                  {t(`Statuses.${customer.status.toLowerCase()}`)}
                 </Badge>
                 <span className="text-xs text-muted-foreground font-mono">
                   {t('Customers.details.labels.id')}:{' '}
@@ -209,7 +176,6 @@ export function CustomerDetailsModal({
               </div>
             </div>
           </div>
-
           {/* Information Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Contact Information */}
@@ -218,7 +184,9 @@ export function CustomerDetailsModal({
                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                   <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Contact</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('Customers.details.labels.contact')}
+                </h3>
               </div>
               <div className="space-y-2">
                 <div>
@@ -242,7 +210,10 @@ export function CustomerDetailsModal({
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <Building className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Company</h3>
+                <h3 className="text-sm font-semibold">
+                  {' '}
+                  {t('Customers.details.labels.company')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
@@ -260,20 +231,17 @@ export function CustomerDetailsModal({
                 <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                   <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Timeline</h3>
+                <h3 className="text-sm font-semibold">
+                  {' '}
+                  {t('Customers.details.labels.timeline')}
+                </h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
                     {t('Customers.details.labels.created')}
                   </p>
-                  <p className="text-xs">
-                    {formatDate(
-                      typeof customer.createdAt === 'string'
-                        ? customer.createdAt
-                        : customer.createdAt.toISOString()
-                    )}
-                  </p>
+                  <p className="text-xs">{formatDate(customer.createdAt)}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-0.5">
@@ -292,7 +260,10 @@ export function CustomerDetailsModal({
                 <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                   <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-sm font-semibold">Status</h3>
+                <h3 className="text-sm font-semibold">
+                  {' '}
+                  {t('Customers.details.labels.status')}
+                </h3>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">
@@ -303,12 +274,11 @@ export function CustomerDetailsModal({
                     customer.status
                   )} px-2 py-0.5 text-xs`}
                 >
-                  {customer.status}
+                  {t(`Statuses.${customer.status.toLowerCase()}`)}
                 </Badge>
               </div>
             </div>
           </div>
-
           {/* Notes Section */}
           {customer.notes && (
             <div className="bg-card border rounded-lg p-4 space-y-3">
@@ -327,61 +297,163 @@ export function CustomerDetailsModal({
               </div>
             </div>
           )}
-
           {/* Comments Section */}
-          {onAddComment &&
-            (() => {
-              const { comments } = parseNotesAndComments(
-                customer.comment || ''
-              );
-              return (
-                <div className="bg-card border rounded-lg p-4 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold">Comments</h3>
-                    {comments.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {comments.length}
-                      </Badge>
-                    )}
-                  </div>
 
-                  {/* Existing Comments */}
-                  {comments.length > 0 && (
-                    <div className="space-y-3">{renderComments(comments)}</div>
-                  )}
-
-                  {/* Add Comment Form */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <Textarea
-                      placeholder={t('Customers.placeholders.comment')}
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      className="min-h-[80px] text-xs resize-none"
-                      disabled={isSubmitting}
-                    />
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-muted-foreground">
-                        {t('Forms.hints.ctrlEnterSubmit')}
-                      </p>
-                      <Button
-                        onClick={handleAddComment}
-                        disabled={!newComment.trim() || isSubmitting}
-                        size="sm"
-                        className="h-7 px-3 text-xs cursor-pointer"
-                      >
-                        {isSubmitting
-                          ? t('Buttons.adding')
-                          : t('Buttons.addComment')}
-                      </Button>
-                    </div>
-                  </div>
+          {onAddComment && (
+            <div className="bg-card border rounded-lg p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-              );
-            })()}
+
+                <h3 className="text-sm font-semibold">
+                  {t('Customers.details.labels.comments')}
+                </h3>
+
+                {comments.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {comments.length}
+                  </Badge>
+                )}
+              </div>
+
+              {comments.length > 0 && (
+                <div className="space-y-0">
+                  {comments.map((comment, idx) => {
+                    const isLast = idx === comments.length - 1;
+                    const isDeleting = deletingCommentId === comment._id;
+
+                    return (
+                      <div
+                        key={comment._id}
+                        className="group relative flex gap-3 pb-4 last:pb-0"
+                      >
+                        {!isLast && (
+                          <span
+                            aria-hidden
+                            className="absolute left-[15px] top-8 bottom-0 w-px bg-border"
+                          />
+                        )}
+
+                        <div
+                          className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white bg-primary`}
+                        >
+                          {getInitials(comment.author)}
+                        </div>
+
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex min-w-0 items-baseline gap-2">
+                              <span className="truncate text-xs font-semibold text-foreground">
+                                {comment.author}
+                              </span>
+                              <span
+                                className="shrink-0 text-[11px] text-muted-foreground"
+                                title={new Date(
+                                  comment.createdAt
+                                ).toLocaleString()}
+                              >
+                                {/* {formatRelativeTime(comment.createdAt)} */}
+                                {timeAgo(comment.createdAt, timeAgoT)}
+                              </span>
+                            </div>
+
+                            {onDeleteComment && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button
+                                    type="button"
+                                    disabled={isDeleting}
+                                    aria-label="Delete comment"
+                                    className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-primary/10 hover:text-primary focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
+                                  >
+                                    {isDeleting ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    )}
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      {t('ConfirmDelete.singleTitle', {
+                                        item: 'Comment',
+                                      })}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      {t(
+                                        'Customers.details.comments.alertDescription'
+                                      )}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel className="cursor-pointer">
+                                      {t('Buttons.cancel')}
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleDeleteComment(comment._id)
+                                      }
+                                      className="cursor-pointer"
+                                    >
+                                      {t('Buttons.delete')}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+
+                          <div className="mt-1 rounded-lg rounded-tl-sm bg-muted/60 px-3 py-2">
+                            <p className="whitespace-pre-wrap break-all text-sm text-foreground leading-5">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {comments.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t('Customers.details.comments.empty')}
+                </p>
+              )}
+
+              {/* Add Comment Form */}
+              <div className="space-y-2 pt-2 border-t">
+                <Textarea
+                  placeholder={t('Customers.placeholders.comment')}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="min-h-[80px] text-xs resize-none"
+                  disabled={isSubmitting}
+                />
+
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    {t('Forms.hints.ctrlEnterSubmit')}
+                  </p>
+
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim() || isSubmitting}
+                    size="sm"
+                    className="h-7 px-3 text-xs cursor-pointer"
+                  >
+                    {isSubmitting
+                      ? t('Buttons.adding')
+                      : t('Buttons.addComment')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}

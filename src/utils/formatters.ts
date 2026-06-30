@@ -65,3 +65,15 @@ export const timeAgo = (
 
   return t('justNow');
 };
+
+export function getInitials(name: string) {
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '?'
+  );
+}

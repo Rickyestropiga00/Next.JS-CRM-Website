@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Agent, DeleteResponse } from '@/types/interface';
 import { AgentsTableHeader } from './table-header';
@@ -63,7 +63,7 @@ import {
 import { Table } from '@/components/ui/table';
 import { getId } from '@/utils/helper';
 import { toast } from 'sonner';
-import { useFetch } from '@/hooks/use-fetch';
+import { invalidateCache, useFetch } from '@/hooks/use-fetch';
 import { useBulkDelete } from '@/hooks/use-bulk-delete';
 import { useTranslations } from 'next-intl';
 import { getApiSuccessMessage } from '@/lib/api-messages';
@@ -139,31 +139,81 @@ export function AgentsTable() {
   const roleOptions = ['Admin', 'Agent', 'Manager'];
   const statusOptions = ['Active', 'Inactive', 'On Leave'];
 
-  function handleAddComment(agentId: string, comment: string) {
-    const formattedDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  const translationKeyMap: Record<(typeof statusOptions)[number], string> = {
+    Active: 'active',
+    Inactive: 'inactive',
+    'On Leave': 'onLeave',
+  };
+
+  async function handleAddComment(agentId: string, comment: string) {
+    const res = await fetch(`/api/agents/${agentId}/comments`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        content: comment,
+        author: 'Anonymous',
+      }),
     });
-    const formattedTime = new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const commentWithTimestamp = `---\n📝 Comment by Anonymous\n📅 ${formattedDate} at ${formattedTime}\n\n${comment}\n`;
+
+    if (!res.ok) {
+      throw new Error('Failed to add comment');
+    }
+
+    const savedComment = await res.json();
 
     setAgentData((prev) =>
       prev.map((agent) =>
-        agent.id === agentId
+        agent._id === agentId
           ? {
               ...agent,
-              comment: agent.comment
-                ? `${agent.comment}\n\n${commentWithTimestamp}`
-                : commentWithTimestamp,
+              comments: [savedComment, ...(agent.comments ?? [])],
+            }
+          : agent
+      )
+    );
+
+    return savedComment;
+  }
+
+  async function handleDeleteComment(agentId: string, commentId: string) {
+    const res = await fetch(`/api/agents/${agentId}/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to delete comment');
+    }
+
+    setAgentData((prev) =>
+      prev.map((agent) =>
+        agent._id === agentId
+          ? {
+              ...agent,
+              comments: (agent.comments ?? []).filter(
+                (c) => c._id !== commentId
+              ),
             }
           : agent
       )
     );
   }
+
+  useEffect(() => {
+    if (!selectedAgentId) return;
+
+    const fetchComments = async () => {
+      const res = await fetch(`/api/agents/${selectedAgentId}/comments`);
+      const data = await res.json();
+
+      setAgentData((prev) =>
+        prev.map((a) =>
+          a._id === selectedAgentId ? { ...a, comments: data } : a
+        )
+      );
+    };
+
+    fetchComments();
+  }, [selectedAgentId, setAgentData]);
 
   const { handleDeleteSelected } = useBulkDelete<DeleteResponse>({
     endpoint: '/api/bulk-delete',
@@ -179,6 +229,7 @@ export function AgentsTable() {
 
       setSelected([]);
       setShowConfirm(false);
+      invalidateCache('agents');
       const message = getApiSuccessMessage(data.message, t, 'Agent');
       toast.success(message);
     },
@@ -201,7 +252,7 @@ export function AgentsTable() {
                 search: e.target.value,
               }))
             }
-            className="w-full md:w-64"
+            className="w-full lg:w-64"
           />
 
           <Select
@@ -223,7 +274,7 @@ export function AgentsTable() {
                 </SelectItem>
                 {roleOptions.map((r) => (
                   <SelectItem key={r} value={r}>
-                    {r}
+                    {t(`Roles.${r.toLowerCase()}`)}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -249,7 +300,7 @@ export function AgentsTable() {
                 </SelectItem>
                 {statusOptions.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s}
+                    {t(`Statuses.${translationKeyMap[s]}`)}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -288,9 +339,20 @@ export function AgentsTable() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Mobile Add */}
+          <Button
+            className="flex lg:hidden items-center gap-2 cursor-pointer"
+            type="button"
+            onClick={() => setShowAddAgent(true)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
+
+        {/* Desktop Add */}
         <Button
-          className="flex items-center gap-2 cursor-pointer"
+          className="hidden lg:flex items-center gap-2 cursor-pointer"
           type="button"
           onClick={() => setShowAddAgent(true)}
         >
@@ -345,16 +407,15 @@ export function AgentsTable() {
             <UserCog className="h-10 w-10 text-muted-foreground" />
           </div>
 
-          <h3 className="font-semibold">No agents found</h3>
+          <h3 className="font-semibold">{t('EmptyState.agent.title')}</h3>
 
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You don&apos;t have any agents yet. Start by adding your first
-            agent.
+            {t('EmptyState.agent.description')}
           </p>
 
           <Button className="mt-4" onClick={() => setShowAddAgent(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add New Agent
+            {t('EmptyState.agent.addNewAgent')}
           </Button>
         </div>
       )}
@@ -392,6 +453,7 @@ export function AgentsTable() {
         isOpen={!!selectedAgentId}
         onClose={() => setSelectedAgentId(null)}
         onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
       />
 
       {/* Assign Customer Modal - Rendered outside table structure */}

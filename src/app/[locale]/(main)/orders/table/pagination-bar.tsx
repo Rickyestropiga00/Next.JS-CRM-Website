@@ -133,12 +133,30 @@ export function OrdersPaginationBar({
 }: PaginationBarProps) {
   const paginationT = useTranslations('Pagination');
   return (
-    <div className="flex flex-wrap lg:flex-nowrap items-center justify-between mt-4 px-2 gap-2">
-      <div className="text-sm text-muted-foreground whitespace-nowrap w-[140px]">
-        {paginationT('selectedRows', {
-          selectedCount: selectedCount,
-          totalRows: totalRows,
-        })}
+    <div className="flex flex-wrap lg:flex-nowrap items-center justify-between mt-4 px-2 gap-4 lg:gap-2">
+      <div className="flex justify-between items-center w-full lg:w-max">
+        <span className="text-sm text-muted-foreground whitespace-nowrap w-[140px]">
+          {paginationT('selectedRows', {
+            selectedCount: selectedCount,
+            totalRows: totalRows,
+          })}
+        </span>
+        <div className="flex lg:hidden items-center gap-2 text-sm whitespace-nowrap">
+          <span>{paginationT('rowsPerPage')}</span>
+          <Select
+            value={String(rowsPerPage)}
+            onValueChange={(v) => setRowsPerPage(Number(v))}
+          >
+            <SelectTrigger className="w-[60px] h-8 px-2 py-1 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <Pagination>
         <PaginationContent className="gap-2">
@@ -220,7 +238,7 @@ export function OrdersPaginationBar({
           </PaginationItem>
         </PaginationContent>
       </Pagination>
-      <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+      <div className="hidden lg:flex items-center gap-2 text-sm whitespace-nowrap">
         <span>{paginationT('rowsPerPage')}</span>
         <Select
           value={String(rowsPerPage)}

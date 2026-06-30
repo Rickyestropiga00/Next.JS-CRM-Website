@@ -27,11 +27,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Agent } from '@/types/interface';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { formatPhone } from '@/utils/formatters';
+import { formatPhone, timeAgo } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { getId } from '@/utils/helper';
 import { TableSkeleton } from '@/components/shared/table-skeleton';
 import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
 
 interface TableBodyProps {
   paginated: Agent[];
@@ -61,6 +62,8 @@ export function AgentsTableBody({
   isHighlighted,
 }: TableBodyProps) {
   const t = useTranslations();
+  const timeAgoT = useTranslations('TimeAgo');
+
   // Helper function to count comments
   const countComments = (comment: string | undefined): number => {
     if (!comment) return 0;
@@ -110,7 +113,6 @@ export function AgentsTableBody({
         </TableRow>
       ) : (
         paginated.map((a) => {
-          const commentCount = countComments(a.comment);
           const highlighted = isHighlighted(a.agentId ?? '');
           return (
             <TableRow
@@ -171,7 +173,9 @@ export function AgentsTableBody({
                 {a.createdAt?.split('T')[0]}
               </TableCell>
               <TableCell className="w-[120px]">
-                {a.lastLogin ? new Date(a.lastLogin).toLocaleDateString() : '-'}
+                {a.userId?.lastLogin
+                  ? timeAgo(a.userId?.lastLogin, timeAgoT)
+                  : '-'}
               </TableCell>
               <TableCell className="w-[180px] max-w-[180px]">
                 <div className="truncate" title={a.notes || ''}>
@@ -180,13 +184,21 @@ export function AgentsTableBody({
               </TableCell>
               <TableCell className="w-[80px] max-w-[180px]">
                 <div className="text-center">
-                  {commentCount > 0 ? (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold">
-                      {commentCount}
-                    </span>
-                  ) : (
-                    '-'
-                  )}
+                  {(() => {
+                    const count = a.comments
+                      ? a.comments.length
+                      : a.commentsCount ?? 0;
+                    return count > 0 ? (
+                      <Badge
+                        variant="secondary"
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-semibold"
+                      >
+                        {count}
+                      </Badge>
+                    ) : (
+                      '-'
+                    );
+                  })()}
                 </div>
               </TableCell>
               <TableCell className="w-[80px]">

@@ -5,18 +5,33 @@ import { getNotificationIcon } from '@/lib/notification';
 import { formatDistanceToNow } from 'date-fns';
 import type { Notification } from '@/types/notification';
 import { useRouter } from 'next/navigation';
+import { Agent } from '@/types/interface';
 
 export function NotificationItem({
   notification: n,
   onClose,
+  onOpenComment,
 }: {
   notification: Notification;
   onClose?: () => void;
+  onOpenComment?: (agent: Agent, commentId: string | undefined) => void;
 }) {
-  const { markAsRead, remove } = useNotifications();
+  const { markAsRead } = useNotifications();
   const router = useRouter();
+
+  const displayDate =
+    n.type === 'comment' && n.meta?.lastCommentAt
+      ? new Date(n.meta.lastCommentAt)
+      : new Date(n.createdAt);
+
   const handleClick = () => {
     markAsRead(String(n._id));
+    if (n.type === 'comment') {
+      if (n.meta?.agentId) {
+        onOpenComment?.(n.meta.agent, n.meta.commentId ?? undefined);
+      }
+      return;
+    }
     if (n.link) {
       router.push(n.link);
     }
@@ -26,9 +41,9 @@ export function NotificationItem({
   return (
     <div
       className={`flex gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 
-                     transition cursor-pointer ${
-                       !n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
-                     }`}
+                   transition cursor-pointer ${
+                     !n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
+                   }`}
       onClick={handleClick}
     >
       {/* Icon */}
@@ -43,7 +58,7 @@ export function NotificationItem({
           {n.message}
         </p>
         <p className="text-[10px] text-gray-400 mt-1">
-          {formatDistanceToNow(n.createdAt, { addSuffix: true })}
+          {formatDistanceToNow(displayDate, { addSuffix: true })}
         </p>
       </div>
 

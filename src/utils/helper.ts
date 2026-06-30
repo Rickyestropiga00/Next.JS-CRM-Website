@@ -6,7 +6,7 @@ export const getNestedValue = (obj: any, path: string) => {
   return path.split('.').reduce((acc, key) => acc?.[key], obj);
 };
 
-const authPaths = ['/login', '/register'];
+const authPaths = ['/login', '/register', '/forgot-password'];
 
 export const redirectWithLocale = (
   request: NextRequest,

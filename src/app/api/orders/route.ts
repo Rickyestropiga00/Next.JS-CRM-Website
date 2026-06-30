@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Order from '@/models/Orders';
+import '@/models/Customer';
 import mongoose from 'mongoose';
 import { generateCustomId } from '@/lib/generate-id';
 import { getCurrentUser } from '@/lib/auth';

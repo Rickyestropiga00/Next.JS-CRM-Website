@@ -11,6 +11,7 @@ import {
 import { useNotifications } from '@/context/notification-context';
 import { useFetch } from '@/hooks/use-fetch';
 import { Agent, Task } from '@/types/interface';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -29,9 +30,11 @@ export const AssignTaskPopover = ({
   onClose,
   onAssigned,
 }: AssignTaskPopoverProps) => {
+  const t = useTranslations();
   const { data: agents = [] } = useFetch<Agent>('agents', false, false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>('');
   const [selectedAgentName, setSelectedAgentName] = useState<string>('');
+  const [agentInputValue, setAgentInputValue] = useState('');
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
@@ -86,36 +89,45 @@ export const AssignTaskPopover = ({
     <ModalWrapper open={isOpen} onClose={handleCancel}>
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="font-medium text-sm sm:text-base">Assign Task</h4>
+          <h4 className="font-medium text-sm sm:text-base">
+            {t('AssignTask.title')}
+          </h4>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Select an agent to assign this task.
+            {t('AssignTask.description')}
           </p>
         </div>
 
         <div className="flex flex-col gap-3 py-2">
           <Combobox
+            items={agents.map((agent) => ({
+              label: agent.name,
+              value: String(agent._id ?? agent.id),
+            }))}
             value={selectedAgentName}
-            onValueChange={(name) => {
-              if (!name) return;
-              const agent = agents.find((a) => a.name === name);
+            onValueChange={(value) => {
+              const agent = agents.find((a) => String(a._id ?? a.id) === value);
+
               if (agent) {
-                setSelectedAgentName(name);
-                setSelectedAgentId(String(agent._id ?? agent.id));
+                setSelectedAgentId(value);
+                setSelectedAgentName(agent.name);
+                setAgentInputValue(agent.name);
               }
             }}
           >
-            <ComboboxInput placeholder="Search agent..." />
+            <ComboboxInput
+              placeholder={t('AssignTask.combobox.placeholder')}
+              value={selectedAgentName}
+              onChange={(e) => setAgentInputValue(e.target.value)}
+            />
             <ComboboxContent>
-              {agents.length === 0 && (
-                <ComboboxEmpty>No agent found.</ComboboxEmpty>
-              )}
+              <ComboboxEmpty>{t('AssignTask.combobox.empty')}</ComboboxEmpty>
 
               <ComboboxList>
-                {agents.map((agent) => (
-                  <ComboboxItem key={agent._id ?? agent.id} value={agent.name}>
-                    {agent.name}
+                {(item) => (
+                  <ComboboxItem key={item.value} value={item.value}>
+                    {item.label}
                   </ComboboxItem>
-                ))}
+                )}
               </ComboboxList>
             </ComboboxContent>
           </Combobox>
@@ -123,13 +135,15 @@ export const AssignTaskPopover = ({
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            {t('Buttons.cancel')}
           </Button>
           <Button
             disabled={!selectedAgentId || loading}
             onClick={handleAssignTask}
           >
-            {loading ? 'Assigning...' : 'Assign'}
+            {loading
+              ? t('AssignTask.buttons.assigning')
+              : t('AssignTask.buttons.assign')}
           </Button>
         </div>
       </div>

@@ -75,7 +75,8 @@
     "addComment": "コメントを追加",
     "adding": "追加中…",
     "viewOrder": "注文を見る",
-    "assign": "割り当て {item}"
+    "assign": "割り当て {item}",
+    "assignTask": "タスクを割り当て"
   },
 
   "Forms": {
@@ -483,7 +484,8 @@
         "lastContacted": "最終連絡日"
       },
       "comments": {
-        "empty": "コメントはまだありません"
+        "empty": "コメントはまだありません",
+        "alertDescription": "このコメントは完全に削除されます。この操作は元に戻せません。"
       }
     },
     "table": {
@@ -576,7 +578,8 @@
         "empty": "メモはありません"
       },
       "comments": {
-        "empty": "-"
+        "empty": "コメントはまだありません",
+        "alertDescription": "このコメントは完全に削除されます。この操作は元に戻せません。"
       }
     },
     "assign": {
@@ -669,6 +672,7 @@
 
     "customersAgentsChart": {
       "title": "顧客 vs エージェント",
+      "agentsTitle": "顧客",
       "description": "現在の分布",
       "total": "合計: {count} 件",
       "breakdown": "{customers} 顧客 と {agents} エージェント"
@@ -733,6 +737,106 @@
       "description": "過去6か月の総訪問者数を表示",
       "trend": "今月5.2%上昇中",
       "footer": "過去6か月の総訪問者数を表示"
+    }
+  },
+  "AssignTask": {
+    "title": "タスクを割り当て",
+    "description": "このタスクを割り当てる担当者を選択してください。",
+    "combobox": {
+      "empty": "担当者が見つかりません。",
+      "placeholder": "担当者を検索..."
+    },
+    "buttons": {
+      "assigning": "割り当て中",
+      "assign": "割り当て"
+    }
+  },
+  "Notification": {
+    "modal": {
+      "title": "通知設定",
+      "description": "通知の受信方法を管理します"
+    },
+    "footer": {
+      "cancel": "キャンセル",
+      "save": "変更を保存",
+      "saving": "保存中..."
+    },
+    "sections": {
+      "products": "商品",
+      "customers": "顧客",
+      "orders": "注文",
+      "tasks": "タスク",
+      "comment": "コメント"
+    },
+    "items": {
+      "systemProductLowStock": {
+        "label": "在庫不足アラート",
+        "sub": "商品の在庫が少なくなったとき"
+      },
+      "customerNew": {
+        "label": "新しい顧客が追加されました",
+        "sub": "顧客または見込み顧客が作成されたとき"
+      },
+      "customerAssigned": {
+        "label": "顧客が自分に割り当てられました",
+        "sub": "顧客または見込み顧客が割り当てられたとき"
+      },
+      "orderNew": {
+        "label": "新しい注文",
+        "sub": "顧客の注文が作成されたとき"
+      },
+      "orderShipmentUpdate": {
+        "label": "配送状況の更新",
+        "sub": "配送中または配達完了時"
+      },
+      "taskAssigned": {
+        "label": "タスクが自分に割り当てられました",
+        "sub": "担当者として設定されたとき"
+      },
+      "taskAssignedToAgent": {
+        "label": "タスクが自分に割り当てられました",
+        "sub": "担当者として設定されたとき"
+      },
+      "comment": {
+        "label": "新しいコメント",
+        "sub": "誰かがコメントを追加したとき"
+      }
+    }
+  },
+  "AppearancePopover": {
+    "title": "外観",
+    "description": "CRMの外観をカスタマイズします。",
+    "themeMode": "テーマモード",
+    "accentColor": "アクセントカラー",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "EmptyState": {
+    "agent": {
+      "title": "エージェントが見つかりません",
+      "description": "まだエージェントがいません。最初のエージェントを追加してください。",
+      "addNewAgent": "新しいエージェントを追加"
+    },
+    "customer": {
+      "title": "顧客が見つかりません",
+      "description": "まだ顧客がいません。最初の顧客を追加してください。",
+      "addNewCustomer": "新しい顧客を追加"
+    },
+    "product": {
+      "title": "製品が見つかりません",
+      "description": "まだ製品がありません。最初の製品を追加してください。",
+      "addNewProduct": "新しい製品を追加"
+    },
+    "order": {
+      "title": "注文はまだありません",
+      "description": "まだ注文がありません。最初の注文を作成してください。",
+      "addNewOrder": "新しい注文を作成"
+    },
+    "task": {
+      "title": "タスクが見つかりません",
+      "description": "まだタスクがありません。最初のタスクを作成してください。",
+      "addNewTask": "新しいタスクを追加"
     }
   }
 }

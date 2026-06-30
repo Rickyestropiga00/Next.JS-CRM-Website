@@ -22,13 +22,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Pencil, Trash, Move, CircleCheckBig, UserPlus } from 'lucide-react';
 import { Task, ColumnKey, Agent } from '@/types/interface';
-import { timeAgo } from '@/utils/formatters';
+import { getInitials, timeAgo } from '@/utils/formatters';
 import { getId } from '@/utils/helper';
 import { useDraggable } from '@dnd-kit/core';
 import { Can } from '@/components/auth/can';
 import { useUser } from '@/hooks/use-user';
 import { useTranslations } from 'next-intl';
-import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import dynamic from 'next/dynamic';
 import { useFetch } from '@/hooks/use-fetch';
 
@@ -83,8 +83,15 @@ export function TaskCard({
       id: getId(task),
       data: { task },
     });
-  const { data: agents } = useFetch<Agent[]>('agents', false, false);
+  const { data: agents } = useFetch<Agent>('agents', false, false);
   const [showAssignTaskPopover, setShowAssignTaskPopover] = useState(false);
+
+  const assignedAgent = task.agentId
+    ? agents.find((a) => String(a._id ?? a.id) === String(task.agentId))
+    : null;
+  const agentUserId = assignedAgent?.userId?._id
+    ? String(assignedAgent.userId._id)
+    : null;
 
   useEffect(() => {
     if (!isHighlighted) return;
@@ -236,12 +243,32 @@ export function TaskCard({
                     {task.lastAdded ?? timeAgo(task.createdAt, timeAgoT)}
                   </span>
                   <div className="flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
-                    {task.avatars.map((avatar, idx) => (
-                      <Avatar key={idx}>
-                        <AvatarImage src={avatar.src} alt={avatar.alt} />
-                        <AvatarFallback>{avatar.fallback}</AvatarFallback>
+                    <div
+                      className="flex flex-col items-center gap-1.5"
+                      title={assignedAgent ? assignedAgent.name : 'Unassigned'}
+                    >
+                      <Avatar className=" ring-2 ring-background">
+                        {assignedAgent ? (
+                          <>
+                            <AvatarImage
+                              src={`/api/user/avatar/${agentUserId}`}
+                              alt={assignedAgent.name}
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="text-[10px] font-semibold">
+                              {getInitials(assignedAgent.name)}
+                            </AvatarFallback>
+                          </>
+                        ) : (
+                          <AvatarFallback className="text-[10px] font-semibold text-muted-foreground">
+                            N/A
+                          </AvatarFallback>
+                        )}
                       </Avatar>
-                    ))}
+                      <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                        {assignedAgent ? assignedAgent.name : ''}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -289,7 +316,7 @@ export function TaskCard({
                   }}
                 >
                   <UserPlus className="h-4 w-4" />
-                  Assign Task
+                  {t('Buttons.assignTask')}
                 </DropdownMenuItem>
               </Can>
               <DropdownMenuItem

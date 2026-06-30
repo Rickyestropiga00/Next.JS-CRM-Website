@@ -22,6 +22,7 @@ import {
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface EditProductPopoverProps {
   product: Product;
@@ -94,6 +95,8 @@ export function EditProductPopover({
               body: formDataImg,
             });
           }
+
+          invalidateCache('products');
 
           onSave(result.data);
           toast.success(result.message, { id: toastId });

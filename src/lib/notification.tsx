@@ -1,8 +1,6 @@
 import { NotificationType } from '@/types/notification';
 import {
-  ShoppingCart,
   User,
-  CheckSquare,
   Users,
   AlertCircle,
   Package,
@@ -12,13 +10,14 @@ import {
   CheckCircle2,
   Bell,
   AlertTriangle,
+  MessageSquare,
 } from 'lucide-react';
 
 export function getNotificationIcon(type: NotificationType) {
   const map: Record<NotificationType, React.ReactNode> = {
     // ORDERS
     order_new: <Package className="w-4 h-4 text-green-500" />,
-    order_status: <Truck className="w-4 h-4 text-blue-500" />,
+    order_shipment_update: <Truck className="w-4 h-4 text-blue-500" />,
 
     // CUSTOMERS
     customer_new: <User className="w-4 h-4 text-emerald-500" />,
@@ -36,12 +35,14 @@ export function getNotificationIcon(type: NotificationType) {
     agent_new: <User className="w-4 h-4 text-purple-500" />,
 
     // PRODUCTS
-    product_low_stock: <AlertTriangle className="w-4 h-4 text-red-500" />,
+    system_product_low_stock: (
+      <AlertTriangle className="w-4 h-4 text-red-500" />
+    ),
 
     // SYSTEM
     system: <Bell className="w-4 h-4 text-gray-500" />,
+    comment: <MessageSquare className="w-4 h-4 text-blue-500" />,
   };
 
   return map[type] ?? map.system;
 }
-1;

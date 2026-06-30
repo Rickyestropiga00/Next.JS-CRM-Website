@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/combobox';
 import { Agent, Customer, Order, Product } from '@/types/interface';
 import { formatPrice } from '@/utils/formatters';
-import { useFetch } from '@/hooks/use-fetch';
+import { invalidateCache, useFetch } from '@/hooks/use-fetch';
 import { validateNumber, validateRequired } from '@/lib/validations';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
@@ -140,6 +140,8 @@ export function AddOrderPopover({
           customer: formData.customer,
           product: formData.product,
         };
+
+        invalidateCache('orders');
 
         onAddOrder(orderWithRelations);
         setCustomerInputValue('');

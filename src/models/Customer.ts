@@ -12,7 +12,6 @@ export interface ICustomer extends Document {
   lastContacted?: string;
   expiresAt: Date;
   notes?: string;
-  comment?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,9 +51,7 @@ const customerSchema = new Schema<ICustomer>(
     notes: {
       type: String,
     },
-    comment: {
-      type: String,
-    },
+
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),

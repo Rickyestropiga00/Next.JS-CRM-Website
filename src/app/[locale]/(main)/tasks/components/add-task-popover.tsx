@@ -16,6 +16,7 @@ import { validateRequired } from '@/lib/validations';
 import { useFormHandler } from '@/hooks/use-form-handler';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useTranslations } from 'next-intl';
+import { invalidateCache } from '@/hooks/use-fetch';
 
 interface AddTaskPopoverProps {
   onAddTask: (task: Task) => void;
@@ -137,6 +138,7 @@ export function AddTaskPopover({
         avatars: [defaultAvatar],
       }),
       onSuccess: (result: Task) => {
+        invalidateCache('tasks');
         onAddTask(result);
       },
       onClose,

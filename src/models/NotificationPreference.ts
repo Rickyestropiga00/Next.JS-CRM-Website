@@ -5,9 +5,10 @@ export interface INotificationPreference extends Document {
   customer_new: boolean;
   customer_assigned: boolean;
   order_new: boolean;
-  shipment_update: boolean;
+  order_shipment_update: boolean;
   task_assigned_to_agent: boolean;
-  product_low_stock: boolean;
+  system_product_low_stock: boolean;
+  comment: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +37,7 @@ const notificationPreferenceSchema = new Schema<INotificationPreference>(
       default: true,
     },
 
-    shipment_update: {
+    order_shipment_update: {
       type: Boolean,
       default: true,
     },
@@ -44,7 +45,11 @@ const notificationPreferenceSchema = new Schema<INotificationPreference>(
       type: Boolean,
       default: true,
     },
-    product_low_stock: {
+    system_product_low_stock: {
+      type: Boolean,
+      default: true,
+    },
+     comment: {
       type: Boolean,
       default: true,
     },

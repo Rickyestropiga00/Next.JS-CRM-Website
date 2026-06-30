@@ -1,6 +1,6 @@
-import { GalleryVerticalEnd } from "lucide-react";
-import { LoginForm } from "@/components/login-form";
-import { DarkModeToggle } from "@/components/dark-mode-toggle";
+import { GalleryVerticalEnd } from 'lucide-react';
+import { LoginForm } from '@/components/login-form';
+import { DarkModeToggle } from '@/components/dark-mode-toggle';
 
 export default function LoginPage() {
   return (

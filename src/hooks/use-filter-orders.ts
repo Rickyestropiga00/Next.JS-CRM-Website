@@ -13,7 +13,12 @@ export function useFilteredOrderByAgent(ordersData: Order[]) {
   const assignedCustomerIds = useMemo(() => {
     if (!isAgent || !user) return [];
 
-    const currentAgent = agents?.find((a) => a.userId === user._id);
+    const currentAgent = agents?.find(
+      (a) =>
+        String(
+          typeof a.userId === 'object' ? (a.userId as any)._id : a.userId
+        ) === String(user._id)
+    );
 
     return currentAgent?.assignedCustomers?.map(String) ?? [];
   }, [agents, user, isAgent]);
@@ -29,7 +34,7 @@ export function useFilteredOrderByAgent(ordersData: Order[]) {
       const customerId =
         typeof order.customer === 'object' && order.customer !== null
           ? String(order.customer._id)
-          : String(order.customer ?? order.customer);
+          : String(order.customer);
 
       return assignedCustomerIds.includes(customerId);
     });

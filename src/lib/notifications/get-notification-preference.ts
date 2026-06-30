@@ -4,9 +4,10 @@ type NotificationKey =
   | 'customer_new'
   | 'customer_assigned'
   | 'order_new'
-  | 'shipment_update'
+  | 'order_shipment_update'
   | 'task_assigned_to_agent'
-  | 'product_low_stock';
+  | 'system_product_low_stock'
+  | 'comment';
 export async function isNotificationEnabled(
   userId: Types.ObjectId,
   type: NotificationKey
